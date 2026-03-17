@@ -5,7 +5,7 @@ config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  API_PORT: z.coerce.number().int().positive().default(4000),
+  API_PORT: z.coerce.number().int().positive().default(3000),
   APP_BASE_URL: z.string().url(),
   CORS_ORIGIN: z.string().url(),
   DATABASE_URL: z.string().min(1),

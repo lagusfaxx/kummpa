@@ -1,0 +1,64 @@
+modules = ["nodejs-20", "web", "bash"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "API Server"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd apps/web && npm run dev"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "API Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd apps/api && npm run dev"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+NODE_ENV = "development"
+API_PORT = "3000"
+APP_BASE_URL = "https://d57ab4ab-a41e-4f06-8076-8045ed608152-00-1sgrywejabk34.spock.replit.dev"
+CORS_ORIGIN = "https://d57ab4ab-a41e-4f06-8076-8045ed608152-00-1sgrywejabk34.spock.replit.dev"
+EMAIL_FROM = "noreply@kumpa.app"
+LOG_LEVEL = "info"
