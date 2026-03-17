@@ -9,34 +9,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "#e8fcf6",
-          100: "#c6f6e8",
-          500: "#00C896",
-          600: "#00B387",
-          700: "#008F6B"
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))"
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))"
+        },
+        border: "hsl(var(--border))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))"
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))"
         },
         accent: {
-          50: "#fff5e8",
-          100: "#ffe4bf",
-          500: "#FF9F1C",
-          600: "#F28C00",
-          700: "#CC6F00"
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))"
         },
-        alert: {
-          50: "#fff0f4",
-          100: "#ffd2dc",
-          500: "#FF4D6D",
-          600: "#F23659",
-          700: "#C72143"
-        }
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))"
+        },
+        ring: "hsl(var(--ring))"
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)"
       },
       fontFamily: {
-        body: ["var(--font-body)", "Segoe UI", "sans-serif"],
-        display: ["var(--font-display)", "Segoe UI", "sans-serif"]
-      },
-      boxShadow: {
-        soft: "0 8px 24px rgba(15, 23, 42, 0.08)"
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"]
       }
     }
   },

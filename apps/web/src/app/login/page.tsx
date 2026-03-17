@@ -41,14 +41,11 @@ export default function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      await signIn({
-        email: normalizedEmail,
-        password
-      });
+      await signIn({ email: normalizedEmail, password });
       showToast({
         tone: "success",
         title: "Sesion iniciada",
-        description: "Tu cuenta ya esta lista para seguir usando la plataforma."
+        description: "Bienvenido de vuelta."
       });
       router.push("/account");
     } catch (submitError) {
@@ -59,9 +56,9 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta para gestionar tu ecosistema pet.">
-      <form className="space-y-3" onSubmit={(event) => void onSubmit(event)}>
-        <label className="block text-sm font-semibold text-slate-700">
+    <AuthCard title="Iniciar sesion" subtitle="Accede a tu cuenta para continuar.">
+      <form className="space-y-4" onSubmit={(event) => void onSubmit(event)}>
+        <label className="block text-sm font-medium">
           Email
           <input
             type="email"
@@ -69,10 +66,10 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="mt-1"
           />
         </label>
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-medium">
           Contrasena
           <input
             type="password"
@@ -80,26 +77,22 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="mt-1"
           />
         </label>
 
         {error && <InlineBanner tone="error">{error}</InlineBanner>}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(15,23,42,0.18)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
           {isSubmitting ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <Link href="/forgot-password" className="font-semibold text-brand-700">
+        <Link href="/forgot-password" className="font-medium text-secondary hover:underline">
           Olvide mi contrasena
         </Link>
-        <Link href="/register" className="font-semibold text-slate-700">
+        <Link href="/register" className="font-medium hover:underline">
           Crear cuenta
         </Link>
       </div>

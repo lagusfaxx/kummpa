@@ -11,10 +11,10 @@ import type { RegisterPayload } from "@/features/auth/types";
 import { useToast } from "@/features/ui/toast-context";
 
 const roleOptions: Array<{ value: RegisterPayload["role"]; label: string }> = [
-  { value: "OWNER", label: "Dueño de mascota" },
-  { value: "VET", label: "Veterinaria / Clinica" },
-  { value: "CAREGIVER", label: "Cuidador / Paseador" },
-  { value: "SHOP", label: "Tienda pet" }
+  { value: "OWNER", label: "Tutor de mascota" },
+  { value: "VET", label: "Veterinaria" },
+  { value: "CAREGIVER", label: "Cuidador" },
+  { value: "SHOP", label: "Tienda" }
 ];
 
 export default function RegisterPage() {
@@ -58,7 +58,7 @@ export default function RegisterPage() {
     }
 
     if (password !== passwordConfirm) {
-      setError("La confirmacion de contrasena no coincide.");
+      setError("Las contrasenas no coinciden.");
       return;
     }
 
@@ -74,7 +74,7 @@ export default function RegisterPage() {
       showToast({
         tone: "success",
         title: "Cuenta creada",
-        description: "Tu perfil inicial ya fue registrado y quedaste autenticado."
+        description: "Tu perfil fue registrado correctamente."
       });
       router.push("/account");
     } catch (submitError) {
@@ -85,35 +85,33 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthCard
-      title="Crear cuenta"
-      subtitle="Registra tu perfil y comienza a gestionar mascotas, reservas y recordatorios."
-    >
-      <form className="space-y-3" onSubmit={(event) => void onSubmit(event)}>
-        <label className="block text-sm font-semibold text-slate-700">
-          Nombre
-          <input
-            type="text"
-            autoComplete="given-name"
-            required
-            value={firstName}
-            onChange={(event) => setFirstName(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-          />
-        </label>
+    <AuthCard title="Crear cuenta" subtitle="Registrate para gestionar tus mascotas.">
+      <form className="space-y-4" onSubmit={(event) => void onSubmit(event)}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-medium">
+            Nombre
+            <input
+              type="text"
+              autoComplete="given-name"
+              required
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+              className="mt-1"
+            />
+          </label>
+          <label className="block text-sm font-medium">
+            Apellido
+            <input
+              type="text"
+              autoComplete="family-name"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+              className="mt-1"
+            />
+          </label>
+        </div>
 
-        <label className="block text-sm font-semibold text-slate-700">
-          Apellido (opcional)
-          <input
-            type="text"
-            autoComplete="family-name"
-            value={lastName}
-            onChange={(event) => setLastName(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-          />
-        </label>
-
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-medium">
           Email
           <input
             type="email"
@@ -121,16 +119,16 @@ export default function RegisterPage() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="mt-1"
           />
         </label>
 
-        <label className="block text-sm font-semibold text-slate-700">
-          Rol
+        <label className="block text-sm font-medium">
+          Tipo de cuenta
           <select
             value={role}
             onChange={(event) => setRole(event.target.value as RegisterPayload["role"])}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="mt-1"
           >
             {roleOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -140,7 +138,7 @@ export default function RegisterPage() {
           </select>
         </label>
 
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-medium">
           Contrasena
           <input
             type="password"
@@ -148,11 +146,11 @@ export default function RegisterPage() {
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="mt-1"
           />
         </label>
 
-        <label className="block text-sm font-semibold text-slate-700">
+        <label className="block text-sm font-medium">
           Confirmar contrasena
           <input
             type="password"
@@ -160,26 +158,22 @@ export default function RegisterPage() {
             required
             value={passwordConfirm}
             onChange={(event) => setPasswordConfirm(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="mt-1"
           />
         </label>
 
         {error && <InlineBanner tone="error">{error}</InlineBanner>}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(15,23,42,0.18)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
           {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
         </button>
       </form>
 
-      <div className="mt-4 text-sm">
-        <Link href="/login" className="font-semibold text-slate-700">
+      <p className="mt-4 text-center text-sm">
+        <Link href="/login" className="font-medium hover:underline">
           Ya tengo cuenta
         </Link>
-      </div>
+      </p>
     </AuthCard>
   );
 }

@@ -26,7 +26,7 @@ export function TopNav() {
             href: "/admin",
             label: "Admin",
             shortLabel: "Admin",
-            description: "Control operativo",
+            description: "Panel de control",
             matchers: ["/admin"]
           }
         ]
@@ -37,150 +37,77 @@ export function TopNav() {
     showToast({
       tone: "success",
       title: "Sesion cerrada",
-      description: "La cuenta se cerro correctamente en este dispositivo."
+      description: "Hasta pronto."
     });
     router.push("/login");
   };
 
-  if (isCompact) {
-    return (
-      <header className="safe-area-top sticky top-0 z-40 border-b border-black/5 bg-[rgba(249,247,241,0.86)] backdrop-blur-2xl">
-        <div className="safe-area-x mx-auto flex min-h-[4.75rem] max-w-5xl items-center justify-between gap-3 py-3">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            <span className="inline-flex items-center justify-center rounded-[1.35rem] border border-white/70 bg-white/85 p-1 shadow-[0_14px_24px_rgba(17,32,29,0.1)]">
-              <BrandLogo variant="icon" className="h-10 w-10" priority />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Ecosistema pet
-              </span>
-              <span className="block truncate font-display text-lg font-bold text-slate-900">
-                Kumpa
-              </span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-2">
-            {!isAuthenticated && !isAuthRoute(pathname) && (
-              <Link
-                href="/login"
-                className="inline-flex min-h-11 items-center rounded-2xl border border-black/10 bg-white/80 px-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-[0.98]"
-              >
-                Ingresar
-              </Link>
-            )}
-            {!isAuthenticated && isAuthRoute(pathname) && pathname !== "/register" && (
-              <Link
-                href="/register"
-                className="inline-flex min-h-11 items-center rounded-2xl bg-slate-900 px-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(17,32,29,0.18)] transition active:scale-[0.98]"
-              >
-                Crear cuenta
-              </Link>
-            )}
-            {isAuthenticated ? (
-              <Link
-                href="/account"
-                className="inline-flex min-h-11 items-center rounded-2xl bg-slate-900 px-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(17,32,29,0.18)] transition active:scale-[0.98]"
-              >
-                Mi panel
-              </Link>
-            ) : (
-              pathname !== "/" && (
-                <Link
-                  href="/"
-                  className="inline-flex min-h-11 items-center rounded-2xl border border-black/10 bg-white/80 px-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-[0.98]"
-                >
-                  Inicio
-                </Link>
-              )
-            )}
-          </div>
-        </div>
-      </header>
-    );
-  }
-
   return (
-    <header className="safe-area-top sticky top-0 z-40 border-b border-black/5 bg-[rgba(249,247,241,0.82)] backdrop-blur-2xl">
-      <div className="safe-area-x mx-auto flex min-h-[4.9rem] max-w-7xl items-center gap-3 py-3">
-        <Link href="/" className="flex min-w-0 items-center gap-3">
-          <span className="inline-flex items-center justify-center rounded-[1.45rem] border border-white/70 bg-white/88 p-1 shadow-[0_16px_28px_rgba(17,32,29,0.12)]">
-            <BrandLogo variant="icon" className="h-10 w-10" priority />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Ecosistema pet
-            </span>
-            <span className="block truncate font-display text-xl font-bold text-slate-900">
-              Kumpa
-            </span>
+    <header className="safe-area-top sticky top-0 z-40 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.95)] backdrop-blur-md">
+      <div className="safe-area-x mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <BrandLogo variant="icon" className="h-8 w-8" priority />
+          <span className="hidden font-display text-lg font-bold sm:block">
+            Kumpa
           </span>
         </Link>
-        <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
-          {navItems.map((item) => {
-            const isActive = isNavItemActive(pathname, item);
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`rounded-[1.35rem] px-3 py-2 transition active:scale-[0.98] ${
-                  isActive
-                    ? "bg-[#11201d] text-white shadow-[0_14px_24px_rgba(17,32,29,0.18)]"
-                    : "text-slate-700 hover:bg-white/70"
-                }`}
-              >
-                <span className="block text-sm font-semibold">{item.label}</span>
-                <span className={`block text-[11px] ${isActive ? "text-white/72" : "text-slate-500"}`}>
-                  {item.description}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Desktop Nav */}
+        {!isCompact && (
+          <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
+            {navItems.map((item) => {
+              const isActive = isNavItemActive(pathname, item);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
+        {/* Right Side Actions */}
         <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/#explorar"
-            className="hidden min-h-11 items-center rounded-2xl border border-black/10 bg-white/80 px-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-[0.98] xl:inline-flex"
-          >
-            Explorar modulos
-          </Link>
-          {isAuthenticated && (
-            <span className="hidden rounded-full bg-[#11201d] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white lg:inline-flex">
-              {session?.user.role}
-            </span>
-          )}
           {isAuthenticated ? (
             <>
               <Link
                 href="/account"
-                className="inline-flex min-h-11 items-center rounded-2xl border border-black/10 bg-white/80 px-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-[0.98]"
+                className="hidden text-sm font-medium text-[hsl(var(--muted-foreground))] transition-colors hover:text-[hsl(var(--foreground))] sm:block"
               >
-                {session?.user.firstName ? `Hola, ${session.user.firstName}` : "Mi panel"}
+                {session?.user.firstName || "Mi cuenta"}
               </Link>
               <button
                 type="button"
                 onClick={() => {
                   void handleLogout();
                 }}
-                className="inline-flex min-h-11 items-center rounded-2xl bg-[#11201d] px-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(17,32,29,0.18)] transition active:scale-[0.98]"
+                className="btn btn-outline text-sm"
               >
                 Salir
               </button>
             </>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="inline-flex min-h-11 items-center rounded-2xl border border-black/10 bg-white/80 px-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-[0.98]"
-              >
-                Ingresar
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex min-h-11 items-center rounded-2xl bg-[#11201d] px-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(17,32,29,0.18)] transition active:scale-[0.98]"
-              >
-                Crear cuenta
-              </Link>
+              {!isAuthRoute(pathname) && (
+                <Link href="/login" className="btn btn-ghost text-sm">
+                  Ingresar
+                </Link>
+              )}
+              {pathname !== "/register" && (
+                <Link href="/register" className="btn btn-primary text-sm">
+                  Crear cuenta
+                </Link>
+              )}
             </>
           )}
         </div>
