@@ -32,8 +32,8 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[hsl(var(--border))] bg-[hsl(var(--card)/0.98)] pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
-      <ul className="mx-auto flex max-w-lg items-stretch">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[hsl(var(--border)/0.9)] bg-[hsl(var(--card)/0.92)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <ul className="mx-auto grid max-w-3xl grid-cols-6 items-stretch">
         {navItems.map((item) => {
           const isActive = isNavItemActive(pathname, item);
 
@@ -46,7 +46,13 @@ export function BottomNav() {
                     ? "text-[hsl(var(--primary))]"
                     : "text-[hsl(var(--muted-foreground))]"
                 }`}
+                title={item.description}
               >
+                <span
+                  className={`h-1.5 w-8 rounded-full ${
+                    isActive ? "bg-[hsl(var(--accent))]" : "bg-transparent"
+                  }`}
+                />
                 <span className="text-xs font-medium">{item.shortLabel}</span>
               </Link>
             </li>

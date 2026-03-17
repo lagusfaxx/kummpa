@@ -111,6 +111,9 @@ interface MapCanvasProps {
   points: MapServicePoint[];
   selectedPointId?: string | null;
   onSelectPoint?: (pointId: string) => void;
+  pickedLocation?: { lat: number; lng: number } | null;
+  onPickLocation?: (location: { lat: number; lng: number }) => void;
+  center?: { lat: number; lng: number } | null;
   className?: string;
 }
 
@@ -119,13 +122,18 @@ export function MapCanvas({
   points,
   selectedPointId = null,
   onSelectPoint,
+  pickedLocation = null,
+  onPickLocation,
+  center = null,
   className
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
+  const pickedMarkerRef = useRef<any>(null);
   const pointsRef = useRef<MapServicePoint[]>(points);
   const onSelectRef = useRef<typeof onSelectPoint>(onSelectPoint);
+  const onPickLocationRef = useRef<typeof onPickLocation>(onPickLocation);
 
   useEffect(() => {
     pointsRef.current = points;
@@ -134,6 +142,10 @@ export function MapCanvas({
   useEffect(() => {
     onSelectRef.current = onSelectPoint;
   }, [onSelectPoint]);
+
+  useEffect(() => {
+    onPickLocationRef.current = onPickLocation;
+  }, [onPickLocation]);
 
   useEffect(() => {
     if (!accessToken || !containerRef.current || mapRef.current) {
@@ -150,7 +162,7 @@ export function MapCanvas({
         const map = new window.mapboxgl.Map({
           container: containerRef.current,
           style: "mapbox://styles/mapbox/streets-v12",
-          center: [-70.65, -33.45],
+          center: center ? [center.lng, center.lat] : [-70.65, -33.45],
           zoom: 9.2
         });
 
@@ -268,6 +280,23 @@ export function MapCanvas({
               .addTo(map);
           });
 
+          if (onPickLocationRef.current) {
+            map.on("click", (event: any) => {
+              const interactiveFeatures = map.queryRenderedFeatures(event.point, {
+                layers: [CLUSTER_LAYER_ID, POINT_LAYER_ID]
+              });
+
+              if (interactiveFeatures.length > 0) {
+                return;
+              }
+
+              onPickLocationRef.current?.({
+                lat: event.lngLat.lat,
+                lng: event.lngLat.lng
+              });
+            });
+          }
+
           const pointerLayers = [CLUSTER_LAYER_ID, POINT_LAYER_ID];
           for (const layerId of pointerLayers) {
             map.on("mouseenter", layerId, () => {
@@ -276,6 +305,10 @@ export function MapCanvas({
             map.on("mouseleave", layerId, () => {
               map.getCanvas().style.cursor = "";
             });
+          }
+
+          if (onPickLocationRef.current) {
+            map.getCanvas().style.cursor = "crosshair";
           }
         });
       })
@@ -287,6 +320,8 @@ export function MapCanvas({
       cancelled = true;
       popupRef.current?.remove?.();
       popupRef.current = null;
+      pickedMarkerRef.current?.remove?.();
+      pickedMarkerRef.current = null;
 
       if (mapRef.current) {
         mapRef.current.remove();
@@ -341,6 +376,37 @@ export function MapCanvas({
       .setHTML(popupHtml(selected))
       .addTo(map);
   }, [points, selectedPointId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !pickedLocation || !window.mapboxgl) return;
+
+    if (!pickedMarkerRef.current) {
+      const markerElement = document.createElement("div");
+      markerElement.className = "h-4 w-4 rounded-full border-4 border-white bg-[hsl(var(--accent))] shadow-[0_8px_20px_rgba(15,23,42,0.24)]";
+      pickedMarkerRef.current = new window.mapboxgl.Marker({
+        element: markerElement
+      });
+    }
+
+    pickedMarkerRef.current.setLngLat([pickedLocation.lng, pickedLocation.lat]).addTo(map);
+    map.flyTo({
+      center: [pickedLocation.lng, pickedLocation.lat],
+      zoom: Math.max(13, map.getZoom()),
+      duration: 450
+    });
+  }, [pickedLocation]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !center) return;
+
+    map.flyTo({
+      center: [center.lng, center.lat],
+      zoom: Math.max(11, map.getZoom()),
+      duration: 450
+    });
+  }, [center]);
 
   if (!accessToken) {
     return (

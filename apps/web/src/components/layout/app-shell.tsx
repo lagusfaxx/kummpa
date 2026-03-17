@@ -20,10 +20,10 @@ export function AppShell({ children }: PropsWithChildren) {
     >
       <TopNav />
       <main
-        className={`mx-auto w-full px-4 sm:px-6 lg:px-8 ${
+        className={`safe-area-x mx-auto w-full px-4 sm:px-6 lg:px-8 ${
           isMinimalShell
             ? "max-w-4xl py-6"
-            : "max-w-6xl py-6 sm:py-8"
+            : "max-w-7xl py-5 sm:py-7"
         }`}
       >
         {children}

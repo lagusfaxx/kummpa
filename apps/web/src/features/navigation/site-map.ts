@@ -27,49 +27,47 @@ export const PRIMARY_NAV_ITEMS: readonly SiteNavItem[] = [
     href: "/",
     label: "Inicio",
     shortLabel: "Inicio",
-    description: "Pagina principal",
+    description: "Tu dia con tus mascotas",
     matchers: ["/"]
   },
   {
     href: "/pets",
-    label: "Mascotas",
+    label: "Mis mascotas",
     shortLabel: "Mascotas",
-    description: "Perfiles y carnet",
+    description: "Perfiles, carnet e identidad",
     matchers: ["/pets"]
   },
   {
     href: "/appointments",
-    label: "Agenda",
-    shortLabel: "Agenda",
-    description: "Reservas y turnos",
+    label: "Reservas",
+    shortLabel: "Reservas",
+    description: "Horas, controles y seguimiento",
     matchers: ["/appointments"]
   },
   {
     href: "/map",
-    label: "Mapa",
-    shortLabel: "Mapa",
-    description: "Servicios cerca",
+    label: "Explorar",
+    shortLabel: "Explorar",
+    description: "Servicios, tiendas y beneficios",
     matchers: ["/map"]
   },
   {
     href: "/community",
     label: "Comunidad",
-    shortLabel: "Social",
-    description: "Red y encuentros",
+    shortLabel: "Comunidad",
+    description: "Posts, paseos y consultas",
     matchers: ["/community"]
   },
   {
     href: "/lost-pets",
     label: "Alertas",
     shortLabel: "Alertas",
-    description: "Emergencias",
+    description: "Perdidas, avistamientos y ayuda",
     matchers: ["/lost-pets"]
   }
 ] as const;
 
-export const MOBILE_NAV_ITEMS: readonly SiteNavItem[] = PRIMARY_NAV_ITEMS.filter(
-  (item) => item.href !== "/community"
-);
+export const MOBILE_NAV_ITEMS: readonly SiteNavItem[] = PRIMARY_NAV_ITEMS;
 
 function pathMatches(pathname: string, candidate: string) {
   if (candidate === "/") {
@@ -106,35 +104,35 @@ const GUEST_QUICK_ACTIONS: readonly QuickAction[] = [
   {
     href: "/register",
     label: "Crear cuenta",
-    description: "Empieza a usar la plataforma"
+    description: "Empieza a cuidar mejor a tu mascota"
   },
   {
     href: "/map",
-    label: "Ver mapa",
-    description: "Explora servicios pet-friendly"
+    label: "Explorar",
+    description: "Busca servicios y beneficios pet"
   }
 ];
 
 const ROLE_QUICK_ACTIONS: Record<UserRole, readonly QuickAction[]> = {
   OWNER: [
-    { href: "/pets/new", label: "Nueva mascota", description: "Agrega una mascota" },
-    { href: "/appointments", label: "Agendar", description: "Reserva un turno" }
+    { href: "/pets/new", label: "Agregar mascota", description: "Crea el perfil de tu mascota" },
+    { href: "/appointments", label: "Reservar", description: "Agenda un servicio" }
   ],
   VET: [
-    { href: "/appointments", label: "Mi agenda", description: "Gestiona turnos" },
-    { href: "/account", label: "Mi perfil", description: "Actualiza tus datos" }
+    { href: "/appointments", label: "Vista profesional", description: "Revisa solicitudes y agenda" },
+    { href: "/account", label: "Perfil profesional", description: "Actualiza tu ficha" }
   ],
   CAREGIVER: [
-    { href: "/appointments", label: "Mis turnos", description: "Organiza tu agenda" },
-    { href: "/community/meet", label: "Encuentros", description: "Coordina paseos" }
+    { href: "/appointments", label: "Vista profesional", description: "Organiza reservas y atenciones" },
+    { href: "/community/meet", label: "Paseos", description: "Coordina encuentros" }
   ],
   SHOP: [
-    { href: "/marketplace", label: "Marketplace", description: "Gestiona productos" },
-    { href: "/benefits", label: "Convenios", description: "Crea promociones" }
+    { href: "/marketplace", label: "Productos", description: "Gestiona catalogo y ventas" },
+    { href: "/benefits", label: "Promociones", description: "Administra descuentos y convenios" }
   ],
   ADMIN: [
     { href: "/admin", label: "Panel admin", description: "Control y moderacion" },
-    { href: "/news", label: "Contenido", description: "Gestiona noticias" }
+    { href: "/news", label: "Contenido", description: "Gestiona noticias y campanas" }
   ]
 };
 
