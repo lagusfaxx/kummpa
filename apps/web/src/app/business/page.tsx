@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/features/auth/auth-context";
 import { getBusinessDashboard, getBusinessServices, getBusinessPromotions, getBusinessSchedule } from "@/features/profiles/business-api";
+import type { BusinessServiceItem, PromotionItem, ScheduleSlot } from "@/features/profiles/business-api";
 
 type TabId = "perfil" | "servicios" | "promociones" | "horarios";
 
@@ -17,9 +18,9 @@ const TABS: { id: TabId; label: string }[] = [
 export default function BusinessPage() {
   const { session } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
-  const [services, setServices] = useState<any[]>([]);
-  const [promotions, setPromotions] = useState<any[]>([]);
-  const [schedule, setSchedule] = useState<any[]>([]);
+  const [services, setServices] = useState<BusinessServiceItem[]>([]);
+  const [promotions, setPromotions] = useState<PromotionItem[]>([]);
+  const [schedule, setSchedule] = useState<ScheduleSlot[]>([]);
   const [activeTab, setActiveTab] = useState<TabId>("perfil");
 
   useEffect(() => {
@@ -74,10 +75,10 @@ export default function BusinessPage() {
               <p className="mt-3 text-sm text-slate-500">No tienes servicios registrados.</p>
             ) : (
               <div className="mt-3 space-y-2">
-                {services.map((svc: any) => (
+                {services.map((svc) => (
                   <div key={svc.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
                     <div>
-                      <p className="font-medium">{svc.name ?? svc.serviceType}</p>
+                      <p className="font-medium">{svc.title ?? svc.serviceType}</p>
                       <p className="text-xs text-slate-500">{svc.durationMinutes ? `${svc.durationMinutes} min` : ""}</p>
                     </div>
                     <p className="font-semibold">{svc.priceCents ? `$${(svc.priceCents / 100).toFixed(0)}` : "Sin precio"}</p>
@@ -95,7 +96,7 @@ export default function BusinessPage() {
               <p className="mt-3 text-sm text-slate-500">Sin promociones activas.</p>
             ) : (
               <div className="mt-3 space-y-2">
-                {promotions.map((promo: any) => (
+                {promotions.map((promo) => (
                   <div key={promo.id} className="rounded-xl border border-slate-200 p-3">
                     <p className="font-medium">{promo.title}</p>
                     <p className="text-xs text-slate-500">{promo.discountLabel ?? "Oferta activa"}</p>
@@ -108,12 +109,12 @@ export default function BusinessPage() {
 
         {activeTab === "horarios" && (
           <section className="card p-5">
-            <h2 className="font-semibold">Horarios de atencion</h2>
+            <h2 className="font-semibold">Horarios de atención</h2>
             {schedule.length === 0 ? (
               <p className="mt-3 text-sm text-slate-500">Sin horarios configurados.</p>
             ) : (
               <div className="mt-3 space-y-2">
-                {schedule.map((slot: any, idx: number) => (
+                {schedule.map((slot, idx) => (
                   <div key={slot.id ?? idx} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 text-sm">
                     <p className="font-medium">Dia {slot.dayOfWeek}</p>
                     <p className="text-slate-600">{slot.startTime} - {slot.endTime}</p>
