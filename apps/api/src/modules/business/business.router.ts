@@ -34,3 +34,50 @@ businessRouter.get(
     });
   })
 );
+
+businessRouter.get(
+  "/services",
+  asyncHandler(requireAuth),
+  requireRoles(UserRole.VET, UserRole.CAREGIVER, UserRole.SHOP),
+  asyncHandler(async (req, res) => {
+    const userId = req.authUser!.id;
+
+    const services = await prisma.appointmentService.findMany({
+      where: { providerUserId: userId },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.status(200).json({ ok: true, data: services });
+  })
+);
+
+businessRouter.get(
+  "/promotions",
+  asyncHandler(requireAuth),
+  requireRoles(UserRole.VET, UserRole.CAREGIVER, UserRole.SHOP),
+  asyncHandler(async (req, res) => {
+    const promotions = await prisma.benefit.findMany({
+      where: { isActive: true },
+      orderBy: { updatedAt: "desc" },
+      take: 20
+    });
+
+    res.status(200).json({ ok: true, data: promotions });
+  })
+);
+
+businessRouter.get(
+  "/schedule",
+  asyncHandler(requireAuth),
+  requireRoles(UserRole.VET, UserRole.CAREGIVER, UserRole.SHOP),
+  asyncHandler(async (req, res) => {
+    const userId = req.authUser!.id;
+
+    const schedule = await prisma.scheduleAvailability.findMany({
+      where: { userId },
+      orderBy: { dayOfWeek: "asc" }
+    });
+
+    res.status(200).json({ ok: true, data: schedule });
+  })
+);

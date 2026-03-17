@@ -396,9 +396,9 @@ export default function CommunityPage() {
   return (
     <AuthGate>
       <div className="space-y-6">
-        <div className="flex gap-2">
-          <button className="btn btn-outline text-xs" onClick={() => setAudience("usuario")} type="button">Usuario</button>
-          <button className="btn btn-outline text-xs" onClick={() => setAudience("comercio")} type="button">Comercio</button>
+        <div className="flex gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+          <button className={`rounded-lg px-4 py-2 text-sm font-medium transition ${audience === "usuario" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`} onClick={() => setAudience("usuario")} type="button">Usuario</button>
+          <button className={`rounded-lg px-4 py-2 text-sm font-medium transition ${audience === "comercio" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`} onClick={() => setAudience("comercio")} type="button">Comercio</button>
         </div>
 
         <PageIntro

@@ -293,9 +293,9 @@ export default function LostPetsPage() {
                   {activeAlerts[0] ? (
                     <Link
                       href={`/lost-pets/${activeAlerts[0].id}#report-sighting`}
-                      className="btn btn-secondary"
+                      className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
                     >
-                      Yo la vi
+                      🚨 Yo la vi
                     </Link>
                   ) : null}
                 </div>
@@ -363,8 +363,8 @@ export default function LostPetsPage() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <Link href={`/lost-pets/${alert.id}#report-sighting`} className="btn btn-secondary">
-                        Yo la vi
+                      <Link href={`/lost-pets/${alert.id}#report-sighting`} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-red-700">
+                        🚨 Yo la vi
                       </Link>
                       <button
                         type="button"
@@ -423,8 +423,8 @@ export default function LostPetsPage() {
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Link href={`/lost-pets/${alert.id}#report-sighting`} className="btn btn-secondary text-xs">
-                          Yo la vi
+                        <Link href={`/lost-pets/${alert.id}#report-sighting`} className="inline-flex items-center gap-1 rounded-xl bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700">
+                          🚨 Yo la vi
                         </Link>
                         <button
                           type="button"

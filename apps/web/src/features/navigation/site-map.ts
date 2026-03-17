@@ -31,13 +31,6 @@ export const PRIMARY_NAV_ITEMS: readonly SiteNavItem[] = [
     matchers: ["/"]
   },
   {
-    href: "/pets",
-    label: "Mis mascotas",
-    shortLabel: "Mascotas",
-    description: "Perfiles, carnet e identidad",
-    matchers: ["/pets"]
-  },
-  {
     href: "/explore",
     label: "Explorar",
     shortLabel: "Explorar",
@@ -45,17 +38,24 @@ export const PRIMARY_NAV_ITEMS: readonly SiteNavItem[] = [
     matchers: ["/explore", "/map"]
   },
   {
+    href: "/pets",
+    label: "Mis mascotas",
+    shortLabel: "Mascotas",
+    description: "Perfiles, carnet e identidad",
+    matchers: ["/pets"]
+  },
+  {
     href: "/community",
     label: "Comunidad",
     shortLabel: "Comunidad",
-    description: "Posts, paseos y consultas",
+    description: "Feed, posts y perfiles",
     matchers: ["/community"]
   },
   {
     href: "/lost-pets",
     label: "Alertas",
     shortLabel: "Alertas",
-    description: "Perdidas, avistamientos y ayuda",
+    description: "Mascotas perdidas, mapa y avistamientos",
     matchers: ["/lost-pets"]
   }
 ] as const;

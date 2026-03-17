@@ -3,11 +3,13 @@ import { listMapServices } from "../map/map.service";
 import type { ExploreSearchQueryInput } from "./explore.schemas";
 
 export async function searchExplore(query: ExploreSearchQueryInput) {
-  const { includeProducts, ...mapQuery } = query;
-  const services = await listMapServices({
-    ...mapQuery,
-    sortBy: mapQuery.sortBy ?? "distance"
-  });
+  const { includeProducts, category, ...mapQuery } = query;
+
+  const searchQuery = category
+    ? { ...mapQuery, q: mapQuery.q ? `${mapQuery.q} ${category}` : category, sortBy: mapQuery.sortBy ?? "distance" }
+    : { ...mapQuery, sortBy: mapQuery.sortBy ?? "distance" };
+
+  const services = await listMapServices(searchQuery);
 
   const products = includeProducts
     ? await prisma.marketplaceListing.findMany({

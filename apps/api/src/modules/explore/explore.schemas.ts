@@ -12,7 +12,11 @@ const includeProductsSchema = z.preprocess((value) => {
 
 export const exploreSearchQuerySchema = mapServicesQuerySchema.and(
   z.object({
-    includeProducts: includeProductsSchema.default(true)
+    includeProducts: includeProductsSchema.default(true),
+    category: z.preprocess((value) => {
+      if (typeof value !== "string" || !value.trim()) return undefined;
+      return value.trim().toUpperCase();
+    }, z.string().optional())
   })
 );
 
