@@ -74,7 +74,7 @@ businessRouter.get(
     const userId = req.authUser!.id;
 
     const schedule = await prisma.scheduleAvailability.findMany({
-      where: { userId },
+      where: { providerUserId: userId },
       orderBy: { dayOfWeek: "asc" }
     });
 
