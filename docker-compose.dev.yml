@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kumpa-postgres
+    environment:
+      POSTGRES_DB: kumpa
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kumpa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: node:22-alpine
+    container_name: kumpa-api
+    working_dir: /workspace
+    command: sh -c "npm install && npm run dev --workspace @kumpa/api"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/kumpa?schema=public
+      SHADOW_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/kumpa_shadow?schema=public
+      API_PORT: 4000
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    image: node:22-alpine
+    container_name: kumpa-web
+    working_dir: /workspace
+    command: sh -c "npm install && npm run dev --workspace @kumpa/web"
+    env_file:
+      - .env
+    environment:
+      WEB_PORT: 3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/workspace
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

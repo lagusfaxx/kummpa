@@ -1,0 +1,17 @@
+{
+  "name": "@kumpa/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "build": "tsc --project tsconfig.json --noEmit",
+    "lint": "echo \"No lint rules configured for @kumpa/config\"",
+    "format": "echo \"No formatter configured for @kumpa/config\""
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

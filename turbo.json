@@ -1,0 +1,38 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ]
+    },
+    "format": {
+      "cache": false
+    },
+    "@kumpa/api#build": {
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "@kumpa/web#build": {
+      "outputs": [
+        ".next/**"
+      ]
+    }
+  }
+}

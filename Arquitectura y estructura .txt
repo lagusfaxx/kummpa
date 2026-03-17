@@ -1,0 +1,140 @@
+Stack obligatorio
+
+Usa este stack exacto o uno extremadamente cercano:
+
+Frontend
+
+Next.js 14+
+
+App Router
+
+TypeScript
+
+Tailwind CSS
+
+componentes limpios, modernos y responsivos
+
+arquitectura pensada para luego usar Capacitor
+
+Backend
+
+Node.js
+
+Express o backend estructurado equivalente
+
+API modular
+
+validación robusta
+
+auth segura
+
+preparado para producción
+
+Base de datos
+
+PostgreSQL
+
+ORM
+
+Prisma
+
+Mapas
+
+Mapbox
+
+Emails
+
+Resend
+
+Deploy
+
+Coolify
+
+repositorio conectado a GitHub
+
+Móvil
+
+dejar la aplicación lista para futura integración con Capacitor
+
+no implementar Capacitor todavía, pero sí dejar todo compatible
+
+Requisitos globales de arquitectura
+
+Quiero que construyas el sistema respetando estas reglas:
+
+No romper deploy
+
+todo debe compilar correctamente
+
+sin errores TypeScript
+
+sin imports rotos
+
+sin rutas huérfanas
+
+sin dependencias mal conectadas
+
+Pensar desde el inicio en web + móvil
+
+diseño mobile-first
+
+evitar interacciones solo hover
+
+nada que dependa exclusivamente de desktop
+
+navegación cómoda en móvil
+
+modales y drawers compatibles con pantalla pequeña
+
+layouts preparados para PWA / Capacitor
+
+Arquitectura modular
+
+separar features por dominio
+
+no mezclar lógica de mascotas con reservas, foros, marketplace, etc.
+
+backend organizado por módulos
+
+frontend con carpetas por feature
+
+Escalabilidad
+
+dejar claro qué partes son MVP y cuáles son expansión futura
+
+base de datos bien normalizada
+
+modelos extensibles
+
+notificaciones desacopladas
+
+sistema de recordatorios reutilizable
+
+DX y mantenimiento
+
+código legible
+
+tipado estricto
+
+helpers reutilizables
+
+componentes compartidos
+
+documentación mínima en comentarios donde sea clave
+
+Estructura general esperada
+
+Quiero una estructura similar a esta, o una equivalente bien organizada:
+
+/apps
+  /web
+  /api
+
+/packages
+  /ui
+  /config
+  /types
+
+/prisma
+  schema.prisma
+  migrations
