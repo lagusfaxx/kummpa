@@ -38,18 +38,11 @@ export const PRIMARY_NAV_ITEMS: readonly SiteNavItem[] = [
     matchers: ["/pets"]
   },
   {
-    href: "/appointments",
-    label: "Reservas",
-    shortLabel: "Reservas",
-    description: "Horas, controles y seguimiento",
-    matchers: ["/appointments"]
-  },
-  {
-    href: "/map",
+    href: "/explore",
     label: "Explorar",
     shortLabel: "Explorar",
-    description: "Servicios, tiendas y beneficios",
-    matchers: ["/map"]
+    description: "Busqueda global y mapa sincronizado",
+    matchers: ["/explore", "/map"]
   },
   {
     href: "/community",
@@ -107,7 +100,7 @@ const GUEST_QUICK_ACTIONS: readonly QuickAction[] = [
     description: "Empieza a cuidar mejor a tu mascota"
   },
   {
-    href: "/map",
+    href: "/explore",
     label: "Explorar",
     description: "Busca servicios y beneficios pet"
   }
@@ -116,18 +109,18 @@ const GUEST_QUICK_ACTIONS: readonly QuickAction[] = [
 const ROLE_QUICK_ACTIONS: Record<UserRole, readonly QuickAction[]> = {
   OWNER: [
     { href: "/pets/new", label: "Agregar mascota", description: "Crea el perfil de tu mascota" },
-    { href: "/appointments", label: "Reservar", description: "Agenda un servicio" }
+    { href: "/explore", label: "Reservar", description: "Reserva desde explorar" }
   ],
   VET: [
-    { href: "/appointments", label: "Vista profesional", description: "Revisa solicitudes y agenda" },
+    { href: "/business", label: "Panel comercio", description: "Gestiona tu negocio" },
     { href: "/account", label: "Perfil profesional", description: "Actualiza tu ficha" }
   ],
   CAREGIVER: [
-    { href: "/appointments", label: "Vista profesional", description: "Organiza reservas y atenciones" },
+    { href: "/business", label: "Panel comercio", description: "Servicios y horarios" },
     { href: "/community/meet", label: "Paseos", description: "Coordina encuentros" }
   ],
   SHOP: [
-    { href: "/marketplace", label: "Productos", description: "Gestiona catalogo y ventas" },
+    { href: "/business", label: "Panel comercio", description: "Servicios y precios" },
     { href: "/benefits", label: "Promociones", description: "Administra descuentos y convenios" }
   ],
   ADMIN: [

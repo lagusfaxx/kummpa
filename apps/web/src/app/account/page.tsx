@@ -8,6 +8,8 @@ import { InlineBanner } from "@/components/feedback/inline-banner";
 import { SurfaceSkeleton } from "@/components/feedback/skeleton";
 import { PageIntro } from "@/components/layout/page-intro";
 import { useAuth } from "@/features/auth/auth-context";
+import { listAppointments } from "@/features/appointments/appointments-api";
+import type { AppointmentRecord } from "@/features/appointments/types";
 import {
   getMyProfile,
   updateBaseProfile,
@@ -39,6 +41,7 @@ export default function AccountPage() {
   const [isSavingRole, setIsSavingRole] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [appointmentHistory, setAppointmentHistory] = useState<AppointmentRecord[]>([]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -74,8 +77,9 @@ export default function AccountPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getMyProfile(accessToken);
+        const [data, history] = await Promise.all([getMyProfile(accessToken), listAppointments(accessToken, { view: "owner", limit: 8 })]);
         setProfile(data);
+        setAppointmentHistory(history);
         setFirstName(data.user.firstName ?? "");
         setLastName(data.user.lastName ?? "");
         setPhone(data.user.phone ?? "");
@@ -297,6 +301,16 @@ export default function AccountPage() {
           />
         ) : (
           <>
+            <section className="kumpa-panel space-y-3 p-5">
+              <h2 className="text-lg font-bold text-slate-900">Historial de reservas</h2>
+              <div className="space-y-2 text-sm">
+                {appointmentHistory.map((appointment) => (
+                  <p key={appointment.id} className="rounded-xl border border-slate-200 px-3 py-2">{new Date(appointment.scheduledAt).toLocaleDateString("es-CL")} · {appointment.status}</p>
+                ))}
+                {appointmentHistory.length === 0 ? <p className="text-slate-500">Sin reservas registradas.</p> : null}
+              </div>
+            </section>
+
             <form className="kumpa-panel space-y-3 p-5" onSubmit={(event) => void handleSaveBase(event)}>
               <h2 className="text-lg font-bold text-slate-900">Perfil base</h2>
               <div className="grid gap-3 sm:grid-cols-2">
