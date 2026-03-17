@@ -206,6 +206,7 @@ export default function CommunityPage() {
   const accessToken = session?.tokens.accessToken;
 
   const [mode, setMode] = useState<CommunityFeedMode>("discover");
+  const [audience, setAudience] = useState<"usuario"|"comercio">("usuario");
   const [profile, setProfile] = useState<CommunityProfile | null>(null);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [pets, setPets] = useState<PetSocialProfileItem[]>([]);
@@ -395,6 +396,11 @@ export default function CommunityPage() {
   return (
     <AuthGate>
       <div className="space-y-6">
+        <div className="flex gap-2">
+          <button className="btn btn-outline text-xs" onClick={() => setAudience("usuario")} type="button">Usuario</button>
+          <button className="btn btn-outline text-xs" onClick={() => setAudience("comercio")} type="button">Comercio</button>
+        </div>
+
         <PageIntro
           eyebrow="Comunidad"
           title="Una comunidad pet util, viva y organizada por necesidades reales"
