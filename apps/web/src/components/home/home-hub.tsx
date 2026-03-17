@@ -121,7 +121,7 @@ function IcoChevronLeft() {
 
 /* ─── Data ───────────────────────────────────────────────────── */
 const QUICK_NAV = [
-  { label: "Veterinarias",  href: "/map",         Icon: IcoMap     },
+  { label: "Mapa",          href: "/explore",     Icon: IcoMap     },
   { label: "Vacunas",       href: "/pets",        Icon: IcoSyringe },
   { label: "Mascotas",      href: "/pets",        Icon: IcoPaw     },
   { label: "Alertas",       href: "/lost-pets",   Icon: IcoBell    },
@@ -148,10 +148,10 @@ const FEATURES: FeatureDef[] = [
   {
     id: "map",
     Icon: IcoMap,
-    label: "Veterinarias",
-    title: "Clínicas cerca, precios a la vista",
-    body: "Busca por zona, filtra por precio y reserva hora sin llamar. Ves descuentos activos antes de ir.",
-    href: "/map",
+    label: "Mapa",
+    title: "Vets, tiendas, parques y paseadores en el mapa",
+    body: "Filtra por categoría — veterinarias, peluquerías, tiendas, parques y paseadores. Ve precios y reserva sin llamar.",
+    href: "/explore",
     cta: "Abrir mapa",
     accent: "bg-[hsl(155_48%_42%/0.08)]",
     iconBg: "bg-[hsl(155_48%_42%/0.15)] text-[hsl(155_48%_30%)]",
@@ -302,8 +302,8 @@ export function HomeHub() {
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/map" className="group flex items-center gap-2 rounded-full bg-[hsl(var(--accent))] px-7 py-3.5 text-sm font-bold text-white shadow-lg transition hover:opacity-90 active:scale-95">
-              Buscar veterinaria
+            <Link href="/explore" className="group flex items-center gap-2 rounded-full bg-[hsl(var(--accent))] px-7 py-3.5 text-sm font-bold text-white shadow-lg transition hover:opacity-90 active:scale-95">
+              Explorar el mapa
               <span className="transition group-hover:translate-x-0.5"><IcoArrow /></span>
             </Link>
             {isAuthenticated ? (
