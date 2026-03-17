@@ -324,7 +324,7 @@ export default function LostPetsPage() {
                 {alerts.slice(0, 6).map((alert) => (
                   <article
                     key={alert.id}
-                    className={`${alert.status === "ACTIVE" ? "kumpa-urgent-card" : "card"} rounded-[1.6rem] p-4 ${
+                    className={`${alert.status === "ACTIVE" ? "kumpa-urgent-card" : "card"} kumpa-card-interactive rounded-[1.6rem] p-4 ${
                       selectedPointId === alert.id ? "kumpa-focus-ring" : ""
                     }`}
                   >
