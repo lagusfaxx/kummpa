@@ -9,23 +9,124 @@ import { useAuth } from "@/features/auth/auth-context";
 import { listLostPetAlerts, listNearbyLostPetAlerts } from "@/features/lost-pets/lost-pets-api";
 import type { LostPetAlert, LostPetAlertStatus } from "@/features/lost-pets/types";
 
-function statusLabel(status: LostPetAlertStatus) {
-  if (status === "ACTIVE") return "Activa";
-  if (status === "FOUND") return "Encontrada";
-  return "Cerrada";
+function statusConfig(status: LostPetAlertStatus) {
+  if (status === "ACTIVE") return { label: "Perdida", color: "bg-red-100 text-red-700" };
+  if (status === "FOUND") return { label: "Encontrada", color: "bg-emerald-100 text-emerald-700" };
+  return { label: "Cerrada", color: "bg-slate-100 text-slate-600" };
 }
 
-function statusClass(status: LostPetAlertStatus) {
-  if (status === "ACTIVE") return "bg-rose-100 text-rose-700";
-  if (status === "FOUND") return "bg-emerald-100 text-emerald-700";
-  return "bg-slate-100 text-slate-700";
+function formatTimeAgo(iso: string) {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffHours < 1) return "Hace menos de 1 hora";
+  if (diffHours < 24) return `Hace ${diffHours} horas`;
+  if (diffDays === 1) return "Ayer";
+  if (diffDays < 7) return `Hace ${diffDays} dias`;
+  return date.toLocaleDateString("es-CL", { day: "numeric", month: "short" });
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("es-CL", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
+function AlertCard({ alert }: { alert: LostPetAlert }) {
+  const status = statusConfig(alert.status);
+
+  return (
+    <article className="card overflow-hidden">
+      <div className="flex">
+        {/* Pet image */}
+        <div className="relative h-32 w-32 flex-shrink-0 bg-[hsl(var(--muted))] sm:h-40 sm:w-40">
+          {alert.pet.avatarUrl ? (
+            <img
+              src={alert.pet.avatarUrl}
+              alt={alert.pet.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-4xl">🐾</div>
+          )}
+          {alert.status === "ACTIVE" && (
+            <div className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+              URGENTE
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex min-w-0 flex-1 flex-col p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="font-semibold">{alert.pet.name}</h3>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {alert.pet.species} {alert.pet.breed && `· ${alert.pet.breed}`}
+              </p>
+            </div>
+            <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${status.color}`}>
+              {status.label}
+            </span>
+          </div>
+
+          <div className="mt-2 flex-1">
+            {alert.lastSeenAddress && (
+              <p className="text-sm">
+                📍 {alert.lastSeenAddress}
+              </p>
+            )}
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              {formatTimeAgo(alert.lastSeenAt)}
+            </p>
+            {alert.distanceKm !== null && alert.distanceKm !== undefined && (
+              <p className="text-sm text-[hsl(var(--secondary))]">
+                {alert.distanceKm.toFixed(1)} km de ti
+              </p>
+            )}
+          </div>
+
+          <div className="mt-2 flex items-center gap-2">
+            {alert.medicalPriority && (
+              <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+                Necesita medicacion
+              </span>
+            )}
+            {alert.stats.sightingsCount > 0 && (
+              <span className="text-xs text-[hsl(var(--muted-foreground))]">
+                {alert.stats.sightingsCount} avistamientos
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex border-t border-[hsl(var(--border))]">
+        <Link
+          href={`/lost-pets/${alert.id}`}
+          className="flex flex-1 items-center justify-center gap-1 py-3 text-sm font-medium transition-colors hover:bg-[hsl(var(--muted))]"
+        >
+          Ver detalle
+        </Link>
+        <div className="w-px bg-[hsl(var(--border))]" />
+        <Link
+          href={`/map?types=LOST_PET&focus=${alert.id}`}
+          className="flex flex-1 items-center justify-center gap-1 py-3 text-sm font-medium transition-colors hover:bg-[hsl(var(--muted))]"
+        >
+          Ver en mapa
+        </Link>
+        {alert.status === "ACTIVE" && (
+          <>
+            <div className="w-px bg-[hsl(var(--border))]" />
+            <Link
+              href={`/lost-pets/${alert.id}/sighting`}
+              className="flex flex-1 items-center justify-center gap-1 py-3 text-sm font-medium text-[hsl(var(--secondary))] transition-colors hover:bg-[hsl(var(--muted))]"
+            >
+              Reportar avistamiento
+            </Link>
+          </>
+        )}
+      </div>
+    </article>
+  );
 }
 
 export default function LostPetsPage() {
@@ -36,12 +137,10 @@ export default function LostPetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [q, setQ] = useState("");
-  const [status, setStatus] = useState<LostPetAlertStatus | "">("");
-  const [mine, setMine] = useState(false);
-  const [nearbyOnly, setNearbyOnly] = useState(false);
-  const [radiusKm, setRadiusKm] = useState(20);
+  const [filter, setFilter] = useState<"all" | "nearby" | "mine">("all");
+  const [statusFilter, setStatusFilter] = useState<LostPetAlertStatus | "">("");
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [radiusKm, setRadiusKm] = useState(20);
 
   const loadAlerts = async () => {
     if (!accessToken) return;
@@ -49,20 +148,22 @@ export default function LostPetsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data =
-        nearbyOnly && location
-          ? await listNearbyLostPetAlerts(accessToken, {
-              lat: location.lat,
-              lng: location.lng,
-              radiusKm,
-              limit: 100
-            })
-          : await listLostPetAlerts(accessToken, {
-              q: q || undefined,
-              status: status || undefined,
-              mine,
-              activeOnly: !status
-            });
+      let data: LostPetAlert[];
+
+      if (filter === "nearby" && location) {
+        data = await listNearbyLostPetAlerts(accessToken, {
+          lat: location.lat,
+          lng: location.lng,
+          radiusKm,
+          limit: 50
+        });
+      } else {
+        data = await listLostPetAlerts(accessToken, {
+          status: statusFilter || undefined,
+          mine: filter === "mine",
+          activeOnly: !statusFilter && filter !== "mine"
+        });
+      }
       setAlerts(data);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "No se pudieron cargar alertas.");
@@ -74,12 +175,7 @@ export default function LostPetsPage() {
   useEffect(() => {
     void loadAlerts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
-
-  const handleFilter = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void loadAlerts();
-  };
+  }, [accessToken, filter, statusFilter]);
 
   const handleUseMyLocation = () => {
     if (!("geolocation" in navigator)) {
@@ -94,193 +190,172 @@ export default function LostPetsPage() {
           lng: position.coords.longitude
         };
         setLocation(next);
-        setNearbyOnly(true);
+        setFilter("nearby");
       },
       (locationError) => {
         setError(locationError.message || "No fue posible obtener tu ubicacion.");
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10_000
-      }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
+
+  const activeAlerts = alerts.filter((a) => a.status === "ACTIVE");
 
   return (
     <AuthGate>
       <div className="space-y-4">
         <PageIntro
-          eyebrow="Urgencia"
           title="Mascotas perdidas"
-          description="Gestiona alertas geolocalizadas, avistamientos y seguimiento de casos con una lectura visual mas inmediata para situaciones criticas."
-          tone="alert"
+          description="Ayuda a reunir familias reportando o buscando mascotas perdidas"
           actions={
-            <Link href="/lost-pets/report" className="kumpa-button-alert">
+            <Link href="/lost-pets/report" className="btn btn-primary">
               Reportar perdida
             </Link>
           }
-          metrics={[
-            { value: String(alerts.length), label: "alertas" },
-            { value: nearbyOnly ? "Si" : "No", label: "modo cerca" }
-          ]}
         />
-
-        <section className="kumpa-panel p-4">
-          <form onSubmit={handleFilter} className="grid gap-3 sm:grid-cols-3">
-            <input
-              value={q}
-              onChange={(event) => setQ(event.target.value)}
-              placeholder="Buscar por mascota o zona"
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-            <select
-              value={status}
-              onChange={(event) => setStatus(event.target.value as LostPetAlertStatus | "")}
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            >
-              <option value="">Solo activas</option>
-              <option value="ACTIVE">Activas</option>
-              <option value="FOUND">Encontradas</option>
-              <option value="CLOSED">Cerradas</option>
-            </select>
-            <label className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={mine}
-                onChange={(event) => setMine(event.target.checked)}
-              />
-              Solo mis alertas
-            </label>
-            <label className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={nearbyOnly}
-                onChange={(event) => setNearbyOnly(event.target.checked)}
-                disabled={!location}
-              />
-              Solo cerca de mi
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Radio (km)
-              <input
-                type="number"
-                min={1}
-                max={200}
-                value={radiusKm}
-                onChange={(event) => setRadiusKm(Number(event.target.value))}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                disabled={!nearbyOnly}
-              />
-            </label>
-            <div className="sm:col-span-3">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="submit"
-                  className="kumpa-button-secondary"
-                >
-                  Aplicar filtros
-                </button>
-                <button
-                  type="button"
-                  onClick={handleUseMyLocation}
-                  className="kumpa-button-secondary"
-                >
-                  Usar mi ubicacion
-                </button>
-                {location && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLocation(null);
-                      setNearbyOnly(false);
-                    }}
-                    className="kumpa-button-secondary"
-                  >
-                    Quitar ubicacion
-                  </button>
-                )}
-              </div>
-              {location && (
-                <p className="mt-2 text-xs text-slate-500">
-                  Ubicacion activa: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-                </p>
-              )}
-              {nearbyOnly && (
-                <p className="mt-1 text-xs text-slate-500">
-                  Modo cerca de mi: se muestran alertas activas con difusion comunitaria.
-                </p>
-              )}
-            </div>
-          </form>
-        </section>
 
         {error && <InlineBanner tone="error">{error}</InlineBanner>}
 
-        {isLoading ? (
-          <div className="kumpa-panel p-6 text-sm text-slate-600">
-            Cargando alertas...
-          </div>
-        ) : alerts.length === 0 ? (
-          <div className="kumpa-panel p-6 text-sm text-slate-600">
-            No hay alertas para los filtros seleccionados.
-          </div>
-        ) : (
-          <div className="grid gap-3">
-            {alerts.map((alert) => (
-              <article key={alert.id} className="kumpa-panel p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">{alert.pet.name}</h2>
-                    <p className="text-sm text-slate-600">
-                      {alert.pet.species} - {alert.pet.breed}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Ultima vez vista: {formatDate(alert.lastSeenAt)}
-                    </p>
-                    {alert.lastSeenAddress && (
-                      <p className="text-xs text-slate-500">Zona: {alert.lastSeenAddress}</p>
-                    )}
-                    <p className="text-xs text-slate-500">
-                      Avistamientos: {alert.stats.sightingsCount} | Radio: {alert.searchRadiusKm} km
-                    </p>
-                    {alert.distanceKm !== null && alert.distanceKm !== undefined && (
-                      <p className="text-xs text-slate-500">Distancia: {alert.distanceKm.toFixed(1)} km</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${statusClass(alert.status)}`}>
-                      {statusLabel(alert.status)}
-                    </span>
-                    {alert.medicalPriority && (
-                      <span className="rounded-lg bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
-                        Prioridad medica
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {alert.description && (
-                  <p className="mt-2 text-sm text-slate-700">{alert.description}</p>
-                )}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href={`/lost-pets/${alert.id}`}
-                    className="inline-flex min-h-10 items-center rounded-xl border border-slate-300 px-3 text-xs font-semibold text-slate-700"
-                  >
-                    Ver detalle
-                  </Link>
-                  <Link
-                    href={`/map?types=LOST_PET&focus=${alert.id}`}
-                    className="inline-flex min-h-10 items-center rounded-xl border border-slate-300 px-3 text-xs font-semibold text-slate-700"
-                  >
-                    Ver en mapa
-                  </Link>
-                </div>
-              </article>
-            ))}
+        {/* Stats banner */}
+        {activeAlerts.length > 0 && (
+          <div className="card flex items-center justify-between bg-red-50 p-4">
+            <div>
+              <p className="text-2xl font-bold text-red-700">{activeAlerts.length}</p>
+              <p className="text-sm text-red-600">mascotas necesitan ayuda</p>
+            </div>
+            <Link href="#alerts" className="btn btn-outline border-red-200 text-red-700">
+              Ver alertas activas
+            </Link>
           </div>
         )}
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className={`btn ${filter === "all" ? "btn-primary" : "btn-outline"}`}
+          >
+            Todas las alertas
+          </button>
+          <button
+            type="button"
+            onClick={handleUseMyLocation}
+            className={`btn ${filter === "nearby" ? "btn-primary" : "btn-outline"}`}
+          >
+            Cerca de mi
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("mine")}
+            className={`btn ${filter === "mine" ? "btn-primary" : "btn-outline"}`}
+          >
+            Mis alertas
+          </button>
+        </div>
+
+        {/* Secondary filters */}
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as LostPetAlertStatus | "")}
+            className="min-h-0 w-auto py-2 text-sm"
+          >
+            <option value="">Solo activas</option>
+            <option value="ACTIVE">Activas</option>
+            <option value="FOUND">Encontradas</option>
+            <option value="CLOSED">Cerradas</option>
+          </select>
+
+          {filter === "nearby" && location && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm">Radio:</label>
+              <select
+                value={radiusKm}
+                onChange={(e) => {
+                  setRadiusKm(Number(e.target.value));
+                  void loadAlerts();
+                }}
+                className="min-h-0 w-auto py-2 text-sm"
+              >
+                <option value={5}>5 km</option>
+                <option value={10}>10 km</option>
+                <option value={20}>20 km</option>
+                <option value={50}>50 km</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  setLocation(null);
+                  setFilter("all");
+                }}
+                className="text-sm text-[hsl(var(--muted-foreground))] hover:underline"
+              >
+                Quitar ubicacion
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Alerts list */}
+        <section id="alerts" className="space-y-3">
+          {isLoading ? (
+            <div className="card p-6 text-center text-[hsl(var(--muted-foreground))]">
+              Buscando alertas...
+            </div>
+          ) : alerts.length === 0 ? (
+            <div className="card p-6 text-center">
+              <p className="text-lg font-semibold">No hay alertas</p>
+              <p className="mt-1 text-[hsl(var(--muted-foreground))]">
+                {filter === "mine"
+                  ? "No tienes alertas registradas."
+                  : filter === "nearby"
+                    ? "No hay mascotas perdidas cerca de tu ubicacion."
+                    : "No hay alertas activas en este momento."}
+              </p>
+              {filter !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setFilter("all")}
+                  className="btn btn-outline mt-3"
+                >
+                  Ver todas las alertas
+                </button>
+              )}
+            </div>
+          ) : (
+            alerts.map((alert) => <AlertCard key={alert.id} alert={alert} />)
+          )}
+        </section>
+
+        {/* Help section */}
+        <section className="card p-4">
+          <h2 className="font-semibold">Como puedes ayudar</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg bg-[hsl(var(--muted))] p-3">
+              <p className="text-2xl">👀</p>
+              <p className="mt-1 font-medium">Reporta avistamientos</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                Si ves una mascota perdida, reportalo
+              </p>
+            </div>
+            <div className="rounded-lg bg-[hsl(var(--muted))] p-3">
+              <p className="text-2xl">📢</p>
+              <p className="mt-1 font-medium">Comparte alertas</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                Difunde en redes sociales y grupos
+              </p>
+            </div>
+            <div className="rounded-lg bg-[hsl(var(--muted))] p-3">
+              <p className="text-2xl">🗺️</p>
+              <p className="mt-1 font-medium">Revisa el mapa</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                Mira si hay mascotas perdidas en tu zona
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </AuthGate>
   );
 }
-

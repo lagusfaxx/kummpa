@@ -9,91 +9,221 @@ import { useAuth } from "@/features/auth/auth-context";
 import {
   addCommunityComment,
   createCommunityPost,
-  createCommunityReport,
-  deleteCommunityComment,
   deleteCommunityPost,
   getMyCommunityProfile,
   likeCommunityPost,
   listCommunityFeed,
   listMyPetSocialProfiles,
   saveCommunityPost,
-  shareCommunityPost,
   unlikeCommunityPost,
-  unsaveCommunityPost,
-  updateMyCommunityProfile,
-  upsertPetSocialProfile
+  unsaveCommunityPost
 } from "@/features/community/community-api";
 import type {
   CommunityFeedMode,
   CommunityPost,
   CommunityProfile,
-  PetSocialProfileItem,
-  SocialPostVisibility
+  PetSocialProfileItem
 } from "@/features/community/types";
 
-const FEED_MODES: Array<{ value: CommunityFeedMode; label: string }> = [
+const FEED_TABS: Array<{ value: CommunityFeedMode; label: string }> = [
   { value: "discover", label: "Descubrir" },
   { value: "following", label: "Siguiendo" },
-  { value: "mine", label: "Mis publicaciones" },
-  { value: "saved", label: "Guardadas" }
+  { value: "mine", label: "Mis posts" },
+  { value: "saved", label: "Guardados" }
 ];
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("es-CL", { dateStyle: "medium", timeStyle: "short" });
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Ahora";
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  return date.toLocaleDateString("es-CL", { day: "numeric", month: "short" });
 }
 
-type PetDraft = { handle: string; bio: string; isPublic: boolean };
+function PostCard({
+  post,
+  isWorking,
+  onLike,
+  onSave,
+  onDelete,
+  onComment,
+  isOwner
+}: {
+  post: CommunityPost;
+  isWorking: boolean;
+  onLike: () => void;
+  onSave: () => void;
+  onDelete: () => void;
+  onComment: (body: string) => void;
+  isOwner: boolean;
+}) {
+  const [commentText, setCommentText] = useState("");
+  const [showComments, setShowComments] = useState(false);
+
+  const handleComment = (e: FormEvent) => {
+    e.preventDefault();
+    if (commentText.trim()) {
+      onComment(commentText.trim());
+      setCommentText("");
+    }
+  };
+
+  return (
+    <article className="card overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 p-4 pb-0">
+        <div className="h-10 w-10 rounded-full bg-[hsl(var(--muted))]">
+          {post.author.avatarUrl ? (
+            <img
+              src={post.author.avatarUrl}
+              alt=""
+              className="h-full w-full rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-[hsl(var(--muted-foreground))]">
+              {post.author.fullName.charAt(0)}
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <Link
+            href={`/community/users/${post.author.id}`}
+            className="block truncate font-semibold hover:underline"
+          >
+            {post.author.fullName}
+          </Link>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+            {post.author.handle ? `@${post.author.handle}` : ""} · {formatDate(post.createdAt)}
+          </p>
+        </div>
+        {isOwner && (
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={isWorking}
+            className="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))]"
+          >
+            Eliminar
+          </button>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        <p className="whitespace-pre-wrap">{post.body}</p>
+        {post.imageUrl && (
+          <img
+            src={post.imageUrl}
+            alt=""
+            className="mt-3 max-h-96 w-full rounded-lg object-cover"
+          />
+        )}
+        {post.pet && (
+          <Link
+            href={`/pets/${post.pet.id}`}
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-[hsl(var(--muted))] px-3 py-1 text-sm"
+          >
+            🐾 {post.pet.name}
+          </Link>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-1 border-t border-[hsl(var(--border))] px-2 py-1">
+        <button
+          type="button"
+          onClick={onLike}
+          disabled={isWorking}
+          className={`btn btn-ghost flex-1 ${post.viewer.liked ? "text-red-500" : ""}`}
+        >
+          {post.viewer.liked ? "❤️" : "🤍"} {post.metrics.likesCount || ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowComments(!showComments)}
+          className="btn btn-ghost flex-1"
+        >
+          💬 {post.metrics.commentsCount || ""}
+        </button>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={isWorking}
+          className={`btn btn-ghost flex-1 ${post.viewer.saved ? "text-amber-500" : ""}`}
+        >
+          {post.viewer.saved ? "🔖" : "📑"}
+        </button>
+      </div>
+
+      {/* Comments section */}
+      {showComments && (
+        <div className="border-t border-[hsl(var(--border))] p-4">
+          {post.commentsPreview.length > 0 && (
+            <div className="mb-3 space-y-2">
+              {post.commentsPreview.map((comment) => (
+                <div key={comment.id} className="text-sm">
+                  <span className="font-semibold">{comment.author.fullName}</span>{" "}
+                  <span className="text-[hsl(var(--muted-foreground))]">{comment.body}</span>
+                </div>
+              ))}
+              {post.metrics.commentsCount > post.commentsPreview.length && (
+                <Link
+                  href={`/community/posts/${post.id}`}
+                  className="text-sm text-[hsl(var(--secondary))]"
+                >
+                  Ver {post.metrics.commentsCount - post.commentsPreview.length} comentarios mas
+                </Link>
+              )}
+            </div>
+          )}
+          {post.allowComments && (
+            <form onSubmit={handleComment} className="flex gap-2">
+              <input
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Escribe un comentario..."
+                className="flex-1"
+              />
+              <button
+                type="submit"
+                disabled={!commentText.trim() || isWorking}
+                className="btn btn-secondary"
+              >
+                Enviar
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
 
 export default function CommunityPage() {
   const { session } = useAuth();
   const accessToken = session?.tokens.accessToken;
+  const userId = session?.user.id;
 
   const [mode, setMode] = useState<CommunityFeedMode>("discover");
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [profile, setProfile] = useState<CommunityProfile | null>(null);
   const [petProfiles, setPetProfiles] = useState<PetSocialProfileItem[]>([]);
-  const [petDrafts, setPetDrafts] = useState<Record<string, PetDraft>>({});
-  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
 
   const [postBody, setPostBody] = useState("");
-  const [postImageUrl, setPostImageUrl] = useState("");
   const [postPetId, setPostPetId] = useState("");
-  const [postVisibility, setPostVisibility] = useState<SocialPostVisibility>("PUBLIC");
-  const [postAllowComments, setPostAllowComments] = useState(true);
-
-  const [displayName, setDisplayName] = useState("");
-  const [handle, setHandle] = useState("");
-  const [bio, setBio] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
+  const [showNewPost, setShowNewPost] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  const [savingProfile, setSavingProfile] = useState(false);
   const [workingPostId, setWorkingPostId] = useState<string | null>(null);
-  const [workingPetId, setWorkingPetId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  const syncProfile = (next: CommunityProfile) => {
-    setProfile(next);
-    setDisplayName(next.profile.displayName);
-    setHandle(next.profile.handle ?? "");
-    setBio(next.profile.bio ?? "");
-    setIsPublic(next.profile.isPublic);
-  };
-
-  const syncPets = (items: PetSocialProfileItem[]) => {
-    setPetProfiles(items);
-    const nextDrafts: Record<string, PetDraft> = {};
-    for (const item of items) {
-      nextDrafts[item.pet.id] = {
-        handle: item.profile.handle ?? "",
-        bio: item.profile.bio ?? "",
-        isPublic: item.profile.isPublic
-      };
-    }
-    setPetDrafts(nextDrafts);
-  };
 
   const loadAll = async (feedMode: CommunityFeedMode) => {
     if (!accessToken) return;
@@ -101,13 +231,13 @@ export default function CommunityPage() {
     setError(null);
     try {
       const [feed, me, pets] = await Promise.all([
-        listCommunityFeed(accessToken, { mode: feedMode, limit: 40 }),
+        listCommunityFeed(accessToken, { mode: feedMode, limit: 30 }),
         getMyCommunityProfile(accessToken),
         listMyPetSocialProfiles(accessToken)
       ]);
       setPosts(feed);
-      syncProfile(me);
-      syncPets(pets);
+      setProfile(me);
+      setPetProfiles(pets);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "No se pudo cargar comunidad.");
     } finally {
@@ -120,7 +250,7 @@ export default function CommunityPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, mode]);
 
-  const applySnapshot = (
+  const updatePostMetrics = (
     postId: string,
     snapshot: {
       likesCount: number;
@@ -132,43 +262,39 @@ export default function CommunityPage() {
     }
   ) => {
     setPosts((current) =>
-      current.map((post) =>
-        post.id !== postId
-          ? post
+      current.map((p) =>
+        p.id !== postId
+          ? p
           : {
-              ...post,
+              ...p,
               metrics: {
                 likesCount: snapshot.likesCount,
                 savesCount: snapshot.savesCount,
                 sharesCount: snapshot.sharesCount,
                 commentsCount: snapshot.commentsCount
               },
-              viewer: { ...post.viewer, liked: snapshot.liked, saved: snapshot.saved }
+              viewer: { ...p.viewer, liked: snapshot.liked, saved: snapshot.saved }
             }
       )
     );
   };
 
-  const handleCreatePost = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCreatePost = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!accessToken || !postBody.trim()) return;
     setPosting(true);
     setError(null);
     try {
       const created = await createCommunityPost(accessToken, {
         body: postBody,
-        imageUrl: postImageUrl || undefined,
         petId: postPetId || undefined,
-        visibility: postVisibility,
-        allowComments: postAllowComments
+        visibility: "PUBLIC",
+        allowComments: true
       });
       setPosts((current) => [created, ...current]);
       setPostBody("");
-      setPostImageUrl("");
       setPostPetId("");
-      setPostVisibility("PUBLIC");
-      setPostAllowComments(true);
-      setSuccess("Publicacion creada.");
+      setShowNewPost(false);
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "No se pudo publicar.");
     } finally {
@@ -183,9 +309,9 @@ export default function CommunityPage() {
       const snapshot = post.viewer.liked
         ? await unlikeCommunityPost(accessToken, post.id)
         : await likeCommunityPost(accessToken, post.id);
-      applySnapshot(post.id, snapshot);
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "No se pudo actualizar like.");
+      updatePostMetrics(post.id, snapshot);
+    } catch {
+      setError("No se pudo actualizar like.");
     } finally {
       setWorkingPostId(null);
     }
@@ -198,289 +324,279 @@ export default function CommunityPage() {
       const snapshot = post.viewer.saved
         ? await unsaveCommunityPost(accessToken, post.id)
         : await saveCommunityPost(accessToken, post.id);
-      applySnapshot(post.id, snapshot);
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "No se pudo actualizar guardado.");
+      updatePostMetrics(post.id, snapshot);
+    } catch {
+      setError("No se pudo guardar.");
     } finally {
       setWorkingPostId(null);
     }
   };
 
-  const handleShare = async (postId: string) => {
-    if (!accessToken) return;
-    setWorkingPostId(postId);
-    try {
-      const snapshot = await shareCommunityPost(accessToken, postId, "community");
-      applySnapshot(postId, snapshot);
-      setSuccess("Compartido.");
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "No se pudo compartir.");
-    } finally {
-      setWorkingPostId(null);
-    }
-  };
-
-  const handleAddComment = async (post: CommunityPost) => {
-    if (!accessToken) return;
-    const body = commentDrafts[post.id]?.trim() ?? "";
-    if (!body) return;
-    setWorkingPostId(post.id);
-    try {
-      const created = await addCommunityComment(accessToken, post.id, { body });
-      setCommentDrafts((current) => ({ ...current, [post.id]: "" }));
-      setPosts((current) =>
-        current.map((item) =>
-          item.id !== post.id
-            ? item
-            : {
-                ...item,
-                commentsPreview: [created, ...item.commentsPreview].slice(0, 3),
-                metrics: { ...item.metrics, commentsCount: item.metrics.commentsCount + 1 }
-              }
-        )
-      );
-    } catch (commentError) {
-      setError(commentError instanceof Error ? commentError.message : "No se pudo comentar.");
-    } finally {
-      setWorkingPostId(null);
-    }
-  };
-
-  const handleDeleteComment = async (postId: string, commentId: string) => {
-    if (!accessToken) return;
-    setWorkingPostId(postId);
-    try {
-      await deleteCommunityComment(accessToken, postId, commentId);
-      setPosts((current) =>
-        current.map((item) =>
-          item.id !== postId
-            ? item
-            : {
-                ...item,
-                commentsPreview: item.commentsPreview.filter((comment) => comment.id !== commentId),
-                metrics: { ...item.metrics, commentsCount: Math.max(0, item.metrics.commentsCount - 1) }
-              }
-        )
-      );
-    } catch (commentError) {
-      setError(commentError instanceof Error ? commentError.message : "No se pudo eliminar comentario.");
-    } finally {
-      setWorkingPostId(null);
-    }
-  };
-
-  const handleDeletePost = async (postId: string) => {
-    if (!accessToken) return;
+  const handleDelete = async (postId: string) => {
+    if (!accessToken || !confirm("Eliminar esta publicacion?")) return;
     setWorkingPostId(postId);
     try {
       await deleteCommunityPost(accessToken, postId);
-      setPosts((current) => current.filter((post) => post.id !== postId));
-    } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "No se pudo eliminar publicación.");
+      setPosts((current) => current.filter((p) => p.id !== postId));
+    } catch {
+      setError("No se pudo eliminar.");
     } finally {
       setWorkingPostId(null);
     }
   };
 
-  const handleReportPost = async (postId: string) => {
+  const handleComment = async (post: CommunityPost, body: string) => {
     if (!accessToken) return;
-    const reason = window.prompt("Motivo del reporte (min 10 caracteres):");
-    if (!reason) return;
+    setWorkingPostId(post.id);
     try {
-      await createCommunityReport(accessToken, { targetType: "POST", targetId: postId, reason });
-      setSuccess("Reporte enviado.");
-    } catch (reportError) {
-      setError(reportError instanceof Error ? reportError.message : "No se pudo reportar.");
-    }
-  };
-
-  const handleSaveProfile = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!accessToken) return;
-    setSavingProfile(true);
-    try {
-      const updated = await updateMyCommunityProfile(accessToken, {
-        displayName,
-        handle,
-        bio,
-        isPublic
-      });
-      syncProfile(updated);
-      setSuccess("Perfil actualizado.");
-    } catch (profileError) {
-      setError(profileError instanceof Error ? profileError.message : "No se pudo actualizar perfil.");
+      const comment = await addCommunityComment(accessToken, post.id, { body });
+      setPosts((current) =>
+        current.map((p) =>
+          p.id !== post.id
+            ? p
+            : {
+                ...p,
+                commentsPreview: [comment, ...p.commentsPreview].slice(0, 3),
+                metrics: { ...p.metrics, commentsCount: p.metrics.commentsCount + 1 }
+              }
+        )
+      );
+    } catch {
+      setError("No se pudo comentar.");
     } finally {
-      setSavingProfile(false);
+      setWorkingPostId(null);
     }
-  };
-
-  const handleSavePet = async (petId: string) => {
-    if (!accessToken) return;
-    const draft = petDrafts[petId];
-    if (!draft) return;
-    setWorkingPetId(petId);
-    try {
-      await upsertPetSocialProfile(accessToken, petId, draft);
-      const refreshed = await listMyPetSocialProfiles(accessToken);
-      syncPets(refreshed);
-      setSuccess("Perfil de mascota actualizado.");
-    } catch (petError) {
-      setError(petError instanceof Error ? petError.message : "No se pudo actualizar mascota.");
-    } finally {
-      setWorkingPetId(null);
-    }
-  };
-
-  const updatePetDraft = (petId: string, patch: Partial<PetDraft>) => {
-    setPetDrafts((current) => {
-      const base = current[petId] ?? { handle: "", bio: "", isPublic: false };
-      return {
-        ...current,
-        [petId]: {
-          ...base,
-          ...patch
-        }
-      };
-    });
   };
 
   return (
     <AuthGate>
       <div className="space-y-4">
         <PageIntro
-          eyebrow="Social"
-          title="Comunidad social"
-          description="Publicaciones, comentarios, perfiles pet y encuentros en una experiencia mas expresiva y coherente con la nueva identidad visual."
-          tone="community"
+          title="Comunidad"
+          description="Conecta con otros amantes de mascotas"
           actions={
-            <Link href="/community/meet" className="kumpa-button-accent">
-              Encuentros y paseos
+            <Link href="/community/meet" className="btn btn-secondary">
+              Encuentros
             </Link>
           }
-          metrics={[
-            { value: String(posts.length), label: "posts visibles" },
-            { value: String(petProfiles.length), label: "mascotas sociales" }
-          ]}
         />
+
         {error && <InlineBanner tone="error">{error}</InlineBanner>}
-        {success && <InlineBanner tone="success">{success}</InlineBanner>}
 
-        <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
-          <aside className="space-y-4">
-            <section className="kumpa-panel p-4">
-              <h2 className="text-lg font-bold text-slate-900">Mi perfil social</h2>
-              {profile && (
-                <p className="text-xs text-slate-500">
-                  {profile.stats.posts} posts | {profile.stats.followers} seguidores
-                </p>
-              )}
-              <form onSubmit={(event) => void handleSaveProfile(event)} className="mt-2 grid gap-2">
-                <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Nombre visible" />
-                <input value={handle} onChange={(event) => setHandle(event.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Handle" />
-                <textarea value={bio} onChange={(event) => setBio(event.target.value)} rows={2} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Bio" />
-                <label className="inline-flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" checked={isPublic} onChange={(event) => setIsPublic(event.target.checked)} />Perfil publico</label>
-                <button type="submit" disabled={savingProfile} className="kumpa-button-primary">{savingProfile ? "Guardando..." : "Guardar"}</button>
+        <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+          {/* Main feed */}
+          <div className="space-y-4">
+            {/* New post button */}
+            {!showNewPost && (
+              <button
+                type="button"
+                onClick={() => setShowNewPost(true)}
+                className="card w-full p-4 text-left text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))]"
+              >
+                Que quieres compartir hoy?
+              </button>
+            )}
+
+            {/* New post form */}
+            {showNewPost && (
+              <form onSubmit={(e) => void handleCreatePost(e)} className="card p-4">
+                <textarea
+                  value={postBody}
+                  onChange={(e) => setPostBody(e.target.value)}
+                  placeholder="Comparte algo sobre tu mascota..."
+                  rows={3}
+                  autoFocus
+                />
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <select
+                    value={postPetId}
+                    onChange={(e) => setPostPetId(e.target.value)}
+                    className="min-h-0 w-auto py-1.5 text-sm"
+                  >
+                    <option value="">Sin mascota</option>
+                    {petProfiles.map((item) => (
+                      <option key={item.pet.id} value={item.pet.id}>
+                        {item.pet.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPost(false)}
+                      className="btn btn-ghost"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={posting || !postBody.trim()}
+                      className="btn btn-primary"
+                    >
+                      {posting ? "Publicando..." : "Publicar"}
+                    </button>
+                  </div>
+                </div>
               </form>
-            </section>
+            )}
 
-            <section className="kumpa-panel p-4">
-              <h2 className="text-lg font-bold text-slate-900">Mascotas sociales</h2>
-              <div className="mt-2 space-y-3">
-                {petProfiles.map((item) => (
-                  <article key={item.pet.id} className="rounded-xl border border-slate-200 p-3">
-                    <p className="text-sm font-semibold text-slate-900">{item.pet.name}</p>
-                    <input value={petDrafts[item.pet.id]?.handle ?? ""} onChange={(event) => updatePetDraft(item.pet.id, { handle: event.target.value })} className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs" placeholder="Handle" />
-                    <textarea value={petDrafts[item.pet.id]?.bio ?? ""} onChange={(event) => updatePetDraft(item.pet.id, { bio: event.target.value })} rows={2} className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs" placeholder="Bio" />
-                    <label className="mt-2 inline-flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" checked={petDrafts[item.pet.id]?.isPublic ?? false} onChange={(event) => updatePetDraft(item.pet.id, { isPublic: event.target.checked })} />Publico</label>
-                    <button type="button" disabled={workingPetId === item.pet.id} onClick={() => { void handleSavePet(item.pet.id); }} className="mt-2 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-700 disabled:opacity-60">{workingPetId === item.pet.id ? "Guardando..." : "Guardar mascota"}</button>
-                  </article>
-                ))}
-              </div>
-            </section>
-          </aside>
+            {/* Feed tabs */}
+            <div className="flex gap-2 overflow-x-auto">
+              {FEED_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setMode(tab.value)}
+                  className={`btn whitespace-nowrap ${
+                    mode === tab.value ? "btn-primary" : "btn-outline"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-          <section className="space-y-4">
-            <section className="kumpa-panel p-4">
-              <h2 className="text-lg font-bold text-slate-900">Nueva publicación</h2>
-              <form onSubmit={(event) => void handleCreatePost(event)} className="mt-2 grid gap-2">
-                <textarea value={postBody} onChange={(event) => setPostBody(event.target.value)} rows={3} className="rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="Comparte una historia pet..." />
-                <input value={postImageUrl} onChange={(event) => setPostImageUrl(event.target.value)} className="rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="URL imagen (opcional)" />
-                <select value={postPetId} onChange={(event) => setPostPetId(event.target.value)} className="rounded-xl border border-slate-300 px-3 py-2 text-sm">
-                  <option value="">Sin mascota asociada</option>
-                  {petProfiles.map((item) => <option key={item.pet.id} value={item.pet.id}>{item.pet.name}</option>)}
-                </select>
-                <select value={postVisibility} onChange={(event) => setPostVisibility(event.target.value as SocialPostVisibility)} className="rounded-xl border border-slate-300 px-3 py-2 text-sm">
-                  <option value="PUBLIC">Publico</option>
-                  <option value="FOLLOWERS">Seguidores</option>
-                  <option value="PRIVATE">Privado</option>
-                </select>
-                <label className="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={postAllowComments} onChange={(event) => setPostAllowComments(event.target.checked)} />Permitir comentarios</label>
-                <button type="submit" disabled={posting} className="kumpa-button-primary">{posting ? "Publicando..." : "Publicar"}</button>
-              </form>
-            </section>
-
-            <section className="kumpa-panel p-4">
-              <div className="flex flex-wrap gap-2">
-                {FEED_MODES.map((item) => (
-                  <button key={item.value} type="button" onClick={() => setMode(item.value)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${mode === item.value ? "bg-slate-900 text-white" : "border border-slate-300 text-slate-700"}`}>
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
+            {/* Posts */}
             {loading ? (
-              <div className="kumpa-panel p-6 text-sm text-slate-600">Cargando feed...</div>
+              <div className="card p-6 text-center text-[hsl(var(--muted-foreground))]">
+                Cargando...
+              </div>
             ) : posts.length === 0 ? (
-              <div className="kumpa-panel p-6 text-sm text-slate-600">Sin publicaciones para este modo.</div>
+              <div className="card p-6 text-center">
+                <p className="text-[hsl(var(--muted-foreground))]">
+                  {mode === "following"
+                    ? "Sigue a otros usuarios para ver sus publicaciones aqui."
+                    : mode === "saved"
+                      ? "No tienes publicaciones guardadas."
+                      : mode === "mine"
+                        ? "Aun no has publicado nada."
+                        : "No hay publicaciones para mostrar."}
+                </p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {posts.map((post) => (
-                  <article key={post.id} className="kumpa-panel p-4">
-                    <Link href={`/community/users/${post.author.id}`} className="text-sm font-bold text-slate-900 underline">{post.author.fullName}</Link>
-                    <p className="text-xs text-slate-500">@{post.author.handle ?? "sin-handle"} | {formatDate(post.createdAt)}</p>
-                    <p className="mt-2 text-sm text-slate-800 whitespace-pre-wrap">{post.body}</p>
-                    {post.imageUrl && <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-brand-700 underline">Ver imagen</a>}
-                    <p className="mt-2 text-xs text-slate-600">Likes {post.metrics.likesCount} | Comentarios {post.metrics.commentsCount} | Guardados {post.metrics.savesCount}</p>
-
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <button type="button" disabled={workingPostId === post.id} onClick={() => { void handleLike(post); }} className="inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-700 disabled:opacity-60">{post.viewer.liked ? "Quitar like" : "Like"}</button>
-                      <button type="button" disabled={workingPostId === post.id} onClick={() => { void handleSave(post); }} className="inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-700 disabled:opacity-60">{post.viewer.saved ? "Quitar guardado" : "Guardar"}</button>
-                      <button type="button" disabled={workingPostId === post.id} onClick={() => { void handleShare(post.id); }} className="inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-700 disabled:opacity-60">Compartir</button>
-                      {post.viewer.canReport && <button type="button" onClick={() => { void handleReportPost(post.id); }} className="inline-flex min-h-10 items-center rounded-lg border border-rose-300 px-3 text-xs font-semibold text-rose-700">Reportar</button>}
-                      {post.viewer.canDelete && <button type="button" disabled={workingPostId === post.id} onClick={() => { void handleDeletePost(post.id); }} className="inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-700 disabled:opacity-60">Eliminar</button>}
-                    </div>
-
-                    <div className="mt-3 rounded-xl bg-slate-50 p-3">
-                      <p className="text-xs font-semibold text-slate-700">Comentarios</p>
-                      {post.commentsPreview.map((comment) => (
-                        <div key={comment.id} className="mt-2 rounded-lg border border-slate-200 bg-white p-2">
-                          <p className="text-xs font-semibold text-slate-800">{comment.author.fullName}</p>
-                          <p className="text-xs text-slate-600">{comment.body}</p>
-                          {comment.permissions.canDelete && (
-                            <button type="button" disabled={workingPostId === post.id} onClick={() => { void handleDeleteComment(post.id, comment.id); }} className="mt-1 text-[11px] font-semibold text-rose-700 underline">
-                              Eliminar comentario
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      {post.viewer.canComment && (
-                        <div className="mt-2 flex gap-2">
-                          <input value={commentDrafts[post.id] ?? ""} onChange={(event) => setCommentDrafts((current) => ({ ...current, [post.id]: event.target.value }))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs" placeholder="Escribe un comentario" />
-                          <button type="button" disabled={workingPostId === post.id} onClick={() => { void handleAddComment(post); }} className="inline-flex min-h-10 items-center rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white disabled:opacity-60">
-                            Enviar
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </article>
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    isWorking={workingPostId === post.id}
+                    onLike={() => void handleLike(post)}
+                    onSave={() => void handleSave(post)}
+                    onDelete={() => void handleDelete(post.id)}
+                    onComment={(body) => void handleComment(post, body)}
+                    isOwner={post.author.id === userId}
+                  />
                 ))}
               </div>
             )}
-          </section>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="hidden space-y-4 lg:block">
+            {/* Profile card */}
+            {profile && (
+              <div className="card p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-[hsl(var(--muted))]">
+                    {profile.profile.avatarUrl ? (
+                      <img
+                        src={profile.profile.avatarUrl}
+                        alt=""
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xl font-semibold text-[hsl(var(--muted-foreground))]">
+                        {profile.profile.displayName.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{profile.profile.displayName}</p>
+                    {profile.profile.handle && (
+                      <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                        @{profile.profile.handle}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
+                  <div>
+                    <p className="font-semibold">{profile.stats.posts}</p>
+                    <p className="text-[hsl(var(--muted-foreground))]">Posts</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold">{profile.stats.followers}</p>
+                    <p className="text-[hsl(var(--muted-foreground))]">Seguidores</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold">{profile.stats.following}</p>
+                    <p className="text-[hsl(var(--muted-foreground))]">Siguiendo</p>
+                  </div>
+                </div>
+                <Link href="/community/profile" className="btn btn-outline mt-3 w-full">
+                  Editar perfil
+                </Link>
+              </div>
+            )}
+
+            {/* My pets */}
+            {petProfiles.length > 0 && (
+              <div className="card p-4">
+                <h3 className="mb-3 font-semibold">Mis mascotas</h3>
+                <div className="space-y-2">
+                  {petProfiles.map((item) => (
+                    <Link
+                      key={item.pet.id}
+                      href={`/pets/${item.pet.id}`}
+                      className="flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-[hsl(var(--muted))]"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-[hsl(var(--muted))]">
+                        {item.pet.avatarUrl ? (
+                          <img
+                            src={item.pet.avatarUrl}
+                            alt=""
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-sm">
+                            🐾
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium">{item.pet.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick links */}
+            <div className="card p-4">
+              <h3 className="mb-3 font-semibold">Explorar</h3>
+              <div className="space-y-1">
+                <Link
+                  href="/community/meet"
+                  className="block rounded-lg p-2 text-sm transition-colors hover:bg-[hsl(var(--muted))]"
+                >
+                  🐕 Encuentros y paseos
+                </Link>
+                <Link
+                  href="/lost-pets"
+                  className="block rounded-lg p-2 text-sm transition-colors hover:bg-[hsl(var(--muted))]"
+                >
+                  🔍 Mascotas perdidas
+                </Link>
+                <Link
+                  href="/news"
+                  className="block rounded-lg p-2 text-sm transition-colors hover:bg-[hsl(var(--muted))]"
+                >
+                  📰 Noticias pet
+                </Link>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </AuthGate>
   );
 }
-
