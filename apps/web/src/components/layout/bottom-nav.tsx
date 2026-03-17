@@ -21,7 +21,7 @@ export function BottomNav() {
             href: "/admin",
             label: "Admin",
             shortLabel: "Admin",
-            description: "Control operativo",
+            description: "Panel",
             matchers: ["/admin"]
           }
         ]
@@ -32,8 +32,8 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.8rem+env(safe-area-inset-bottom))] lg:hidden">
-      <ul className="mx-auto flex max-w-xl items-center justify-between gap-2 rounded-[1.85rem] border border-white/70 bg-[rgba(255,255,255,0.95)] px-3 py-3 shadow-[0_24px_55px_rgba(17,32,29,0.14)] backdrop-blur-2xl">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[hsl(var(--border))] bg-[hsl(var(--card)/0.98)] pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+      <ul className="mx-auto flex max-w-lg items-stretch">
         {navItems.map((item) => {
           const isActive = isNavItemActive(pathname, item);
 
@@ -41,18 +41,13 @@ export function BottomNav() {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
-                className={`flex min-h-[3.4rem] w-full flex-col items-center justify-center rounded-[1.25rem] px-2 text-center transition active:scale-[0.98] ${
+                className={`flex flex-col items-center justify-center gap-0.5 py-2.5 text-center transition-colors ${
                   isActive
-                    ? "bg-[#11201d] text-white shadow-[0_12px_24px_rgba(17,32,29,0.18)]"
-                    : "text-slate-600"
+                    ? "text-[hsl(var(--primary))]"
+                    : "text-[hsl(var(--muted-foreground))]"
                 }`}
               >
-                <span className="text-[11px] font-semibold uppercase tracking-[0.15em]">
-                  {item.shortLabel}
-                </span>
-                <span className={`mt-1 text-[10px] ${isActive ? "text-white/72" : "text-slate-500"}`}>
-                  {item.description}
-                </span>
+                <span className="text-xs font-medium">{item.shortLabel}</span>
               </Link>
             </li>
           );

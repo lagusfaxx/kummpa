@@ -3,10 +3,10 @@ import type { ReactNode } from "react";
 type BannerTone = "error" | "success" | "info" | "warning";
 
 const toneClasses: Record<BannerTone, string> = {
-  error: "border-rose-200 bg-rose-50/90 text-rose-700",
-  success: "border-emerald-200 bg-emerald-50/90 text-emerald-700",
-  info: "border-sky-200 bg-sky-50/90 text-sky-700",
-  warning: "border-amber-200 bg-amber-50/90 text-amber-700"
+  error: "border-destructive/30 bg-destructive/10 text-destructive",
+  success: "border-secondary/30 bg-secondary/10 text-secondary",
+  info: "border-primary/20 bg-primary/5 text-primary",
+  warning: "border-accent/40 bg-accent/10 text-accent-foreground"
 };
 
 interface InlineBannerProps {
@@ -15,13 +15,9 @@ interface InlineBannerProps {
   children: ReactNode;
 }
 
-export function InlineBanner({
-  tone = "info",
-  title,
-  children
-}: InlineBannerProps) {
+export function InlineBanner({ tone = "info", title, children }: InlineBannerProps) {
   return (
-    <div className={`rounded-2xl border p-3 text-sm shadow-sm ${toneClasses[tone]}`}>
+    <div className={`rounded-lg border p-3 text-sm ${toneClasses[tone]}`}>
       {title && <p className="font-semibold">{title}</p>}
       <div className={title ? "mt-1" : ""}>{children}</div>
     </div>
