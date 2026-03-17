@@ -1,0 +1,1299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  VET
+  CAREGIVER
+  SHOP
+  ADMIN
+}
+
+enum ListingCondition {
+  NEW
+  USED
+}
+
+enum MarketplaceCategory {
+  BED
+  CARRIER
+  TOY
+  LEASH
+  CAGE
+  CLOTHES
+  FEEDER
+  ACCESSORY
+  OTHER
+}
+
+enum PetSex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum PetSize {
+  XS
+  S
+  M
+  L
+  XL
+  UNKNOWN
+}
+
+enum PetEmergencyStatus {
+  NORMAL
+  LOST
+  FOUND
+  IN_TREATMENT
+}
+
+enum ReminderType {
+  VACCINE
+  VACCINE_OVERDUE
+  DEWORMING
+  MEDICAL_CHECK
+  MEDICATION
+  GROOMING
+}
+
+enum ReminderChannel {
+  EMAIL
+  IN_APP
+  PUSH
+}
+
+enum ReminderDispatchStatus {
+  SENT
+  SKIPPED
+  FAILED
+  PENDING_PUSH
+}
+
+enum EmailTemplateKey {
+  AUTH_WELCOME
+  AUTH_VERIFY_EMAIL
+  AUTH_PASSWORD_RESET
+  APPOINTMENT_CREATED
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_RESCHEDULED
+  REMINDER_GENERIC
+  REMINDER_VACCINE_DUE
+  REMINDER_VACCINE_OVERDUE
+  LOST_PET_ALERT_ACTIVATED
+  LOST_PET_SIGHTING_REPORTED
+}
+
+enum EmailDeliveryStatus {
+  SENT
+  FAILED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  REJECTED
+  RESCHEDULED
+}
+
+enum ProviderType {
+  VET
+  CAREGIVER
+  SHOP
+  GROOMING
+  HOTEL
+  OTHER
+}
+
+enum ServiceType {
+  GENERAL_CONSULT
+  VACCINATION
+  EMERGENCY
+  DEWORMING
+  GROOMING
+  HOTEL_DAYCARE
+  WALKING
+  TRAINING
+  OTHER
+}
+
+enum LostPetAlertStatus {
+  ACTIVE
+  FOUND
+  CLOSED
+}
+
+enum SocialPostVisibility {
+  PUBLIC
+  FOLLOWERS
+  PRIVATE
+}
+
+enum SocialReportTargetType {
+  POST
+  COMMENT
+  PROFILE
+}
+
+enum SocialReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+}
+
+enum PetEnergyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SocialWalkInvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum SocialEventType {
+  WALK
+  PLAYDATE
+  TRAINING
+  HIKE
+  OTHER
+}
+
+enum SocialEventStatus {
+  OPEN
+  FULL
+  CANCELLED
+  COMPLETED
+}
+
+enum ForumReportTargetType {
+  TOPIC
+  REPLY
+}
+
+enum ForumReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+}
+
+enum MarketplaceReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+}
+
+enum BenefitRedemptionStatus {
+  ACTIVE
+  USED
+  CANCELLED
+  EXPIRED
+}
+
+enum NewsCategory {
+  FOOD
+  GADGETS
+  VET_NEWS
+  HEALTH_TIPS
+  PET_EVENTS
+  HEALTH_ALERTS
+  ADOPTION
+  OTHER
+}
+
+model User {
+  id                               String                    @id @default(cuid())
+  email                            String                    @unique
+  passwordHash                     String
+  role                             UserRole                  @default(OWNER)
+  firstName                        String?
+  lastName                         String?
+  phone                            String?
+  city                             String?
+  emailVerifiedAt                  DateTime?
+  lastLoginAt                      DateTime?
+  createdAt                        DateTime                  @default(now())
+  updatedAt                        DateTime                  @updatedAt
+  deletedAt                        DateTime?
+  pets                             Pet[]
+  posts                            SocialPost[]
+  socialProfile                    SocialProfile?
+  socialComments                   SocialPostComment[]       @relation("SocialPostCommentAuthor")
+  socialLikes                      SocialPostLike[]
+  socialSaves                      SocialPostSave[]
+  socialShares                     SocialPostShare[]
+  following                        SocialFollow[]            @relation("UserFollowing")
+  followers                        SocialFollow[]            @relation("UserFollowers")
+  socialReportsSubmitted           SocialReport[]            @relation("SocialReportReporter")
+  socialReportsReviewed            SocialReport[]            @relation("SocialReportReviewer")
+  reportedInProfiles               SocialReport[]            @relation("SocialReportProfileTarget")
+  listings                         MarketplaceListing[]
+  authSessions                     AuthSession[]
+  emailVerificationTokens          EmailVerificationToken[]
+  passwordResetTokens              PasswordResetToken[]
+  ownerProfile                     OwnerProfile?
+  vetProfile                       VetProfile?
+  caregiverProfile                 CaregiverProfile?
+  shopProfile                      ShopProfile?
+  reminders                        Reminder[]
+  notifications                    Notification[]
+  providedAppointments             Appointment[]             @relation("ProviderAppointments")
+  appointmentServices              AppointmentService[]
+  scheduleAvailabilities           ScheduleAvailability[]
+  lostPetSightings                 LostPetSighting[]
+  socialWalkProfile                SocialWalkProfile?
+  walkInvitationsSent              SocialWalkInvitation[]    @relation("SocialWalkInvitationSender")
+  walkInvitationsReceived          SocialWalkInvitation[]    @relation("SocialWalkInvitationReceiver")
+  walkChatMessages                 SocialWalkChatMessage[]   @relation("SocialWalkChatMessageSender")
+  walkEventsCreated                SocialGroupEvent[]        @relation("SocialGroupEventCreator")
+  walkEventMembers                 SocialGroupEventMember[]  @relation("SocialGroupEventMemberUser")
+  forumTopics                      ForumTopic[]              @relation("ForumTopicAuthor")
+  forumReplies                     ForumReply[]              @relation("ForumReplyAuthor")
+  forumUsefulVotes                 ForumReplyUsefulVote[]    @relation("ForumReplyUsefulVoteUser")
+  forumReportsSubmitted            ForumReport[]             @relation("ForumReportReporter")
+  forumReportsReviewed             ForumReport[]             @relation("ForumReportReviewer")
+  marketplaceFavorites             MarketplaceFavorite[]
+  marketplaceConversationsAsBuyer  MarketplaceConversation[] @relation("MarketplaceConversationBuyer")
+  marketplaceConversationsAsSeller MarketplaceConversation[] @relation("MarketplaceConversationSeller")
+  marketplaceMessages              MarketplaceMessage[]      @relation("MarketplaceMessageSender")
+  marketplaceReportsSubmitted      MarketplaceReport[]       @relation("MarketplaceReportReporter")
+  marketplaceReportsReviewed       MarketplaceReport[]       @relation("MarketplaceReportReviewer")
+  benefitSaves                     BenefitSave[]
+  benefitRedemptions               BenefitRedemption[]
+  newsArticleSaves                 NewsArticleSave[]
+  newsArticleShares                NewsArticleShare[]
+
+  @@index([role])
+  @@index([deletedAt])
+  @@index([emailVerifiedAt])
+}
+
+model OwnerProfile {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  avatarUrl               String?
+  district                String?
+  approximateAddress      String?
+  biography               String?
+  notificationPreferences Json?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BusinessLocation {
+  id                 String            @id @default(cuid())
+  label              String?
+  address            String?
+  district           String?
+  city               String?
+  latitude           Decimal?          @db.Decimal(9, 6)
+  longitude          Decimal?          @db.Decimal(9, 6)
+  timezone           String            @default("America/Santiago")
+  openingHours       Json?
+  contactPhone       String?
+  vetProfileId       String?           @unique
+  caregiverProfileId String?           @unique
+  shopProfileId      String?           @unique
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  vetProfile         VetProfile?       @relation(fields: [vetProfileId], references: [id], onDelete: Cascade)
+  caregiverProfile   CaregiverProfile? @relation(fields: [caregiverProfileId], references: [id], onDelete: Cascade)
+  shopProfile        ShopProfile?      @relation(fields: [shopProfileId], references: [id], onDelete: Cascade)
+
+  @@index([city, district])
+  @@index([latitude, longitude])
+}
+
+model VetProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  clinicName      String?
+  logoUrl         String?
+  address         String?
+  district        String?
+  city            String?
+  latitude        Decimal? @db.Decimal(9, 6)
+  longitude       Decimal? @db.Decimal(9, 6)
+  openingHours    Json?
+  services        Json?
+  referencePrices Json?
+  isEmergency24x7 Boolean  @default(false)
+  contactPhone    String?
+  contactEmail    String?
+  description     String?
+  websiteUrl      String?
+  socialLinks     Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessLocation BusinessLocation?
+
+  @@index([city, district])
+  @@index([isEmergency24x7])
+}
+
+model CaregiverProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  avatarUrl     String?
+  introduction  String?
+  experience    String?
+  latitude      Decimal? @db.Decimal(9, 6)
+  longitude     Decimal? @db.Decimal(9, 6)
+  services      Json?
+  coverageAreas Json?
+  rates         Json?
+  schedule      Json?
+  ratingAverage Decimal? @db.Decimal(3, 2)
+  reviewsCount  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessLocation BusinessLocation?
+
+  @@index([latitude, longitude])
+}
+
+model ShopProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  businessName String?
+  logoUrl      String?
+  address      String?
+  district     String?
+  city         String?
+  latitude     Decimal? @db.Decimal(9, 6)
+  longitude    Decimal? @db.Decimal(9, 6)
+  basicCatalog Json?
+  openingHours Json?
+  contactPhone String?
+  contactEmail String?
+  websiteUrl   String?
+  discounts    Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessLocation BusinessLocation?
+
+  @@index([city, district])
+  @@index([latitude, longitude])
+}
+
+model AuthSession {
+  id               String    @id @default(cuid())
+  userId           String
+  refreshTokenHash String    @unique
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([revokedAt])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([usedAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([usedAt])
+}
+
+model Pet {
+  id                     String                   @id @default(cuid())
+  ownerId                String
+  name                   String
+  primaryPhotoUrl        String?
+  species                String
+  breed                  String
+  sex                    PetSex                   @default(UNKNOWN)
+  birthDate              DateTime?
+  weightKg               Decimal?                 @db.Decimal(5, 2)
+  color                  String?
+  size                   PetSize                  @default(UNKNOWN)
+  isSterilized           Boolean?                 @default(false)
+  microchipNumber        String?
+  allergies              String?
+  diseases               String?
+  medications            String?
+  feeding                String?
+  usualVetName           String?
+  usualVetContact        String?
+  emergencyContactName   String?
+  emergencyContactPhone  String?
+  generalNotes           String?
+  healthStatus           String?
+  isPublic               Boolean                  @default(false)
+  shareToken             String                   @unique @default(cuid())
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  deletedAt              DateTime?
+  owner                  User                     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  media                  PetMedia[]
+  vaccines               VaccineRecord[]
+  reminders              Reminder[]
+  appointments           Appointment[]
+  lostAlerts             LostPetAlert[]
+  publicIdentity         PetPublicIdentity?
+  publicProfile          PublicPetProfile?
+  socialProfile          PetSocialProfile?
+  socialPosts            SocialPost[]
+  walkInvitations        SocialWalkInvitation[]
+  socialEventMemberships SocialGroupEventMember[]
+
+  @@index([ownerId])
+  @@index([isPublic])
+  @@index([shareToken])
+  @@index([deletedAt])
+}
+
+model PetPublicIdentity {
+  id                        String             @id @default(cuid())
+  petId                     String             @unique
+  publicToken               String             @unique @default(cuid())
+  emergencyStatus           PetEmergencyStatus @default(NORMAL)
+  secondaryContactName      String?
+  secondaryContactPhone     String?
+  cityZone                  String?
+  emergencyInstructions     String?
+  nfcCode                   String?            @unique
+  showOwnerName             Boolean            @default(true)
+  showOwnerPhone            Boolean            @default(true)
+  showSecondaryContact      Boolean            @default(true)
+  showCityZone              Boolean            @default(true)
+  showAllergies             Boolean            @default(true)
+  showDiseases              Boolean            @default(true)
+  showMedications           Boolean            @default(true)
+  showUsualVet              Boolean            @default(true)
+  showEmergencyInstructions Boolean            @default(true)
+  showGeneralNotes          Boolean            @default(false)
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+  pet                       Pet                @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([emergencyStatus, updatedAt])
+}
+
+model PublicPetProfile {
+  id                    String   @id @default(cuid())
+  petId                  String   @unique
+  headline               String?
+  biography              String?
+  cityLabel              String?
+  traits                 String[] @default([])
+  showOwnerName          Boolean  @default(true)
+  showOwnerPhone         Boolean  @default(true)
+  showHealthDetails      Boolean  @default(true)
+  showEmergencyContacts  Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  pet                    Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([updatedAt])
+}
+
+model PetMedia {
+  id        String   @id @default(cuid())
+  petId     String
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  pet       Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId, sortOrder])
+}
+
+model VaccineRecord {
+  id             String     @id @default(cuid())
+  petId          String
+  vaccineName    String
+  appliedAt      DateTime
+  nextDoseAt     DateTime?
+  lotNumber      String?
+  providerName   String?
+  notes          String?
+  certificateUrl String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  pet            Pet        @relation(fields: [petId], references: [id], onDelete: Cascade)
+  reminders      Reminder[]
+
+  @@index([petId, appliedAt])
+  @@index([nextDoseAt])
+}
+
+model Reminder {
+  id                    String                @id @default(cuid())
+  userId                String
+  petId                 String
+  sourceVaccineRecordId String?
+  type                  ReminderType
+  title                 String
+  message               String?
+  dueAt                 DateTime
+  sendEmail             Boolean               @default(true)
+  sendInApp             Boolean               @default(true)
+  sendPush              Boolean               @default(false)
+  isActive              Boolean               @default(true)
+  sentAt                DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet                   Pet                   @relation(fields: [petId], references: [id], onDelete: Cascade)
+  sourceVaccineRecord   VaccineRecord?        @relation(fields: [sourceVaccineRecordId], references: [id], onDelete: SetNull)
+  dispatchLogs          ReminderDispatchLog[]
+
+  @@unique([sourceVaccineRecordId, type])
+  @@index([userId, dueAt, isActive])
+  @@index([petId, dueAt])
+  @@index([sourceVaccineRecordId])
+}
+
+model ReminderDispatchLog {
+  id           String                 @id @default(cuid())
+  reminderId   String
+  channel      ReminderChannel
+  scheduledFor DateTime
+  status       ReminderDispatchStatus
+  sentAt       DateTime?
+  errorMessage String?
+  createdAt    DateTime               @default(now())
+  reminder     Reminder               @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  @@unique([reminderId, channel, scheduledFor])
+  @@index([status, createdAt])
+}
+
+model EmailDispatchLog {
+  id                String              @id @default(cuid())
+  templateKey       EmailTemplateKey
+  toEmail           String
+  subject           String
+  status            EmailDeliveryStatus
+  attempts          Int                 @default(1)
+  providerMessageId String?
+  errorMessage      String?
+  metadata          Json?
+  createdAt         DateTime            @default(now())
+
+  @@index([templateKey, createdAt])
+  @@index([status, createdAt])
+  @@index([toEmail, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  metadata  Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+model Appointment {
+  id                String            @id @default(cuid())
+  petId             String
+  providerUserId    String?
+  appointmentServiceId String?
+  providerType      ProviderType
+  providerSourceId  String?
+  providerName      String
+  serviceType       ServiceType
+  scheduledAt       DateTime
+  durationMinutes   Int               @default(30)
+  status            AppointmentStatus @default(PENDING)
+  reason            String?
+  notes             String?
+  cancelReason      String?
+  cancelledAt       DateTime?
+  confirmedAt       DateTime?
+  completedAt       DateTime?
+  rejectedAt        DateTime?
+  rescheduledFromId String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  pet               Pet               @relation(fields: [petId], references: [id], onDelete: Restrict)
+  providerUser      User?             @relation("ProviderAppointments", fields: [providerUserId], references: [id], onDelete: SetNull)
+  appointmentService AppointmentService? @relation(fields: [appointmentServiceId], references: [id], onDelete: SetNull)
+  rescheduledFrom   Appointment?      @relation("AppointmentRescheduleTrail", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledTo     Appointment[]     @relation("AppointmentRescheduleTrail")
+
+  @@index([petId, scheduledAt])
+  @@index([providerUserId, scheduledAt])
+  @@index([appointmentServiceId])
+  @@index([status, scheduledAt])
+  @@index([providerType, providerSourceId])
+}
+
+model AppointmentService {
+  id              String        @id @default(cuid())
+  providerUserId  String
+  providerType    ProviderType
+  providerSourceId String?
+  title           String
+  description     String?
+  serviceType     ServiceType
+  durationMinutes Int           @default(30)
+  priceCents      Int?
+  currencyCode    String        @default("CLP")
+  isActive        Boolean       @default(true)
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  providerUser    User          @relation(fields: [providerUserId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+
+  @@index([providerUserId, isActive, sortOrder])
+  @@index([providerType, providerSourceId, isActive])
+}
+
+model ScheduleAvailability {
+  id             String       @id @default(cuid())
+  providerUserId String
+  dayOfWeek      Int
+  startTime      String
+  endTime        String
+  serviceType    ServiceType?
+  timezone       String       @default("America/Santiago")
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  providerUser   User         @relation(fields: [providerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([providerUserId, dayOfWeek, startTime, endTime, serviceType])
+  @@index([providerUserId, dayOfWeek, isActive])
+}
+
+model LostPetAlert {
+  id               String             @id @default(cuid())
+  petId            String
+  status           LostPetAlertStatus @default(ACTIVE)
+  lastSeenAt       DateTime
+  lastSeenLat      Decimal            @db.Decimal(9, 6)
+  lastSeenLng      Decimal            @db.Decimal(9, 6)
+  lastSeenAddress  String?
+  description      String?
+  emergencyNotes   String?
+  searchRadiusKm   Int                @default(10)
+  broadcastEnabled Boolean            @default(true)
+  medicalPriority  Boolean            @default(false)
+  shareToken       String             @unique @default(cuid())
+  foundAt          DateTime?
+  closedAt         DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  pet              Pet                @relation(fields: [petId], references: [id], onDelete: Cascade)
+  sightings        LostPetSighting[]
+
+  @@index([petId, status])
+  @@index([lastSeenAt])
+  @@index([status, updatedAt])
+}
+
+model LostPetSighting {
+  id             String       @id @default(cuid())
+  alertId        String
+  reporterUserId String?
+  sightingAt     DateTime
+  lat            Decimal      @db.Decimal(9, 6)
+  lng            Decimal      @db.Decimal(9, 6)
+  address        String?
+  comment        String?
+  photoUrl       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  alert          LostPetAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  reporterUser   User?        @relation(fields: [reporterUserId], references: [id], onDelete: SetNull)
+
+  @@index([alertId, sightingAt])
+  @@index([reporterUserId, createdAt])
+}
+
+model SocialPost {
+  id            String               @id @default(cuid())
+  authorId      String
+  petId         String?
+  body          String
+  imageUrl      String?
+  visibility    SocialPostVisibility @default(PUBLIC)
+  allowComments Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  deletedAt     DateTime?
+  author        User                 @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  pet           Pet?                 @relation(fields: [petId], references: [id], onDelete: SetNull)
+  comments      SocialPostComment[]
+  likes         SocialPostLike[]
+  saves         SocialPostSave[]
+  shares        SocialPostShare[]
+  reports       SocialReport[]       @relation("SocialReportPostTarget")
+
+  @@index([authorId, createdAt])
+  @@index([petId, createdAt])
+  @@index([visibility, createdAt])
+  @@index([deletedAt])
+}
+
+model SocialProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  handle      String?  @unique
+  displayName String?
+  avatarUrl   String?
+  coverUrl    String?
+  bio         String?
+  city        String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isPublic, updatedAt])
+}
+
+model PetSocialProfile {
+  id          String         @id @default(cuid())
+  petId       String         @unique
+  handle      String?        @unique
+  avatarUrl   String?
+  coverUrl    String?
+  bio         String?
+  energyLevel PetEnergyLevel @default(MEDIUM)
+  isPublic    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  pet         Pet            @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([isPublic, updatedAt])
+  @@index([energyLevel, updatedAt])
+}
+
+model SocialPostComment {
+  id        String         @id @default(cuid())
+  postId    String
+  authorId  String
+  body      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
+  post      SocialPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User           @relation("SocialPostCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  reports   SocialReport[] @relation("SocialReportCommentTarget")
+
+  @@index([postId, createdAt])
+  @@index([authorId, createdAt])
+  @@index([deletedAt])
+}
+
+model SocialPostLike {
+  id        String     @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime   @default(now())
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
+model SocialPostSave {
+  id        String     @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime   @default(now())
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
+model SocialPostShare {
+  id        String     @id @default(cuid())
+  postId    String
+  userId    String?
+  channel   String     @default("internal")
+  createdAt DateTime   @default(now())
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([postId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model SocialFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId, createdAt])
+}
+
+model SocialReport {
+  id               String                 @id @default(cuid())
+  reporterUserId   String
+  targetType       SocialReportTargetType
+  postId           String?
+  commentId        String?
+  reportedUserId   String?
+  reason           String
+  status           SocialReportStatus     @default(OPEN)
+  reviewNotes      String?
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  reporterUser     User                   @relation("SocialReportReporter", fields: [reporterUserId], references: [id], onDelete: Cascade)
+  reviewedByUser   User?                  @relation("SocialReportReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  post             SocialPost?            @relation("SocialReportPostTarget", fields: [postId], references: [id], onDelete: Cascade)
+  comment          SocialPostComment?     @relation("SocialReportCommentTarget", fields: [commentId], references: [id], onDelete: Cascade)
+  reportedUser     User?                  @relation("SocialReportProfileTarget", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, status, createdAt])
+  @@index([reporterUserId, createdAt])
+  @@index([status, updatedAt])
+}
+
+model SocialWalkProfile {
+  id                    String           @id @default(cuid())
+  userId                String           @unique
+  displayName           String?
+  bio                   String?
+  city                  String?
+  district              String?
+  latitude              Decimal?         @db.Decimal(9, 6)
+  longitude             Decimal?         @db.Decimal(9, 6)
+  preferredSpecies      String?
+  preferredSizes        PetSize[]        @default([])
+  preferredEnergyLevels PetEnergyLevel[] @default([])
+  preferredMinAgeMonths Int?
+  preferredMaxAgeMonths Int?
+  isDiscoverable        Boolean          @default(true)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isDiscoverable, city, district])
+}
+
+model SocialWalkInvitation {
+  id           String                     @id @default(cuid())
+  fromUserId   String
+  toUserId     String
+  petId        String?
+  message      String?
+  proposedAt   DateTime?
+  city         String?
+  district     String?
+  placeLabel   String?
+  status       SocialWalkInvitationStatus @default(PENDING)
+  respondedAt  DateTime?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  fromUser     User                       @relation("SocialWalkInvitationSender", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser       User                       @relation("SocialWalkInvitationReceiver", fields: [toUserId], references: [id], onDelete: Cascade)
+  pet          Pet?                       @relation(fields: [petId], references: [id], onDelete: SetNull)
+  chatMessages SocialWalkChatMessage[]
+
+  @@index([toUserId, status, createdAt])
+  @@index([fromUserId, status, createdAt])
+  @@index([petId, createdAt])
+}
+
+model SocialWalkChatMessage {
+  id           String               @id @default(cuid())
+  invitationId String
+  senderUserId String
+  body         String
+  createdAt    DateTime             @default(now())
+  invitation   SocialWalkInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  senderUser   User                 @relation("SocialWalkChatMessageSender", fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId, createdAt])
+  @@index([senderUserId, createdAt])
+}
+
+model SocialGroupEvent {
+  id              String                   @id @default(cuid())
+  creatorUserId   String
+  title           String
+  description     String?
+  type            SocialEventType          @default(WALK)
+  status          SocialEventStatus        @default(OPEN)
+  city            String
+  district        String?
+  placeLabel      String?
+  startsAt        DateTime
+  endsAt          DateTime?
+  maxAttendees    Int?
+  speciesFilter   String?
+  sizeFilter      PetSize?
+  energyFilter    PetEnergyLevel?
+  minPetAgeMonths Int?
+  maxPetAgeMonths Int?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  creatorUser     User                     @relation("SocialGroupEventCreator", fields: [creatorUserId], references: [id], onDelete: Cascade)
+  attendees       SocialGroupEventMember[]
+
+  @@index([status, startsAt])
+  @@index([city, district, startsAt])
+  @@index([creatorUserId, createdAt])
+}
+
+model SocialGroupEventMember {
+  id        String           @id @default(cuid())
+  eventId   String
+  userId    String
+  petId     String?
+  note      String?
+  createdAt DateTime         @default(now())
+  event     SocialGroupEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User             @relation("SocialGroupEventMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  pet       Pet?             @relation(fields: [petId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, userId])
+  @@index([userId, createdAt])
+  @@index([petId, createdAt])
+}
+
+model ForumCategory {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  name        String
+  description String?
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  topics      ForumTopic[]
+
+  @@index([isActive, sortOrder])
+}
+
+model ForumTopic {
+  id         String        @id @default(cuid())
+  categoryId String
+  authorId   String
+  title      String
+  body       String
+  tags       String[]      @default([])
+  isPinned   Boolean       @default(false)
+  isLocked   Boolean       @default(false)
+  deletedAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author     User          @relation("ForumTopicAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  replies    ForumReply[]
+  reports    ForumReport[] @relation("ForumReportTopicTarget")
+
+  @@index([categoryId, createdAt])
+  @@index([authorId, createdAt])
+  @@index([isPinned, createdAt])
+  @@index([deletedAt])
+}
+
+model ForumReply {
+  id            String                 @id @default(cuid())
+  topicId       String
+  authorId      String
+  body          String
+  quotedReplyId String?
+  deletedAt     DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  topic         ForumTopic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  author        User                   @relation("ForumReplyAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  quotedReply   ForumReply?            @relation("ForumReplyQuote", fields: [quotedReplyId], references: [id], onDelete: SetNull)
+  quotedBy      ForumReply[]           @relation("ForumReplyQuote")
+  usefulVotes   ForumReplyUsefulVote[]
+  reports       ForumReport[]          @relation("ForumReportReplyTarget")
+
+  @@index([topicId, createdAt])
+  @@index([authorId, createdAt])
+  @@index([deletedAt])
+}
+
+model ForumReplyUsefulVote {
+  id        String     @id @default(cuid())
+  replyId   String
+  userId    String
+  createdAt DateTime   @default(now())
+  reply     ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  user      User       @relation("ForumReplyUsefulVoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([replyId, userId])
+  @@index([userId, createdAt])
+}
+
+model ForumReport {
+  id               String                @id @default(cuid())
+  reporterUserId   String
+  targetType       ForumReportTargetType
+  topicId          String?
+  replyId          String?
+  reason           String
+  status           ForumReportStatus     @default(OPEN)
+  reviewNotes      String?
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  reporterUser     User                  @relation("ForumReportReporter", fields: [reporterUserId], references: [id], onDelete: Cascade)
+  reviewedByUser   User?                 @relation("ForumReportReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  topic            ForumTopic?           @relation("ForumReportTopicTarget", fields: [topicId], references: [id], onDelete: Cascade)
+  reply            ForumReply?           @relation("ForumReportReplyTarget", fields: [replyId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, status, createdAt])
+  @@index([reporterUserId, createdAt])
+  @@index([status, updatedAt])
+}
+
+model MarketplaceListing {
+  id            String                    @id @default(cuid())
+  sellerId      String
+  title         String
+  description   String
+  priceCents    Int
+  condition     ListingCondition
+  category      MarketplaceCategory       @default(ACCESSORY)
+  photoUrls     String[]                  @default([])
+  city          String?
+  district      String?
+  latitude      Decimal?                  @db.Decimal(9, 6)
+  longitude     Decimal?                  @db.Decimal(9, 6)
+  isActive      Boolean                   @default(true)
+  featuredUntil DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  deletedAt     DateTime?
+  seller        User                      @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  favorites     MarketplaceFavorite[]
+  conversations MarketplaceConversation[]
+  reports       MarketplaceReport[]
+
+  @@index([sellerId, createdAt])
+  @@index([isActive, category, condition, createdAt])
+  @@index([city, district, createdAt])
+  @@index([latitude, longitude])
+  @@index([featuredUntil])
+  @@index([deletedAt])
+}
+
+model MarketplaceFavorite {
+  id        String             @id @default(cuid())
+  listingId String
+  userId    String
+  createdAt DateTime           @default(now())
+  listing   MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, userId])
+  @@index([userId, createdAt])
+}
+
+model MarketplaceConversation {
+  id        String               @id @default(cuid())
+  listingId String
+  buyerId   String
+  sellerId  String
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  listing   MarketplaceListing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer     User                 @relation("MarketplaceConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller    User                 @relation("MarketplaceConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages  MarketplaceMessage[]
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId, updatedAt])
+  @@index([sellerId, updatedAt])
+}
+
+model MarketplaceMessage {
+  id             String                  @id @default(cuid())
+  conversationId String
+  senderUserId   String
+  body           String
+  createdAt      DateTime                @default(now())
+  conversation   MarketplaceConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUser     User                    @relation("MarketplaceMessageSender", fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderUserId, createdAt])
+}
+
+model MarketplaceReport {
+  id               String                  @id @default(cuid())
+  reporterUserId   String
+  listingId        String
+  reason           String
+  status           MarketplaceReportStatus @default(OPEN)
+  reviewNotes      String?
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  reporterUser     User                    @relation("MarketplaceReportReporter", fields: [reporterUserId], references: [id], onDelete: Cascade)
+  reviewedByUser   User?                   @relation("MarketplaceReportReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  listing          MarketplaceListing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, status, createdAt])
+  @@index([reporterUserId, createdAt])
+  @@index([status, updatedAt])
+}
+
+model Benefit {
+  id               String              @id @default(cuid())
+  title            String
+  summary          String
+  description      String?
+  providerType     ProviderType        @default(OTHER)
+  providerName     String?
+  discountLabel    String?
+  couponCode       String?
+  terms            String?
+  city             String?
+  district         String?
+  landingUrl       String?
+  validFrom        DateTime
+  validTo          DateTime
+  maxRedemptions   Int?
+  redemptionsCount Int                 @default(0)
+  isFeatured       Boolean             @default(false)
+  isActive         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  saves            BenefitSave[]
+  redemptions      BenefitRedemption[]
+
+  @@index([isActive, isFeatured, validTo])
+  @@index([city, district, validTo])
+  @@index([providerType, validTo])
+  @@index([validFrom, validTo])
+}
+
+model BenefitSave {
+  id        String   @id @default(cuid())
+  benefitId String
+  userId    String
+  createdAt DateTime @default(now())
+  benefit   Benefit  @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([benefitId, userId])
+  @@index([userId, createdAt])
+}
+
+model BenefitRedemption {
+  id             String                  @id @default(cuid())
+  benefitId      String
+  userId         String
+  activationCode String                  @unique
+  status         BenefitRedemptionStatus @default(ACTIVE)
+  expiresAt      DateTime
+  usedAt         DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  benefit        Benefit                 @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([benefitId, userId])
+  @@index([userId, status, createdAt])
+  @@index([expiresAt, status])
+}
+
+model NewsArticle {
+  id            String             @id @default(cuid())
+  title         String
+  slug          String             @unique
+  excerpt       String
+  body          String
+  category      NewsCategory       @default(OTHER)
+  tags          String[]           @default([])
+  coverImageUrl String?
+  sourceUrl     String?
+  isFeatured    Boolean            @default(false)
+  isPublished   Boolean            @default(true)
+  publishedAt   DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  saves         NewsArticleSave[]
+  shares        NewsArticleShare[]
+
+  @@index([category, publishedAt])
+  @@index([isFeatured, publishedAt])
+  @@index([isPublished, publishedAt])
+}
+
+model NewsArticleSave {
+  id        String      @id @default(cuid())
+  articleId String
+  userId    String
+  createdAt DateTime    @default(now())
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([userId, createdAt])
+}
+
+model NewsArticleShare {
+  id        String      @id @default(cuid())
+  articleId String
+  userId    String
+  channel   String      @default("internal")
+  createdAt DateTime    @default(now())
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, createdAt])
+  @@index([userId, createdAt])
+}

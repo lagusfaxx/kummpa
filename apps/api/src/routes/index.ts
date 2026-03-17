@@ -1,0 +1,38 @@
+import { Router } from "express";
+import { adminRouter } from "../modules/admin/admin.router";
+import { appointmentsRouter } from "../modules/appointments/appointments.router";
+import { authRouter } from "../modules/auth/auth.router";
+import { benefitsRouter } from "../modules/benefits/benefits.router";
+import { businessRouter } from "../modules/business/business.router";
+import { communityRouter } from "../modules/community/community.router";
+import { exploreRouter } from "../modules/explore/explore.router";
+import { forumRouter } from "../modules/forum/forum.router";
+import { healthRouter } from "../modules/health/health.router";
+import { lostPetsRouter } from "../modules/lost-pets/lost-pets.router";
+import { mapRouter } from "../modules/map/map.router";
+import { marketplaceRouter } from "../modules/marketplace/marketplace.router";
+import { newsRouter } from "../modules/news/news.router";
+import { petsRouter } from "../modules/pets/pets.router";
+import { profilesRouter } from "../modules/profiles/profiles.router";
+import { remindersRouter } from "../modules/reminders/reminders.router";
+
+export const rootRouter = Router();
+const API_PREFIX = "/api/v1";
+
+rootRouter.use("/health", healthRouter);
+
+rootRouter.use(`${API_PREFIX}/auth`, authRouter);
+rootRouter.use(`${API_PREFIX}/profiles`, profilesRouter);
+rootRouter.use(`${API_PREFIX}/pets`, petsRouter);
+rootRouter.use(`${API_PREFIX}/reminders`, remindersRouter);
+rootRouter.use(`${API_PREFIX}/appointments`, appointmentsRouter);
+rootRouter.use(`${API_PREFIX}/map`, mapRouter);
+rootRouter.use(`${API_PREFIX}/lost-pets`, lostPetsRouter);
+rootRouter.use(`${API_PREFIX}/community`, communityRouter);
+rootRouter.use(`${API_PREFIX}/forum`, forumRouter);
+rootRouter.use(`${API_PREFIX}/marketplace`, marketplaceRouter);
+rootRouter.use(`${API_PREFIX}/benefits`, benefitsRouter);
+rootRouter.use(`${API_PREFIX}/business`, businessRouter);
+rootRouter.use(`${API_PREFIX}/explore`, exploreRouter);
+rootRouter.use(`${API_PREFIX}/news`, newsRouter);
+rootRouter.use(`${API_PREFIX}/admin`, adminRouter);

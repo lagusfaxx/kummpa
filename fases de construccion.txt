@@ -1,0 +1,1394 @@
+FASE 1 — Fundaciones del proyecto
+Paso 1: Inicializar el proyecto
+
+Crea la base completa del proyecto con:
+
+monorepo o estructura limpia
+
+app web
+
+app api
+
+TypeScript
+
+Tailwind
+
+Prisma
+
+PostgreSQL
+
+variables de entorno
+
+scripts de desarrollo, build y producción
+
+configuración lista para GitHub y Coolify
+
+Entregables de esta etapa
+
+estructura inicial completa
+
+archivos de configuración
+
+.env.example
+
+conexión Prisma
+
+configuración de build
+
+scripts reproducibles
+
+instrucciones claras para deploy
+
+Requisitos
+
+usar variables de entorno para todo
+
+no hardcodear secrets
+
+separar config de dev y prod si aplica
+
+dejar preparado para dominio real
+
+FASE 2 — Autenticación y usuarios
+Paso 2: Sistema de autenticación
+
+Implementa autenticación segura para:
+
+registro
+
+login
+
+logout
+
+sesión persistente
+
+recuperación de contraseña
+
+verificación de correo mediante Resend
+
+manejo de roles
+
+Roles mínimos
+
+OWNER → dueño de mascota
+
+VET → veterinaria o clínica
+
+CAREGIVER → paseador, cuidador, pet sitter
+
+SHOP → tienda o negocio pet
+
+ADMIN → administrador
+
+Funcionalidades detalladas
+
+registro por email y password
+
+hash seguro de contraseñas
+
+validación backend y frontend
+
+email de bienvenida
+
+email de verificación
+
+recuperación de contraseña con token temporal
+
+middleware de auth
+
+protección de rutas privadas
+
+sistema de permisos por rol
+
+UI requerida
+
+/login
+
+/register
+
+/forgot-password
+
+/reset-password
+
+formularios limpios, modernos y mobile-first
+
+Con Resend
+
+Usa Resend para:
+
+email de verificación
+
+recuperación de contraseña
+
+confirmación de registro
+
+notificaciones futuras reutilizables
+
+FASE 3 — Perfiles de usuario y mascotas
+Paso 3: Perfiles de usuario
+
+Crea perfiles completos para cada tipo de usuario.
+
+OWNER
+
+nombre
+
+foto
+
+teléfono
+
+comuna / ciudad
+
+dirección aproximada opcional
+
+biografía
+
+preferencias de notificación
+
+VET
+
+nombre de clínica
+
+logo/foto
+
+dirección
+
+geolocalización
+
+horarios
+
+servicios
+
+precios referenciales
+
+urgencias 24/7 sí/no
+
+contacto
+
+descripción
+
+redes / sitio web
+
+CAREGIVER
+
+foto
+
+presentación
+
+experiencia
+
+servicios
+
+cobertura geográfica
+
+tarifas
+
+horarios
+
+reseñas
+
+SHOP
+
+nombre comercial
+
+ubicación
+
+catálogo básico
+
+horarios
+
+contacto
+
+descuentos
+
+Paso 4: Perfiles de mascotas
+
+Cada dueño puede tener múltiples mascotas.
+
+Campos obligatorios del perfil de mascota
+
+nombre
+
+foto principal
+
+galería opcional
+
+especie
+
+raza
+
+sexo
+
+fecha de nacimiento
+
+edad calculada
+
+peso
+
+color
+
+tamaño
+
+esterilizado sí/no
+
+número de microchip opcional
+
+alergias
+
+enfermedades
+
+medicamentos
+
+alimentación
+
+veterinaria habitual
+
+contacto de emergencia
+
+notas generales
+
+Funcionalidades
+
+crear mascota
+
+editar mascota
+
+eliminar mascota
+
+marcar perfil como público o privado
+
+compartir perfil por link
+
+asociar historial de salud
+
+asociar vacunas
+
+asociar alertas de pérdida
+
+asociar QR/NFC
+
+UI esperada
+
+/pets
+
+/pets/new
+
+/pets/[id]
+
+/pets/[id]/edit
+
+FASE 4 — Carnet de vacunación virtual
+Paso 5: Construir el carnet de vacunación digital
+
+Esta es una funcionalidad central y debe quedar muy bien hecha.
+
+Cada mascota debe tener un carnet de vacunación virtual con historial completo y recordatorios automáticos.
+
+Estructura del carnet
+
+Debe mostrar:
+
+nombre de la mascota
+
+foto
+
+especie
+
+raza
+
+fecha de nacimiento
+
+nombre del dueño
+
+número interno o identificador
+
+número de microchip si existe
+
+estado sanitario general
+
+historial de vacunas
+
+próximas dosis
+
+refuerzos pendientes
+
+profesional o veterinaria que aplicó la vacuna
+
+observaciones
+
+archivos adjuntos si existen
+
+Modelo sugerido
+
+Crear entidad de vacunas con:
+
+mascota
+
+tipo de vacuna
+
+fecha de aplicación
+
+próxima fecha
+
+lote opcional
+
+veterinaria o profesional
+
+observaciones
+
+archivo adjunto opcional
+
+Funcionalidades requeridas
+
+agregar vacuna manualmente
+
+editar vacuna
+
+eliminar vacuna
+
+ver historial cronológico
+
+ver vacunas próximas
+
+estado visual:
+
+al día
+
+próxima a vencer
+
+vencida
+
+filtros por tipo y fecha
+
+adjuntar certificado o comprobante
+
+compartir carnet por link o PDF
+
+Paso 6: Impresión de carnet físico
+
+Agregar opción de generar carnet imprimible.
+
+Debe permitir:
+
+descargar PDF
+
+versión tamaño hoja
+
+versión tipo carnet
+
+diseño limpio y profesional
+
+QR que lleve al perfil digital de la mascota
+
+datos resumidos de identidad y vacunas
+
+opción de impresión desde navegador
+
+Opcional desde la arquitectura
+
+deja preparada la posibilidad de:
+
+solicitar impresión física
+
+credencial plastificada
+
+envío a domicilio
+
+tarjeta premium con QR o NFC
+
+Paso 7: Recordatorios automáticos
+
+Implementa un motor de recordatorios para vacunas y salud.
+
+Tipos de recordatorio
+
+próxima vacuna
+
+vacuna vencida
+
+desparasitación
+
+control médico
+
+medicación
+
+peluquería o baño si se quiere ampliar después
+
+Canales iniciales
+
+email con Resend
+
+notificaciones in-app
+
+dejar preparado push para futuro
+
+Requisitos
+
+programables por fecha
+
+por mascota
+
+configurables por usuario
+
+con historial de envío
+
+evitar duplicados
+
+FASE 5 — Mapa con Mapbox
+Paso 8: Integrar Mapbox
+
+El mapa será una funcionalidad core del producto.
+
+Usa Mapbox para:
+
+visualizar veterinarias
+
+mostrar servicios pet cercanos
+
+mostrar mascotas perdidas
+
+mostrar cuidadores y tiendas
+
+filtrar por ubicación
+
+Requisitos técnicos
+
+cargar mapa solo en cliente
+
+evitar errores SSR
+
+usar coordenadas correctas [lng, lat]
+
+componentes reutilizables
+
+clustering si hay muchos puntos
+
+buen rendimiento móvil
+
+Paso 9: Mapa de veterinarias y servicios
+
+Crear una vista principal de mapa y listado combinado.
+
+Debe mostrar
+
+veterinarias
+
+clínicas 24/7
+
+pet shops
+
+cuidadores
+
+peluquerías caninas
+
+hoteles o guarderías
+
+parques pet-friendly
+
+Cada ficha debe tener
+
+nombre
+
+foto
+
+categoría
+
+dirección
+
+distancia
+
+horarios
+
+servicios
+
+precios “desde”
+
+descuentos activos
+
+calificación
+
+botón de reservar
+
+botón de ver perfil
+
+botón de llamar o contactar
+
+Filtros requeridos
+
+abierto ahora
+
+urgencias 24/7
+
+con descuento
+
+por comuna
+
+por tipo de servicio
+
+rango de precio
+
+atención a domicilio
+
+veterinarias destacadas
+
+cercanía
+
+UX requerida
+
+desktop: mapa + panel lateral
+
+móvil: mapa full width + bottom sheet/listado
+
+búsqueda por texto
+
+autocomplete por zona o dirección
+
+botón “usar mi ubicación”
+
+FASE 6 — Reservas veterinarias y servicios
+Paso 10: Sistema de reservas
+
+Construir módulo completo de reservas.
+
+Flujo de reserva
+
+usuario entra a perfil de veterinaria o servicio
+
+elige servicio
+
+selecciona mascota
+
+selecciona fecha y hora
+
+agrega motivo
+
+confirma reserva
+
+recibe email de confirmación vía Resend
+
+Entidades necesarias
+
+appointment
+
+appointmentStatus
+
+serviceType
+
+scheduleAvailability
+
+Estados mínimos
+
+pending
+
+confirmed
+
+completed
+
+cancelled
+
+rejected
+
+rescheduled
+
+Requisitos
+
+una reserva pertenece a una mascota
+
+una reserva pertenece a un profesional/centro
+
+evitar doble reserva en mismo horario
+
+reagendar
+
+cancelar
+
+historial de reservas por usuario
+
+historial por veterinaria
+
+email al crear, confirmar, cancelar o reagendar
+
+UI
+
+/appointments
+
+/appointments/[id]
+
+panel de agenda para veterinarias
+
+vista simple y limpia para móvil
+
+FASE 7 — Identidad digital de la mascota con QR/NFC
+Paso 11: Perfil público de emergencia
+
+Cada mascota debe poder tener un perfil de emergencia accesible por QR y preparado para NFC.
+
+Este perfil debe mostrar
+
+nombre de la mascota
+
+foto
+
+estado actual:
+
+normal
+
+perdida
+
+encontrada
+
+en tratamiento
+
+nombre del dueño
+
+teléfono
+
+contacto secundario
+
+ciudad o zona
+
+alergias importantes
+
+enfermedades relevantes
+
+medicamentos
+
+veterinaria habitual
+
+instrucciones de emergencia
+
+Requisitos de privacidad
+
+permitir al dueño definir qué campos se muestran
+
+ocultar datos sensibles si desea
+
+perfil público separado del perfil privado
+
+Paso 12: Preparar soporte para QR/NFC
+
+Aunque no se implementará hardware todavía, deja la lógica preparada.
+
+Requisitos
+
+generar URL pública única
+
+generar QR descargable
+
+dejar campo para nfcCode o publicToken
+
+panel para descargar QR
+
+arquitectura lista para futura integración con placa física/NFC
+
+FASE 8 — Sistema de mascotas perdidas
+Paso 13: Alertas de mascotas perdidas
+
+Crear módulo completo de mascotas perdidas.
+
+Flujo para el dueño
+
+seleccionar mascota
+
+marcarla como perdida
+
+subir foto principal
+
+ingresar última ubicación
+
+fecha y hora
+
+descripción
+
+observaciones médicas
+
+activar difusión
+
+Flujo comunitario
+
+usuarios cercanos reciben alerta
+
+pueden tocar botón “Yo la vi”
+
+pueden enviar ubicación
+
+comentario
+
+foto opcional
+
+historial de avistamientos
+
+Requisitos del sistema
+
+geolocalización
+
+radio configurable
+
+mapa de avistamientos
+
+estado del caso
+
+cerrar alerta cuando se encuentre
+
+priorizar si tiene condición médica grave
+
+UI
+
+/lost-pets
+
+/lost-pets/report
+
+/lost-pets/[id]
+
+FASE 9 — Comunidad social
+Paso 14: Perfiles sociales y publicaciones
+
+Construir una sección social liviana pero bien hecha.
+
+Funcionalidades
+
+perfil social del dueño
+
+perfil social de mascota
+
+publicaciones con texto e imagen
+
+comentarios
+
+likes
+
+compartir
+
+guardar
+
+seguir perfiles
+
+feed por actividad
+
+Casos de uso
+
+compartir paseos
+
+subir fotos
+
+mostrar crecimiento
+
+comunidad local pet-friendly
+
+Requisitos
+
+moderación básica
+
+visibilidad configurable
+
+reportes
+
+UX tipo red social ligera, no sobrecargada
+
+Paso 15: Encuentros, paseos y “Pet-Tinder”
+
+Implementar una función social para organizar paseos y encuentros.
+
+Importante
+
+No enfocarlo como “citas románticas humanas”, sino como:
+
+paseos
+
+socialización
+
+encuentros entre mascotas
+
+actividades por zona
+
+dueños con intereses similares
+
+Funcionalidades
+
+ver mascotas o dueños cercanos
+
+filtrar por tamaño, especie, energía, edad, zona
+
+enviar invitación a paseo
+
+aceptar o rechazar
+
+chat previo
+
+crear eventos grupales
+
+FASE 10 — Foros y consultas
+Paso 16: Foros comunitarios
+
+Crear foros por categorías.
+
+Categorías iniciales
+
+salud
+
+alimentación
+
+vacunas
+
+entrenamiento
+
+perros
+
+gatos
+
+mascotas exóticas
+
+recomendaciones
+
+experiencias
+
+mascotas perdidas
+
+adopción
+
+Funcionalidades
+
+crear tema
+
+responder
+
+citar
+
+votar respuesta útil
+
+etiquetas
+
+moderación
+
+reportar
+
+buscar temas
+
+Nota importante
+
+Agregar disclaimer visible:
+el foro no reemplaza atención veterinaria profesional.
+
+FASE 11 — Marketplace pet
+Paso 17: Marketplace de productos usados y nuevos
+
+Crear módulo de marketplace.
+
+Permitir publicar
+
+camas
+
+transportadoras
+
+juguetes
+
+correas
+
+jaulas
+
+ropa
+
+comederos
+
+accesorios
+
+productos usados o nuevos
+
+Funcionalidades
+
+crear publicación
+
+subir fotos
+
+precio
+
+estado
+
+ubicación
+
+categoría
+
+descripción
+
+chat con vendedor
+
+favoritos
+
+reportar
+
+destacar publicación
+
+Filtros
+
+categoría
+
+usado / nuevo
+
+precio
+
+distancia
+
+comuna
+
+más recientes
+
+FASE 12 — Beneficios y convenios
+Paso 18: Módulo de descuentos y beneficios
+
+Crear sección de convenios y promociones.
+
+Mostrar
+
+descuentos en veterinarias
+
+promociones en pet shops
+
+campañas de vacunación
+
+convenios con bancos
+
+tarjetas vecinas
+
+descuentos por zona
+
+Funcionalidades
+
+listar descuentos
+
+filtrar por ubicación
+
+ver vigencia
+
+canjear o activar cupón
+
+guardar beneficios
+
+beneficios destacados
+
+FASE 13 — Noticias pet
+Paso 19: Noticias y novedades
+
+Crear sección editorial.
+
+Contenido
+
+alimentos nuevos
+
+gadgets
+
+novedades veterinarias
+
+consejos de salud
+
+eventos pet-friendly
+
+alertas sanitarias
+
+Funcionalidades
+
+artículos
+
+categorías
+
+destacados
+
+guardar
+
+compartir
+
+FASE 14 — Emails transaccionales con Resend
+Paso 20: Integrar Resend en todos los flujos relevantes
+
+Usar Resend para plantillas profesionales y reutilizables.
+
+Emails obligatorios
+
+verificación de cuenta
+
+bienvenida
+
+reset password
+
+reserva creada
+
+reserva confirmada
+
+reserva cancelada
+
+recordatorio de vacuna
+
+vacuna vencida
+
+alerta de mascota perdida activada
+
+avistamiento reportado
+
+Requisitos
+
+plantillas consistentes
+
+branding simple
+
+textos claros
+
+manejo de errores
+
+reintentos si aplica
+
+logs de envío
+
+FASE 15 — Base de datos PostgreSQL + Prisma
+Paso 21: Diseñar esquema robusto
+
+Diseña el schema de Prisma en PostgreSQL con modelos bien normalizados.
+
+Modelos mínimos sugeridos
+
+User
+
+Session / AuthToken si aplica
+
+Pet
+
+PetMedia
+
+VaccineRecord
+
+Reminder
+
+VetProfile
+
+CaregiverProfile
+
+ShopProfile
+
+Appointment
+
+AppointmentService
+
+BusinessLocation
+
+LostPetAlert
+
+LostPetSighting
+
+PublicPetProfile
+
+SocialPost
+
+SocialComment
+
+Follow
+
+ForumCategory
+
+ForumThread
+
+ForumReply
+
+MarketplaceListing
+
+Benefit
+
+NewsArticle
+
+Notification
+
+Requisitos
+
+índices donde corresponda
+
+relaciones claras
+
+timestamps
+
+estados por enum
+
+soft delete si conviene
+
+campos preparados para expansión futura
+
+FASE 16 — Admin panel
+Paso 22: Panel administrativo
+
+Crear panel de administración para operar la plataforma.
+
+Funciones mínimas
+
+gestionar usuarios
+
+gestionar mascotas
+
+moderar publicaciones
+
+moderar foros
+
+revisar alertas de mascotas perdidas
+
+gestionar beneficios
+
+gestionar noticias
+
+revisar reservas
+
+ver métricas básicas
+
+Requisitos
+
+acceso solo ADMIN
+
+tablas limpias
+
+filtros
+
+acciones seguras
+
+confirmación antes de eliminar
+
+FASE 17 — UI/UX y responsive
+Paso 23: Diseño general
+
+La plataforma debe sentirse moderna, clara, cálida y confiable.
+
+Requisitos de diseño
+
+estética premium pero amigable
+
+mobile-first
+
+excelente en iPhone y Android
+
+no depender de hover
+
+botones grandes y táctiles
+
+formularios cómodos
+
+cards limpias
+
+loaders
+
+empty states
+
+skeletons
+
+toasts
+
+feedback visual en acciones importantes
+
+Debe estar pensada para Capacitor
+
+headers compactos
+
+navegación inferior o mixta si tiene sentido
+
+overlays y modales que no rompan en móvil
+
+scroll correcto
+
+safe areas consideradas
+
+FASE 18 — Preparación para Coolify y GitHub
+Paso 24: Deploy listo para producción
+
+Deja el proyecto preparado para desplegar desde GitHub en Coolify.
+
+Requisitos
+
+variables de entorno documentadas
+
+build reproducible
+
+scripts de start y build correctos
+
+migraciones Prisma claras
+
+conexión a Postgres estable
+
+configuración de puertos correcta
+
+healthcheck si aplica
+
+Dockerfile o configuración compatible con Coolify
+
+sin dependencias locales implícitas
+
+Entregables
+
+README de deploy
+
+.env.example
+
+pasos para:
+
+conectar repo
+
+crear Postgres en Coolify
+
+configurar variables
+
+ejecutar migraciones
+
+levantar web y api
+
+FASE 19 — Preparación futura para Capacitor
+Paso 25: Dejar lista la base para empaquetar con Capacitor
+
+No implementes Capacitor ahora, pero deja todo preparado.
+
+Requisitos
+
+app responsive real
+
+navegación y layouts compatibles con móvil
+
+manejo correcto de viewport
+
+sin dependencias problemáticas para webview
+
+mapa funcionando bien en móvil
+
+auth y sesiones compatibles
+
+links internos sanos
+
+posibilidad futura de integrar:
+
+push notifications
+
+deep links
+
+cámara
+
+geolocalización nativa
+
+NFC si más adelante se implementa
+
+Requisitos de calidad obligatorios
+Importante
+
+Antes de dar por terminado cualquier módulo:
+
+verifica que compile
+
+verifica tipado TypeScript
+
+revisa imports
+
+revisa errores de build
+
+revisa rutas
+
+revisa mobile
+
+revisa que nada rompa SSR si aplica
+
+revisa Mapbox solo client-side cuando corresponda
+
+revisa uso correcto de variables de entorno
+
+revisa que Resend esté abstraído
+
+revisa que Prisma no tenga relaciones mal definidas
+
+Forma de trabajo esperada
+
+Quiero que desarrolles este proyecto por fases, sin saltarte arquitectura.
+
+Orden obligatorio de ejecución
+
+fundaciones
+
+auth
+
+perfiles
+
+mascotas
+
+carnet y vacunas
+
+recordatorios
+
+mapa con Mapbox
+
+reservas
+
+QR/NFC
+
+mascotas perdidas
+
+comunidad
+
+foros
+
+marketplace
+
+beneficios
+
+noticias
+
+admin
+
+hardening
+
+deploy readiness
+
+preparación Capacitor
+
+Qué quiero que entregues en cada fase
+
+En cada fase quiero:
+
+archivos creados o modificados
+
+explicación corta de lo implementado
+
+schema actualizado si cambió
+
+endpoints creados
+
+pantallas creadas
+
+variables de entorno nuevas
+
+pasos de prueba
+
+confirmación de que build no se rompe
+
+Restricciones importantes
+
+no uses Firebase como base principal
+
+no uses Supabase como reemplazo de Postgres/Prisma
+
+no cambies Mapbox por Google Maps
+
+no cambies Resend por otro proveedor
+
+no metas features innecesarias antes del core
+
+no sobrecargues la UI
+
+no inventes rutas sin consistencia
+
+no hardcodees secretos
+
+no dejes código muerto
+
+no rompas compatibilidad móvil
+
+Resultado esperado
+
+Quiero terminar con una plataforma que:
+
+funcione en web responsive
+
+esté lista para deploy en Coolify
+
+use PostgreSQL, Prisma, Mapbox y Resend
+
+tenga arquitectura limpia y escalable
+
+esté preparada para luego empaquetarse con Capacitor
+
+tenga una base sólida para crecer como superapp pet
