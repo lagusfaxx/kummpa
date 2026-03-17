@@ -71,6 +71,14 @@ function savingsCopy(discountLabel?: string | null) {
   return `Ahorra ${discountLabel}`;
 }
 
+function savingsValueCopy(priceFrom?: number | null, discountLabel?: string | null) {
+  if (!priceFrom || !discountLabel) return savingsCopy(discountLabel);
+  const percentMatch = discountLabel.match(/(\d{1,2})\s?%/);
+  if (!percentMatch) return savingsCopy(discountLabel);
+  const savings = Math.round((priceFrom * Number(percentMatch[1])) / 100);
+  return `Ahorra ${formatMoney(savings)}`;
+}
+
 function serviceSmartChips(service: MapServicePoint) {
   const chips: string[] = [];
   if (service.isOpenNow) chips.push("rapido");
@@ -410,7 +418,7 @@ export default function MapPage() {
             services.map((service) => (
               <article
                 key={service.id}
-                className={`card p-4 ${selectedPointId === service.id ? "kumpa-focus-ring" : ""}`}
+                className={`card kumpa-card-interactive p-4 ${selectedPointId === service.id ? "kumpa-focus-ring" : ""}`}
               >
                 <div className="flex gap-3">
                   <div className="h-28 w-28 overflow-hidden rounded-[1.35rem] bg-[hsl(var(--muted))]">
@@ -455,7 +463,7 @@ export default function MapPage() {
                       </span>
                       {service.hasDiscount && (
                         <span className="kumpa-offer-badge">
-                          {savingsCopy(service.discountLabel)}
+                          {savingsValueCopy(service.priceFrom, service.discountLabel)}
                         </span>
                       )}
                     </div>
@@ -483,7 +491,7 @@ export default function MapPage() {
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
-          <SectionHeader title="Beneficios y descuentos" description="Promociones que realmente ayudan a decidir mas rapido dentro de explorar." />
+          <SectionHeader title="🔥 Beneficios y descuentos" description="Promociones que realmente ayudan a decidir mas rapido dentro de explorar." />
           <div className="grid gap-4 md:grid-cols-2">
             {benefits.length === 0 ? (
               <div className="card p-5 text-sm text-[hsl(var(--muted-foreground))]">

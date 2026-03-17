@@ -5,10 +5,10 @@ interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {}
 export function Skeleton({ className = "", ...props }: SkeletonProps) {
   return (
     <div
-      className={`relative overflow-hidden rounded-lg bg-[hsl(var(--muted))] ${className}`.trim()}
+      className={`relative overflow-hidden rounded-lg bg-[hsl(var(--muted)/0.8)] ${className}`.trim()}
       {...props}
     >
-      <div className="absolute inset-0 animate-[pulse_1.7s_ease-in-out_infinite] bg-[linear-gradient(90deg,transparent,hsl(0_0%_100%_/_0.55),transparent)]" />
+      <div className="absolute inset-0 animate-[kumpa-shimmer_1.8s_ease-in-out_infinite] bg-[linear-gradient(100deg,transparent,hsl(0_0%_100%_/_0.68),transparent)]" />
     </div>
   );
 }

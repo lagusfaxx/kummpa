@@ -314,6 +314,8 @@ button {
     font-size: 1.35rem;
     font-weight: 800;
     letter-spacing: -0.035em;
+    color: hsl(var(--foreground));
+    text-wrap: balance;
   }
 
   .kumpa-eyebrow {
@@ -344,6 +346,20 @@ button {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     box-shadow: 0 10px 24px hsl(var(--accent) / 0.24);
+    animation: kumpa-glow 2.2s ease-in-out infinite;
+  }
+
+  .kumpa-card-interactive {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      border-color 180ms ease,
+      background 180ms ease;
+    cursor: pointer;
+  }
+
+  .kumpa-card-interactive:active {
+    transform: scale(0.99);
   }
 
   .kumpa-status-success {
@@ -393,6 +409,25 @@ button {
   }
 }
 
+@keyframes kumpa-glow {
+  0%,
+  100% {
+    box-shadow: 0 10px 24px hsl(var(--accent) / 0.24);
+  }
+  50% {
+    box-shadow: 0 14px 30px hsl(var(--accent) / 0.34);
+  }
+}
+
+@keyframes kumpa-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .safe-area-top {
   padding-top: env(safe-area-inset-top);
 }
@@ -410,7 +445,8 @@ button {
   .card:hover,
   .kumpa-panel:hover,
   .kumpa-highlight-card:hover,
-  .kumpa-soft-section:hover {
+  .kumpa-soft-section:hover,
+  .kumpa-card-interactive:hover {
     transform: translateY(-3px);
     box-shadow:
       0 22px 52px hsl(var(--foreground) / 0.12),

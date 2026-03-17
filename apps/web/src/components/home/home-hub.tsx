@@ -98,6 +98,16 @@ function savingsCopy(discountLabel?: string | null) {
   return `Ahorra ${discountLabel}`;
 }
 
+function savingsValueCopy(priceFrom?: number | null, discountLabel?: string | null) {
+  if (!priceFrom || !discountLabel) return savingsCopy(discountLabel);
+  const percentMatch = discountLabel.match(/(\d{1,2})\s?%/);
+  if (!percentMatch) return savingsCopy(discountLabel);
+  const percent = Number(percentMatch[1]);
+  if (!percent || Number.isNaN(percent)) return savingsCopy(discountLabel);
+  const savings = Math.round((priceFrom * percent) / 100);
+  return `Ahorra ${formatMoney(savings)}`;
+}
+
 function petPriorityValue(card: PetVaccineCard | null) {
   if (!card) return 3;
   if (card.summary.overallStatus === "OVERDUE") return 0;
@@ -590,7 +600,7 @@ export function HomeHub() {
 
           <section className="space-y-4">
             <SectionHeader
-              title="Ofertas activas cerca de ti"
+              title="🔥 Ofertas activas cerca de ti"
               description="Descuentos con mas valor visible desde el primer scroll."
               href="/map"
               cta="Ver todas"
@@ -670,7 +680,7 @@ export function HomeHub() {
                       </div>
                       {service.hasDiscount ? (
                         <span className="kumpa-offer-badge">
-                          {savingsCopy(service.discountLabel)}
+                          {savingsValueCopy(service.priceFrom, service.discountLabel)}
                         </span>
                       ) : null}
                     </div>
@@ -714,7 +724,7 @@ export function HomeHub() {
                   </div>
                 ) : (
                   nearbyNowServices.map((service) => (
-                    <article key={service.id} className="card p-4">
+                    <article key={service.id} className="card kumpa-card-interactive p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <h3 className="text-lg font-semibold">{service.name}</h3>
@@ -731,7 +741,7 @@ export function HomeHub() {
                           <span className="kumpa-chip">{formatMoney(service.priceFrom)}</span>
                         ) : null}
                         {service.hasDiscount ? (
-                          <span className="kumpa-offer-badge">{savingsCopy(service.discountLabel)}</span>
+                          <span className="kumpa-offer-badge">{savingsValueCopy(service.priceFrom, service.discountLabel)}</span>
                         ) : null}
                       </div>
                     </article>
