@@ -11,11 +11,16 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 /* ─── Typing placeholder hook ────────────────────────────────── */
 const SEARCH_PHRASES = [
-  "Veterinarias en Providencia...",
-  "Peluquerías para mi perro...",
-  "Parques pet-friendly...",
-  "Paseadores cerca de ti...",
-  "Tiendas con descuento...",
+  "Royal Canin cerca de ti...",
+  "Peluquería para Golden Retriever...",
+  "Hill's Science Diet...",
+  "Tiendas con Purina Pro Plan...",
+  "Paseadores en Ñuñoa...",
+  "Eukanuba para cachorros...",
+  "Peluquería canina con turno...",
+  "Alimento húmedo para gatos...",
+  "Acana en tu barrio...",
+  "Baño y corte express...",
 ];
 
 function useTypingPlaceholder(phrases: string[]) {
