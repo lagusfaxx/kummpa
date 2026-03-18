@@ -1,0 +1,124 @@
+Quiero transformar completamente el flujo de “Agregar mascota”.
+
+PROBLEMA ACTUAL
+El formulario actual es demasiado largo, frío y administrativo. Pide demasiada información desde el inicio y se siente pesado. No quiero una ficha extensa al crear la mascota.
+
+OBJETIVO
+Convertir el alta de mascota en un cuestionario interactivo por fases, con animaciones suaves y una experiencia mucho más moderna, guiada y emocional.
+
+DIRECCIÓN UX
+Debe sentirse como un onboarding / wizard / cuestionario por pasos, no como un formulario largo.
+
+Quiero:
+- una sola fase visible a la vez
+- barra de progreso o indicador de pasos
+- transiciones suaves entre pasos
+- interfaz limpia, moderna y amigable
+- microinteracciones elegantes
+- flujo rápido de completar
+
+INFORMACIÓN QUE SÍ DEBE PEDIRSE AL CREAR LA MASCOTA
+Solo lo esencial:
+
+1. tipo de animal
+- Perro
+- Gato
+- Otro
+
+2. nombre
+
+3. género
+
+4. raza
+- si aplica
+- permitir opción “mestizo”, “sin raza definida” o “no aplica”
+
+5. peso aproximado
+
+6. enfermedades o condiciones
+
+7. carácter / personalidad
+
+8. alergias
+
+9. número de chip
+- opcional
+- solo si tiene
+
+INFORMACIÓN QUE NO DEBE PEDIRSE EN ESTA PRIMERA CREACIÓN
+Esto debe quedar para después, cuando la mascota ya exista:
+- foto principal
+- galería
+- veterinaria habitual
+- contacto veterinaria
+- contacto de emergencia
+- teléfono de emergencia
+- notas generales
+- visibilidad pública
+- otros campos largos o secundarios
+
+ESTRUCTURA DEL FLUJO
+
+FASE 1 — Identidad
+- tipo de animal
+- nombre
+- género
+
+FASE 2 — Rasgos
+- raza / mestizo / no aplica
+- peso aproximado
+- carácter
+
+FASE 3 — Salud básica
+- enfermedades o condiciones
+- alergias
+- número de chip opcional
+
+FASE 4 — Confirmación
+- resumen claro de lo ingresado
+- botón final para crear mascota
+
+DESPUÉS DE CREAR
+Una vez creada la mascota, mostrar una segunda etapa opcional o accesos rápidos para completar su perfil:
+- subir foto
+- agregar contacto de emergencia
+- completar carnet
+- agregar veterinaria
+- completar perfil público
+
+DISEÑO
+Quiero una experiencia visual:
+- más cálida
+- más premium
+- más viva
+- menos clínica
+- menos administrativa
+- más tipo producto moderno
+
+COMPONENTES / UX
+- cards grandes para elegir tipo de animal
+- selects o botones elegantes
+- text inputs limpios
+- progreso visible
+- botones atrás / siguiente
+- validaciones claras
+- resumen final bonito
+
+ANIMACIONES
+Agregar animaciones suaves y premium:
+- transición entre pasos
+- selección de opciones con feedback visual
+- barra de progreso animada
+- entrada y salida sutil de contenido
+- hover / tap states refinados
+
+Las animaciones deben sentirse modernas y fluidas, no exageradas.
+
+IMPORTANTE
+- no mostrar un formulario largo en una sola pantalla
+- simplificar mucho la primera creación
+- mover la información secundaria al perfil posterior de la mascota
+- mantener consistencia visual con el resto de la app
+
+ENTREGABLE
+Quiero un nuevo flujo de creación de mascota tipo cuestionario por fases, interactivo, animado y mucho más simple, enfocado solo en la información esencial para crear la mascota.
