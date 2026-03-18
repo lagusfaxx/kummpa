@@ -1,0 +1,85 @@
+Quiero separar claramente la experiencia de “Comunidad” en dos páginas distintas: Feed y Perfil.
+
+PROBLEMA ACTUAL
+Ahora mismo se mezclan en una misma sección:
+- feed general
+- perfil del usuario
+- seguidores
+- siguiendo
+- publicaciones propias
+- mascotas asociadas
+
+Eso se siente raro. El feed no debería mostrar toda la información del perfil. Quiero una estructura más natural, parecida a una red social bien organizada.
+
+OBJETIVO
+Separar Comunidad en dos experiencias:
+1. Feed / Comunidad
+2. Perfil
+
+NUEVA ESTRUCTURA
+
+1. FEED / COMUNIDAD
+Esta página debe enfocarse en descubrir publicaciones y compartir contenido.
+
+Debe incluir:
+- composer para publicar
+- tabs tipo:
+  - Descubrir
+  - Siguiendo
+  - Guardados
+- filtros de tipo de publicación:
+  - Momento
+  - Recomendación
+  - Consulta
+  - Paseo
+  - Tip útil
+- feed principal de publicaciones
+
+NO debe incluir:
+- bloque grande de perfil
+- seguidores
+- siguiendo
+- estadísticas personales del usuario
+- perfil detallado del usuario
+
+Debe sentirse como feed social real.
+
+2. PERFIL
+Crear una página aparte para el perfil del usuario.
+
+Debe mostrar:
+- avatar / foto de perfil
+- nombre
+- bio corta
+- comuna o zona
+- publicaciones
+- seguidores
+- siguiendo
+- mascotas visibles asociadas al perfil
+- publicaciones del usuario
+- botón editar perfil
+- botón compartir perfil
+
+Opcional:
+- tabs internas para:
+  - publicaciones
+  - mascotas
+  - guardados
+
+3. PERFIL PÚBLICO
+Preparar estructura para que en el futuro exista perfil público de otros usuarios usando la misma base visual.
+
+DISEÑO
+- más parecido a red social real
+- menos mezcla entre identidad y feed
+- más limpio
+- más claro
+- más escalable
+
+IMPORTANTE
+- el feed debe centrarse en contenido
+- el perfil debe centrarse en identidad y publicaciones propias
+- no mezclar ambas cosas en una misma página principal
+
+ENTREGABLE
+Quiero una reorganización clara de Comunidad separando Feed y Perfil en páginas distintas, con mejor lógica de UX y una estructura más parecida a una experiencia social real.

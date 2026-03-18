@@ -1,19 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { InlineBanner } from "@/components/feedback/inline-banner";
 import { useAuth } from "@/features/auth/auth-context";
 import {
   addCommunityComment,
   createCommunityPost,
-  getMyCommunityProfile,
   likeCommunityPost,
   listCommunityFeed,
   listGroupEvents,
   listMyPetSocialProfiles,
-  listWalkInvitations,
   saveCommunityPost,
   unlikeCommunityPost,
   unsaveCommunityPost
@@ -21,16 +19,13 @@ import {
 import type {
   CommunityFeedMode,
   CommunityPost,
-  CommunityProfile,
   GroupEvent,
-  PetSocialProfileItem,
-  WalkInvitation
+  PetSocialProfileItem
 } from "@/features/community/types";
-import { listForumTopics } from "@/features/forum/forum-api";
 import { listNewsArticles } from "@/features/news/news-api";
 import type { NewsArticleListItem } from "@/features/news/types";
 
-/* ─── helpers ────────────────────────────────────────────── */
+/* ─── helpers ──────────────────────────────────────────────── */
 function cls(...args: (string | false | undefined | null)[]) {
   return args.filter(Boolean).join(" ");
 }
@@ -48,17 +43,15 @@ function relativeTime(iso?: string | null): string {
   return new Date(iso).toLocaleDateString("es-CL", { day: "numeric", month: "short" });
 }
 
-function initials(name?: string | null): string {
+function initials(name?: string | null) {
   if (!name) return "?";
   return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
-/* ─── Avatar ──────────────────────────────────────────────── */
-function Avatar({ src, name, size = "md" }: { src?: string | null; name?: string | null; size?: "sm" | "md" | "lg" }) {
-  const dim = size === "sm" ? "h-8 w-8 text-xs" : size === "lg" ? "h-14 w-14 text-lg" : "h-10 w-10 text-sm";
-  if (src) {
-    return <img src={src} alt={name ?? ""} className={cls(dim, "rounded-full object-cover shrink-0")} />;
-  }
+/* ─── Avatar ────────────────────────────────────────────────── */
+function Avatar({ src, name, size = "md" }: { src?: string | null; name?: string | null; size?: "sm" | "md" }) {
+  const dim = size === "sm" ? "h-8 w-8 text-[10px]" : "h-10 w-10 text-xs";
+  if (src) return <img src={src} alt={name ?? ""} className={cls(dim, "rounded-full object-cover shrink-0")} />;
   return (
     <div className={cls(dim, "flex shrink-0 items-center justify-center rounded-full bg-[hsl(155_48%_42%/0.15)] font-bold text-[hsl(155_48%_28%)]")}>
       {initials(name)}
@@ -66,16 +59,9 @@ function Avatar({ src, name, size = "md" }: { src?: string | null; name?: string
   );
 }
 
-/* ─── PostCard ────────────────────────────────────────────── */
-const POST_TYPE_ICONS: Record<string, string> = {
-  STORY: "📸", RECOMMENDATION: "📍", QUESTION: "❓", WALK: "🐕", TIP: "💡"
-};
-
+/* ─── PostCard ──────────────────────────────────────────────── */
 function PostCard({
-  post,
-  onLike,
-  onSave,
-  onComment,
+  post, onLike, onSave, onComment,
 }: {
   post: CommunityPost;
   onLike: (p: CommunityPost) => void;
@@ -86,25 +72,19 @@ function PostCard({
   const [commentText, setCommentText] = useState("");
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/80 shadow-sm">
-      {/* post header */}
+    <article className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm">
+      {/* header */}
       <div className="flex items-start gap-3 px-4 pt-4">
-        <Link href={`/community/users/${post.author.id}`}>
-          <Avatar src={post.author.avatarUrl} name={post.author.fullName} />
-        </Link>
+        <Avatar src={post.author.avatarUrl} name={post.author.fullName} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-1.5">
-            <Link href={`/community/users/${post.author.id}`} className="text-sm font-bold text-[hsl(var(--foreground))] hover:underline">
-              {post.author.fullName}
-            </Link>
-            {post.author.city && (
-              <span className="text-xs text-[hsl(var(--muted-foreground))]">· {post.author.city}</span>
-            )}
+            <span className="text-sm font-bold text-[hsl(var(--foreground))]">{post.author.fullName}</span>
+            {post.author.city && <span className="text-[11px] text-[hsl(var(--muted-foreground))]">· {post.author.city}</span>}
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-0.5">
             <span className="text-[11px] text-[hsl(var(--muted-foreground))]">{relativeTime(post.createdAt)}</span>
             {post.pet && (
-              <Link href={`/pets/${post.pet.id}/public-profile`} className="flex items-center gap-1 rounded-full bg-[hsl(155_48%_42%/0.1)] px-2.5 py-0.5 text-[11px] font-semibold text-[hsl(155_48%_28%)] hover:bg-[hsl(155_48%_42%/0.18)] transition">
+              <Link href={`/pets/${post.pet.id}`} className="flex items-center gap-1 rounded-full bg-[hsl(155_48%_42%/0.1)] px-2.5 py-0.5 text-[11px] font-semibold text-[hsl(155_48%_28%)] hover:bg-[hsl(155_48%_42%/0.18)] transition">
                 🐾 {post.pet.name}
               </Link>
             )}
@@ -113,9 +93,7 @@ function PostCard({
       </div>
 
       {/* body */}
-      <p className="px-4 pt-3 text-sm leading-relaxed text-[hsl(var(--foreground))] whitespace-pre-wrap">
-        {post.body}
-      </p>
+      <p className="px-4 pt-3 text-sm leading-relaxed text-[hsl(var(--foreground))] whitespace-pre-wrap">{post.body}</p>
 
       {/* image */}
       {post.imageUrl && (
@@ -126,76 +104,41 @@ function PostCard({
 
       {/* action bar */}
       <div className="flex items-center gap-1 px-3 pt-3 pb-2">
-        <button
-          type="button"
-          onClick={() => onLike(post)}
-          className={cls(
-            "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-            post.viewer.liked
-              ? "bg-red-50 text-red-600"
-              : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]"
-          )}
-        >
+        <button type="button" onClick={() => onLike(post)}
+          className={cls("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+            post.viewer.liked ? "bg-red-50 text-red-600" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
           {post.viewer.liked ? "❤️" : "🤍"} {post.metrics.likesCount}
         </button>
-        <button
-          type="button"
-          onClick={() => setShowComments((v) => !v)}
-          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]"
-        >
+        <button type="button" onClick={() => setShowComments((v) => !v)}
+          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]">
           💬 {post.metrics.commentsCount}
         </button>
-        <button
-          type="button"
-          onClick={() => onSave(post)}
-          className={cls(
-            "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-            post.viewer.saved
-              ? "bg-amber-50 text-amber-600"
-              : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]"
-          )}
-        >
+        <button type="button" onClick={() => onSave(post)}
+          className={cls("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+            post.viewer.saved ? "bg-amber-50 text-amber-600" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
           {post.viewer.saved ? "🔖" : "🏷️"} {post.metrics.savesCount}
         </button>
       </div>
 
-      {/* comments panel */}
+      {/* comments */}
       {showComments && (
         <div className="border-t border-[hsl(var(--border)/0.5)] mx-4 mb-4 pt-3 space-y-2">
           {post.commentsPreview.length === 0 && (
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">Sin comentarios aún. ¡Sé el primero!</p>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">Sin comentarios aún.</p>
           )}
           {post.commentsPreview.map((c) => (
             <div key={c.id} className="flex gap-2">
               <Avatar src={c.author.avatarUrl} name={c.author.fullName} size="sm" />
               <div className="rounded-2xl bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-xs leading-relaxed">
-                <span className="font-semibold">{c.author.fullName} </span>
-                {c.body}
+                <span className="font-semibold">{c.author.fullName} </span>{c.body}
               </div>
             </div>
           ))}
           {post.allowComments && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!commentText.trim()) return;
-                onComment(post, commentText.trim());
-                setCommentText("");
-              }}
-              className="flex gap-2 pt-1"
-            >
-              <input
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Comenta algo…"
-                className="flex-1 rounded-full border border-[hsl(var(--border))] bg-white/80 px-4 py-2 text-xs outline-none focus:border-[hsl(var(--secondary))] focus:shadow-[0_0_0_3px_hsl(155_48%_42%/0.1)]"
-              />
-              <button
-                type="submit"
-                className="rounded-full bg-[hsl(var(--secondary))] px-4 py-2 text-xs font-bold text-white transition hover:opacity-90"
-              >
-                Enviar
-              </button>
+            <form onSubmit={(e) => { e.preventDefault(); if (!commentText.trim()) return; onComment(post, commentText.trim()); setCommentText(""); }} className="flex gap-2 pt-1">
+              <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Comenta algo…"
+                className="flex-1 rounded-full border border-[hsl(var(--border))] bg-white/80 px-4 py-2 text-xs outline-none focus:border-[hsl(var(--secondary))] focus:shadow-[0_0_0_3px_hsl(155_48%_42%/0.1)]" />
+              <button type="submit" className="rounded-full bg-[hsl(var(--secondary))] px-4 py-2 text-xs font-bold text-white transition hover:opacity-90">Enviar</button>
             </form>
           )}
         </div>
@@ -204,26 +147,22 @@ function PostCard({
   );
 }
 
-/* ─── Composer ────────────────────────────────────────────── */
+/* ─── Composer ──────────────────────────────────────────────── */
 const POST_TYPES = [
-  { label: "📸 Momento", placeholder: "¿Qué pasó hoy con tu mascota? Comparte la historia…" },
-  { label: "📍 Recomendación", placeholder: "Recomienda un lugar, parque, veterinaria, tienda…" },
-  { label: "❓ Consulta", placeholder: "Pregunta a la comunidad, alguien ya vivió lo mismo…" },
-  { label: "🐕 Paseo", placeholder: "¿Organizas una salida? Cuéntanos dónde y cuándo…" },
-  { label: "💡 Tip útil", placeholder: "Comparte algo que aprendiste con tu mascota…" },
+  { label: "📸 Momento",        placeholder: "¿Qué pasó hoy con tu mascota?" },
+  { label: "📍 Recomendación",  placeholder: "Recomienda un lugar, parque o veterinaria…" },
+  { label: "❓ Consulta",       placeholder: "Pregunta a la comunidad…" },
+  { label: "🐕 Paseo",          placeholder: "¿Organizas una salida? Cuéntanos…" },
+  { label: "💡 Tip",            placeholder: "Comparte algo que aprendiste…" },
 ];
 
-function Composer({
-  pets,
-  onPublish,
-  isPublishing,
-}: {
+function Composer({ pets, onPublish, isPublishing }: {
   pets: PetSocialProfileItem[];
   onPublish: (body: string, petId: string, imageUrl: string) => Promise<void>;
   isPublishing: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [selectedType, setSelectedType] = useState(0);
+  const [typeIdx, setTypeIdx] = useState(0);
   const [body, setBody] = useState("");
   const [petId, setPetId] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -232,35 +171,22 @@ function Composer({
     e.preventDefault();
     if (!body.trim()) return;
     await onPublish(body.trim(), petId, imageUrl);
-    setBody("");
-    setPetId("");
-    setImageUrl("");
-    setExpanded(false);
+    setBody(""); setPetId(""); setImageUrl(""); setExpanded(false);
   }
 
   if (!expanded) {
     return (
-      <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/80 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
-        >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary)/0.15)] text-base">
-            ✏️
-          </div>
-          <span className="text-sm text-[hsl(var(--muted-foreground))]">
-            ¿Qué hay de nuevo con tu mascota?
-          </span>
+      <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm">
+        <button type="button" onClick={() => setExpanded(true)}
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary)/0.12)] text-base">✏️</div>
+          <span className="text-sm text-[hsl(var(--muted-foreground))]">¿Qué hay de nuevo con tu mascota?</span>
         </button>
         <div className="flex border-t border-[hsl(var(--border)/0.5)]">
           {POST_TYPES.map((t, i) => (
-            <button
-              key={t.label}
-              type="button"
-              onClick={() => { setSelectedType(i); setExpanded(true); }}
-              className="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.4)] hover:text-[hsl(var(--foreground))]"
-            >
+            <button key={t.label} type="button"
+              onClick={() => { setTypeIdx(i); setExpanded(true); }}
+              className="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.4)] hover:text-[hsl(var(--foreground))]">
               <span className="text-base leading-none">{t.label.split(" ")[0]}</span>
               <span className="hidden sm:block">{t.label.split(" ").slice(1).join(" ")}</span>
             </button>
@@ -271,73 +197,41 @@ function Composer({
   }
 
   return (
-    <form
-      onSubmit={(e) => void submit(e)}
-      className="overflow-hidden rounded-3xl border border-[hsl(var(--secondary)/0.3)] bg-white/90 shadow-sm space-y-3 p-4"
-    >
-      {/* type selector */}
+    <form onSubmit={(e) => void submit(e)}
+      className="overflow-hidden rounded-3xl border border-[hsl(var(--secondary)/0.3)] bg-white/90 shadow-sm space-y-3 p-4">
       <div className="flex flex-wrap gap-2">
         {POST_TYPES.map((t, i) => (
-          <button
-            key={t.label}
-            type="button"
-            onClick={() => setSelectedType(i)}
-            className={cls(
-              "rounded-full border px-3 py-1 text-xs font-semibold transition",
-              selectedType === i
+          <button key={t.label} type="button" onClick={() => setTypeIdx(i)}
+            className={cls("rounded-full border px-3 py-1 text-xs font-semibold transition",
+              typeIdx === i
                 ? "border-[hsl(var(--secondary))] bg-[hsl(155_48%_42%/0.1)] text-[hsl(155_48%_24%)]"
-                : "border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--secondary)/0.4)]"
-            )}
-          >
+                : "border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--secondary)/0.4)]")}>
             {t.label}
           </button>
         ))}
       </div>
-
-      <textarea
-        autoFocus
-        rows={4}
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={POST_TYPES[selectedType]!.placeholder}
-        className="w-full resize-none rounded-2xl border border-[hsl(var(--border))] bg-white/70 px-4 py-3 text-sm outline-none focus:border-[hsl(var(--secondary))] focus:shadow-[0_0_0_3px_hsl(155_48%_42%/0.1)] placeholder:text-[hsl(var(--muted-foreground)/0.5)] leading-relaxed"
-      />
-
+      <textarea autoFocus rows={4} value={body} onChange={(e) => setBody(e.target.value)}
+        placeholder={POST_TYPES[typeIdx]!.placeholder}
+        className="w-full resize-none rounded-2xl border border-[hsl(var(--border))] bg-white/70 px-4 py-3 text-sm outline-none focus:border-[hsl(var(--secondary))] focus:shadow-[0_0_0_3px_hsl(155_48%_42%/0.1)] placeholder:text-[hsl(var(--muted-foreground)/0.5)] leading-relaxed" />
       <div className="grid gap-3 sm:grid-cols-2">
         {pets.length > 0 && (
-          <select
-            value={petId}
-            onChange={(e) => setPetId(e.target.value)}
-            className="rounded-xl border border-[hsl(var(--border))] bg-white/80 px-3 py-2 text-sm outline-none focus:border-[hsl(var(--secondary))]"
-          >
+          <select value={petId} onChange={(e) => setPetId(e.target.value)}
+            className="rounded-xl border border-[hsl(var(--border))] bg-white/80 px-3 py-2 text-sm outline-none focus:border-[hsl(var(--secondary))]">
             <option value="">Sin mascota asociada</option>
-            {pets.map((p) => (
-              <option key={p.pet.id} value={p.pet.id}>{p.pet.name}</option>
-            ))}
+            {pets.map((p) => <option key={p.pet.id} value={p.pet.id}>{p.pet.name}</option>)}
           </select>
         )}
-        <input
-          type="url"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
+        <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
           placeholder="URL de imagen (opcional)"
-          className="rounded-xl border border-[hsl(var(--border))] bg-white/80 px-3 py-2 text-sm outline-none focus:border-[hsl(var(--secondary))] placeholder:text-[hsl(var(--muted-foreground)/0.5)]"
-        />
+          className="rounded-xl border border-[hsl(var(--border))] bg-white/80 px-3 py-2 text-sm outline-none focus:border-[hsl(var(--secondary))] placeholder:text-[hsl(var(--muted-foreground)/0.5)]" />
       </div>
-
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => { setExpanded(false); setBody(""); }}
-          className="rounded-full border border-[hsl(var(--border))] px-5 py-2 text-sm font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]"
-        >
+        <button type="button" onClick={() => { setExpanded(false); setBody(""); }}
+          className="rounded-full border border-[hsl(var(--border))] px-5 py-2 text-sm font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]">
           Cancelar
         </button>
-        <button
-          type="submit"
-          disabled={isPublishing || !body.trim()}
-          className="rounded-full bg-[hsl(var(--secondary))] px-6 py-2 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isPublishing || !body.trim()}
+          className="rounded-full bg-[hsl(var(--secondary))] px-6 py-2 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
           {isPublishing ? "Publicando…" : "Publicar"}
         </button>
       </div>
@@ -345,71 +239,7 @@ function Composer({
   );
 }
 
-/* ─── ProfileWidget ───────────────────────────────────────── */
-function ProfileWidget({ profile, pets }: { profile: CommunityProfile; pets: PetSocialProfileItem[] }) {
-  return (
-    <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/80 shadow-sm">
-      {/* cover strip */}
-      <div className="h-14 bg-gradient-to-r from-[hsl(155_48%_28%)] to-[hsl(155_48%_18%)]" />
-      <div className="px-4 pb-4">
-        {/* avatar overlapping cover */}
-        <div className="-mt-7 mb-3">
-          <Avatar src={profile.profile.avatarUrl} name={profile.profile.displayName} size="lg" />
-        </div>
-        <p className="font-bold text-[hsl(var(--foreground))]">{profile.profile.displayName}</p>
-        {profile.profile.bio && (
-          <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">{profile.profile.bio}</p>
-        )}
-        {profile.profile.city && (
-          <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">📍 {profile.profile.city}</p>
-        )}
-
-        {/* stats */}
-        <div className="mt-3 grid grid-cols-3 gap-1 rounded-2xl bg-[hsl(var(--muted)/0.4)] p-2 text-center">
-          {[
-            { val: profile.stats.posts, label: "posts" },
-            { val: profile.stats.followers, label: "seguidores" },
-            { val: profile.stats.following, label: "siguiendo" },
-          ].map(({ val, label }) => (
-            <div key={label} className="py-1">
-              <p className="text-base font-black text-[hsl(var(--foreground))]">{val}</p>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">{label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* pets chips */}
-        {pets.length > 0 && (
-          <div className="mt-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))] mb-2">
-              Mis mascotas
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {pets.map((p) => (
-                <Link
-                  key={p.pet.id}
-                  href={`/pets/${p.pet.id}`}
-                  className="flex items-center gap-1.5 rounded-full bg-[hsl(155_48%_42%/0.1)] px-3 py-1 text-xs font-semibold text-[hsl(155_48%_28%)] transition hover:bg-[hsl(155_48%_42%/0.18)]"
-                >
-                  {p.pet.species === "Perro" ? "🐕" : p.pet.species === "Gato" ? "🐈" : "🐾"} {p.pet.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <Link
-          href={`/community/users/${profile.user.id}`}
-          className="mt-3 block w-full rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]"
-        >
-          Ver mi perfil completo
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Feed skeleton ───────────────────────────────────────── */
+/* ─── Skeletons ─────────────────────────────────────────────── */
 function FeedSkeleton() {
   return (
     <div className="space-y-4">
@@ -417,7 +247,7 @@ function FeedSkeleton() {
         <div key={i} className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-4 space-y-3">
           <div className="flex gap-3">
             <div className="h-10 w-10 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
-            <div className="flex-1 space-y-1.5">
+            <div className="flex-1 space-y-1.5 pt-1">
               <div className="h-3 w-1/3 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
               <div className="h-2.5 w-1/4 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
             </div>
@@ -431,26 +261,22 @@ function FeedSkeleton() {
   );
 }
 
-/* ─── SidebarSkeleton ─────────────────────────────────────── */
-function SidebarSkeleton() {
-  return (
-    <div className="space-y-3 rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-4">
-      <div className="h-14 animate-pulse rounded-2xl bg-[hsl(var(--muted))]" />
-      <div className="h-3 w-2/3 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
-      <div className="h-3 w-1/2 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
-    </div>
-  );
-}
-
-/* ─── Feed tabs ───────────────────────────────────────────── */
-const TABS: Array<{ value: CommunityFeedMode; label: string }> = [
-  { value: "discover", label: "Descubrir" },
+/* ─── constants ─────────────────────────────────────────────── */
+const FEED_TABS: Array<{ value: CommunityFeedMode; label: string }> = [
+  { value: "discover",  label: "Descubrir" },
   { value: "following", label: "Siguiendo" },
-  { value: "mine",     label: "Mis posts" },
-  { value: "saved",    label: "Guardados" },
+  { value: "saved",     label: "Guardados" },
 ];
 
-/* ─── Event type label ────────────────────────────────────── */
+const TYPE_FILTERS = [
+  { key: "", label: "Todo" },
+  { key: "STORY", label: "📸 Momentos" },
+  { key: "RECOMMENDATION", label: "📍 Recomendaciones" },
+  { key: "QUESTION", label: "❓ Consultas" },
+  { key: "WALK", label: "🐕 Paseos" },
+  { key: "TIP", label: "💡 Tips" },
+];
+
 function eventTypeLabel(type: GroupEvent["type"]) {
   if (type === "WALK") return "Paseo";
   if (type === "PLAYDATE") return "Playdate";
@@ -459,13 +285,13 @@ function eventTypeLabel(type: GroupEvent["type"]) {
   return "Actividad";
 }
 
-/* ─── Page ────────────────────────────────────────────────── */
+/* ─── Page ──────────────────────────────────────────────────── */
 export default function CommunityPage() {
   const { session } = useAuth();
   const accessToken = session?.tokens.accessToken;
 
   const [mode, setMode] = useState<CommunityFeedMode>("discover");
-  const [profile, setProfile] = useState<CommunityProfile | null>(null);
+  const [typeFilter, setTypeFilter] = useState("");
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [pets, setPets] = useState<PetSocialProfileItem[]>([]);
   const [events, setEvents] = useState<GroupEvent[]>([]);
@@ -479,20 +305,18 @@ export default function CommunityPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const [feedRows, profileRow, petRows, eventRows, newsRows] = await Promise.all([
+      const [feedRows, petRows, eventRows, newsRows] = await Promise.all([
         listCommunityFeed(accessToken, { mode: feedMode, limit: 20 }),
-        getMyCommunityProfile(accessToken),
         listMyPetSocialProfiles(accessToken),
         listGroupEvents(accessToken, { limit: 4, includePast: false }),
         listNewsArticles(accessToken, { featuredOnly: true, publishedOnly: true, limit: 3 }),
       ]);
       setPosts(feedRows);
-      setProfile(profileRow);
       setPets(petRows);
       setEvents(eventRows);
       setNews(newsRows);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cargar la comunidad.");
+      setError(err instanceof Error ? err.message : "No se pudo cargar el feed.");
     } finally {
       setIsLoading(false);
     }
@@ -505,11 +329,8 @@ export default function CommunityPage() {
     setIsPublishing(true);
     try {
       const post = await createCommunityPost(accessToken, {
-        body,
-        imageUrl: imageUrl || undefined,
-        petId: petId || undefined,
-        visibility: "PUBLIC",
-        allowComments: true,
+        body, imageUrl: imageUrl || undefined, petId: petId || undefined,
+        visibility: "PUBLIC", allowComments: true,
       });
       setPosts((cur) => [post, ...cur]);
     } catch (err) {
@@ -540,7 +361,7 @@ export default function CommunityPage() {
       setPosts((cur) => cur.map((p) =>
         p.id === post.id ? { ...p, metrics: { ...p.metrics, savesCount: snap.savesCount }, viewer: { ...p.viewer, saved: snap.saved } } : p
       ));
-    } catch { setError("No se pudo guardar la publicación."); }
+    } catch { setError("No se pudo guardar."); }
   };
 
   const handleComment = async (post: CommunityPost, body: string) => {
@@ -555,80 +376,81 @@ export default function CommunityPage() {
     } catch { setError("No se pudo comentar."); }
   };
 
+  /* client-side type filter (no extra API call) */
+  const visiblePosts = typeFilter
+    ? posts.filter((p) => (p as unknown as Record<string, unknown>).type === typeFilter)
+    : posts;
+
   return (
     <AuthGate>
       <div className="space-y-5 pb-16">
 
-        {/* ── page header ── */}
+        {/* ── header ── */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              Comunidad
-            </p>
-            <h1 className="mt-0.5 text-2xl font-black tracking-tight text-[hsl(var(--foreground))]">
-              Tu mundo pet
-            </h1>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">Comunidad</p>
+            <h1 className="mt-0.5 text-2xl font-black tracking-tight text-[hsl(var(--foreground))]">Feed</h1>
           </div>
-          <Link
-            href="/community/meet"
-            className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]"
-          >
-            🐕 Paseos
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/community/meet"
+              className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]">
+              🐕 Paseos
+            </Link>
+            <Link href="/community/profile"
+              className="rounded-full bg-[hsl(var(--primary))] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
+              Mi perfil
+            </Link>
+          </div>
         </div>
 
         {error && <InlineBanner tone="error">{error}</InlineBanner>}
 
-        {/* ── pet strip (quick nav) ── */}
+        {/* ── pet strip ── */}
         {pets.length > 0 && (
           <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
             {pets.map((p) => (
-              <Link
-                key={p.pet.id}
-                href={`/pets/${p.pet.id}`}
-                className="flex shrink-0 flex-col items-center gap-1.5"
-              >
+              <Link key={p.pet.id} href={`/pets/${p.pet.id}`} className="flex shrink-0 flex-col items-center gap-1.5">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[hsl(var(--secondary))] bg-[hsl(155_48%_42%/0.1)] text-2xl">
                   {p.pet.species === "Perro" ? "🐕" : p.pet.species === "Gato" ? "🐈" : "🐾"}
                 </div>
-                <span className="max-w-[60px] truncate text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">
-                  {p.pet.name}
-                </span>
+                <span className="max-w-[60px] truncate text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">{p.pet.name}</span>
               </Link>
             ))}
-            <Link
-              href="/pets/new"
-              className="flex shrink-0 flex-col items-center gap-1.5"
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-[hsl(var(--border))] text-2xl text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--secondary))] transition">
-                +
-              </div>
+            <Link href="/pets/new" className="flex shrink-0 flex-col items-center gap-1.5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-[hsl(var(--border))] text-xl text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--secondary))] transition">+</div>
               <span className="text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">Agregar</span>
             </Link>
           </div>
         )}
 
-        {/* ── main 2-col layout ── */}
-        <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
+        {/* ── main layout ── */}
+        <div className="grid gap-5 xl:grid-cols-[1fr_300px]">
 
           {/* ── feed column ── */}
           <div className="space-y-4 min-w-0">
 
-            {/* feed tabs */}
-            <div className="flex overflow-x-auto scrollbar-none -mx-1 px-1">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setMode(tab.value)}
-                  className={cls(
-                    "shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition mr-1",
+            {/* feed mode tabs */}
+            <div className="flex gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+              {FEED_TABS.map((tab) => (
+                <button key={tab.value} type="button" onClick={() => setMode(tab.value)}
+                  className={cls("shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition",
                     mode === tab.value
                       ? "bg-[hsl(var(--primary))] text-white"
-                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]"
-                  )}
-                >
+                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
                   {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* type filters */}
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1">
+              {TYPE_FILTERS.map((f) => (
+                <button key={f.key} type="button" onClick={() => setTypeFilter(f.key)}
+                  className={cls("shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold transition",
+                    typeFilter === f.key
+                      ? "border-[hsl(var(--secondary))] bg-[hsl(155_48%_42%/0.1)] text-[hsl(155_48%_24%)]"
+                      : "border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--secondary)/0.4)]")}>
+                  {f.label}
                 </button>
               ))}
             </div>
@@ -639,29 +461,21 @@ export default function CommunityPage() {
             {/* feed */}
             {isLoading ? (
               <FeedSkeleton />
-            ) : posts.length === 0 ? (
+            ) : visiblePosts.length === 0 ? (
               <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
                 <p className="text-4xl">🐾</p>
                 <p className="mt-3 font-bold text-[hsl(var(--foreground))]">
-                  {mode === "discover" ? "La comunidad está esperando sus primeras historias" :
-                   mode === "following" ? "Aún no sigues a nadie — descubre perfiles" :
-                   mode === "mine" ? "Aún no has publicado nada" :
-                   "No tienes publicaciones guardadas"}
+                  {mode === "discover" ? "Sé el primero en compartir algo" :
+                   mode === "following" ? "Aún no sigues a nadie" : "No tienes publicaciones guardadas"}
                 </p>
                 <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                  {mode === "discover" ? "Sé el primero en compartir." : "Empieza a explorar la comunidad."}
+                  {mode === "discover" ? "La comunidad está esperando sus primeras historias." : "Explora el feed de Descubrir para encontrar perfiles."}
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onLike={handleLike}
-                    onSave={handleSave}
-                    onComment={handleComment}
-                  />
+                {visiblePosts.map((post) => (
+                  <PostCard key={post.id} post={post} onLike={handleLike} onSave={handleSave} onComment={handleComment} />
                 ))}
               </div>
             )}
@@ -670,79 +484,47 @@ export default function CommunityPage() {
           {/* ── sidebar ── */}
           <aside className="space-y-4">
 
-            {/* profile widget */}
-            {isLoading ? (
-              <SidebarSkeleton />
-            ) : profile ? (
-              <ProfileWidget profile={profile} pets={pets} />
-            ) : null}
-
-            {/* upcoming walks */}
-            <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/80 shadow-sm p-4">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-                Paseos y encuentros
-              </p>
+            {/* paseos */}
+            <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">Paseos y encuentros</p>
               {isLoading ? (
-                <div className="mt-3 space-y-2">
-                  {[1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded-2xl bg-[hsl(var(--muted))]" />)}
-                </div>
+                <div className="mt-3 space-y-2">{[1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded-2xl bg-[hsl(var(--muted))]" />)}</div>
               ) : events.length === 0 ? (
-                <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))]">
-                  Sin encuentros activos por ahora.
-                </p>
+                <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))]">Sin encuentros activos por ahora.</p>
               ) : (
                 <div className="mt-3 space-y-2">
                   {events.slice(0, 3).map((ev) => (
                     <div key={ev.id} className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--muted)/0.4)] px-3 py-2.5">
-                      <span className="text-xl">
-                        {ev.type === "WALK" ? "🐕" : ev.type === "PLAYDATE" ? "🎾" : "🏕️"}
-                      </span>
+                      <span className="text-xl">{ev.type === "WALK" ? "🐕" : ev.type === "PLAYDATE" ? "🎾" : "🏕️"}</span>
                       <div className="min-w-0">
                         <p className="truncate text-xs font-semibold">{ev.title}</p>
-                        <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                          {ev.location.district ?? ev.location.city} · {eventTypeLabel(ev.type)}
-                        </p>
+                        <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{ev.location.district ?? ev.location.city} · {eventTypeLabel(ev.type)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              <Link
-                href="/community/meet"
-                className="mt-3 block w-full rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]"
-              >
+              <Link href="/community/meet"
+                className="mt-3 block w-full rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]">
                 Ver todos los paseos
               </Link>
             </div>
 
-            {/* news & tips */}
-            <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/80 shadow-sm p-4">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-                Tips y noticias
-              </p>
+            {/* noticias y foro */}
+            <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">Novedades</p>
               <div className="mt-3 space-y-1">
-                {news.slice(0, 3).map((n) => (
-                  <div key={n.id} className="rounded-2xl px-3 py-2.5 transition hover:bg-[hsl(var(--muted)/0.4)]">
-                    <p className="text-xs font-semibold leading-snug text-[hsl(var(--foreground))]">{n.title}</p>
-                  </div>
-                ))}
-                {news.length === 0 && (
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">Sin novedades por ahora.</p>
-                )}
+                {news.length === 0
+                  ? <p className="text-xs text-[hsl(var(--muted-foreground))]">Sin novedades por ahora.</p>
+                  : news.map((n) => (
+                    <div key={n.id} className="rounded-2xl px-3 py-2.5 transition hover:bg-[hsl(var(--muted)/0.4)]">
+                      <p className="text-xs font-semibold leading-snug text-[hsl(var(--foreground))]">{n.title}</p>
+                    </div>
+                  ))}
               </div>
-              <div className="mt-2 flex gap-2">
-                <Link
-                  href="/news"
-                  className="flex-1 rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]"
-                >
-                  Noticias
-                </Link>
-                <Link
-                  href="/forum"
-                  className="flex-1 rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]"
-                >
-                  Foro
-                </Link>
+              <div className="mt-3 flex gap-2">
+                <Link href="/news" className="flex-1 rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold transition hover:bg-[hsl(var(--muted)/0.4)]">Noticias</Link>
+                <Link href="/forum" className="flex-1 rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold transition hover:bg-[hsl(var(--muted)/0.4)]">Foro</Link>
               </div>
             </div>
 
