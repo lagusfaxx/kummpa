@@ -290,30 +290,29 @@ export function HomeHub() {
     <div className="pb-16">
 
       {/* ── Hero — full-width, breaks out of shell container ──── */}
-      <section className="relative -mx-4 -mt-5 overflow-hidden bg-[hsl(var(--primary))] px-4 pb-14 pt-14 text-white sm:-mx-6 sm:-mt-7 sm:px-6 sm:pb-16 sm:pt-16 lg:-mx-8 lg:px-8">
-        {/* Glow blobs */}
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[hsl(22_92%_60%/0.28)] blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-[hsl(155_60%_40%/0.25)] blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[hsl(155_48%_38%/0.15)] blur-2xl" />
+      <section className="relative -mx-4 -mt-5 overflow-hidden bg-[hsl(var(--primary))] px-4 pb-24 pt-20 text-white sm:-mx-6 sm:-mt-7 sm:px-6 sm:pb-28 sm:pt-24 lg:-mx-8 lg:px-8">
+        {/* Glow blobs — kept away from bottom edge */}
+        <div aria-hidden className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-[hsl(22_92%_60%/0.22)] blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -left-28 top-1/3 h-80 w-80 rounded-full bg-[hsl(155_60%_40%/0.2)] blur-3xl" />
 
         {/* Content centered inside the full-width hero */}
         <div className="relative mx-auto flex max-w-2xl flex-col items-center text-center">
-          <span className="mb-5 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-sm">
+          <span className="mb-6 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/75 backdrop-blur-sm">
             Todo para tu mascota en un solo lugar
           </span>
 
-          <h1 className="text-[2.4rem] font-bold leading-[1.08] tracking-tight sm:text-[3.2rem]">
+          <h1 className="text-[2.5rem] font-bold leading-[1.07] tracking-tight sm:text-[3.4rem]">
             Tu mascota,{" "}
             <span className="text-[hsl(var(--accent))]">más protegida.</span>
           </h1>
 
-          <p className="mt-4 max-w-sm text-[1rem] leading-relaxed text-white/60">
+          <p className="mt-5 max-w-sm text-[1rem] leading-relaxed text-white/55">
             Salud, comunidad, alertas y beneficios — desde una sola app.
           </p>
 
           {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative mt-8 w-full max-w-md">
-            <div className="flex overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-white/10">
+          <form onSubmit={handleSearch} className="relative mt-9 w-full max-w-md">
+            <div className="flex overflow-hidden rounded-2xl bg-white shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
               <div className="relative flex-1">
                 <input
                   value={searchQuery}
@@ -342,13 +341,6 @@ export function HomeHub() {
             </div>
           </form>
         </div>
-
-        {/* Bottom fade transition to page background */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
-          style={{ background: "linear-gradient(to bottom, transparent, hsl(var(--background)))" }}
-        />
       </section>
 
       {/* ── Rest of content in centered container ─────────────── */}
