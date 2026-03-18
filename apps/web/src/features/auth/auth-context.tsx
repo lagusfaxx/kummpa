@@ -26,6 +26,7 @@ interface AuthContextValue {
   signIn: (payload: LoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<void>;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
 
@@ -126,6 +127,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signIn,
       signUp,
       signOut,
+      logout: signOut,
       refreshSession
     }),
     [isReady, refreshSession, session, signIn, signOut, signUp]
