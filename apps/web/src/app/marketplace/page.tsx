@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { InlineBanner } from "@/components/feedback/inline-banner";
 import { PageIntro } from "@/components/layout/page-intro";
@@ -353,6 +354,11 @@ export default function MarketplacePage() {
             { value: conversation ? "1" : "0", label: "chat activo" }
           ]}
         />
+        <div className="flex justify-end">
+          <Link href="/marketplace/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">
+            🏪 Panel de mi tienda
+          </Link>
+        </div>
         {error && <InlineBanner tone="error">{error}</InlineBanner>}
         {success && <InlineBanner tone="success">{success}</InlineBanner>}
 

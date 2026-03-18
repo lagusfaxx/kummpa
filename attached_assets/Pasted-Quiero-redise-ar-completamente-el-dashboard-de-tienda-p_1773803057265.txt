@@ -1,0 +1,181 @@
+Quiero rediseñar completamente el dashboard de tienda para que pase de ser un formulario simple a un panel comercial totalmente profesional, estructurado y propio de un marketplace serio.
+
+OBJETIVO
+El dashboard debe sentirse como un centro de control real para una tienda dentro del marketplace. No quiero una sola página larga de inputs. Quiero una experiencia más modular, profesional, clara y escalable.
+
+PROBLEMA ACTUAL
+- El panel actual parece una ficha editable larga.
+- No se siente como dashboard de negocio.
+- Falta estructura modular.
+- No hay gestión real de productos, stock, pagos, envíos y promociones.
+- No transmite sensación de marketplace bien construido.
+
+NUEVA DIRECCIÓN
+Convertir el dashboard en un panel profesional con navegación clara y módulos separados.
+
+ESTRUCTURA PRINCIPAL
+Agregar navegación interna tipo sidebar o tabs para estas secciones:
+
+- Resumen
+- Tienda
+- Productos
+- Categorías
+- Inventario
+- Promociones
+- Pagos
+- Envíos
+- Pedidos
+- Configuración
+
+SECCIÓN: RESUMEN
+Debe existir una vista inicial con tarjetas resumen:
+- productos activos
+- stock bajo
+- pedidos nuevos
+- ventas o actividad reciente
+- promociones activas
+- métodos de pago configurados
+- estado de la tienda
+
+SECCIÓN: TIENDA
+Información general del negocio:
+- nombre comercial
+- descripción corta
+- logo
+- portada/banner
+- dirección
+- comuna / ciudad
+- teléfono
+- email
+- sitio web
+- redes sociales
+- horario de atención
+- estado de la tienda (activa / pausada)
+
+SECCIÓN: PRODUCTOS
+Debe existir una gestión de productos real.
+Cada producto debe poder tener:
+- nombre
+- categoría
+- subcategoría
+- tags
+- descripción corta
+- descripción larga
+- precio
+- precio oferta
+- SKU opcional
+- fotos
+- stock
+- stock mínimo
+- estado activo/inactivo
+- destacado
+- variantes opcionales (tamaño, color, formato, peso)
+
+Mostrar además un listado o tabla de productos con:
+- imagen
+- nombre
+- categoría
+- precio
+- stock
+- estado
+- acciones
+
+SECCIÓN: INVENTARIO
+Agregar módulo de stock profesional:
+- stock actual
+- alerta de stock bajo
+- producto agotado
+- control por variante
+- activar/desactivar venta cuando no hay stock
+- unidad de medida si aplica
+
+SECCIÓN: CATEGORÍAS
+La tienda debe poder:
+- usar categorías base del marketplace
+- crear categorías o subcategorías libres si aplica
+- agregar etiquetas/tags propios
+
+SECCIÓN: PROMOCIONES
+Agregar sistema de descuentos y promociones:
+- descuento porcentual
+- descuento fijo
+- 2x1
+- combo
+- promo por categoría
+- promo por producto
+- fecha de inicio y término
+- estado activa/inactiva
+- cupón opcional
+
+SECCIÓN: PAGOS
+Agregar métodos de pago configurables:
+- efectivo
+- transferencia
+- pago online
+- Webpay / Flow / Khipu / Mercado Pago si aplica
+- pago contra entrega
+- pago presencial
+
+Permitir:
+- activar/desactivar métodos
+- elegir método principal
+- agregar instrucciones de transferencia
+
+SECCIÓN: ENVÍOS
+Agregar métodos de envío:
+- retiro en tienda
+- despacho local
+- envío por comuna
+- envío por zona
+- delivery propio
+- courier externo
+- envío gratis sobre monto mínimo
+- costo fijo o por zona
+
+SECCIÓN: PEDIDOS
+Agregar vista básica de pedidos:
+- nuevos
+- pagados
+- preparando
+- enviados
+- entregados
+- cancelados
+
+Mostrar:
+- cliente
+- total
+- productos
+- método de pago
+- método de envío
+- estado
+- fecha
+
+SECCIÓN: CONFIGURACIÓN
+Agregar:
+- visibilidad de tienda
+- aceptar pedidos / pausar tienda
+- tiempo estimado de preparación
+- políticas de despacho
+- políticas de cambio
+- configuración general
+
+DISEÑO
+Quiero que visualmente se vea:
+- totalmente profesional
+- modular
+- limpio
+- marketplace serio
+- dashboard real de negocio
+- con mejor jerarquía, cards, tablas, bloques y acciones claras
+- menos “formulario largo”
+- más “panel comercial”
+
+IMPORTANTE
+- Mantener consistencia con el estilo visual actual de la app
+- No recargar innecesariamente
+- Priorizar UX clara y escalable
+- Prepararlo para crecer en el futuro
+- Debe verse bien en desktop y adaptarse bien a móvil
+
+ENTREGABLE
+Una nueva versión del dashboard de tienda con estructura profesional, módulos claros y herramientas reales para administrar una tienda dentro del marketplace.
