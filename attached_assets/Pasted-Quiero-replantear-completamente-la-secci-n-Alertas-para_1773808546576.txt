@@ -1,0 +1,100 @@
+Quiero replantear completamente la sección “Alertas” para que se sienta más como una herramienta tipo SOSAFE / mapa de incidentes, enfocada en mascotas perdidas y avistamientos, y no como una página informativa tradicional.
+
+OBJETIVO
+La sección Alertas debe priorizar acción rápida, ubicación y visibilidad de reportes en mapa. Quiero que se sienta como una herramienta útil, urgente y visual para reportar mascotas perdidas y avistamientos.
+
+PROBLEMA ACTUAL
+- La sección actual se siente demasiado tipo landing / informativa.
+- Hay demasiado bloque explicativo.
+- El mapa no tiene suficiente protagonismo funcional.
+- Falta sensación de incidentes en tiempo real.
+- No parece una herramienta de respuesta rápida.
+
+NUEVA DIRECCIÓN
+Quiero una experiencia inspirada en SOSAFE / mapa de reportes, adaptada a mascotas.
+
+ESTRUCTURA PRINCIPAL
+
+1. MAPA PROTAGONISTA
+- El mapa debe ser una parte central de la experiencia.
+- Debe mostrar pins de alertas activas.
+- Los pins deben diferenciar:
+  - mascota perdida
+  - avistamiento
+  - alerta resuelta
+
+2. FILTROS RÁPIDOS
+Agregar filtros visibles y útiles:
+- Perdidas
+- Avistadas
+- Resueltas
+- Cerca de mí
+- Últimas 24h
+
+3. LISTADO DE ALERTAS
+Mostrar alertas activas cercanas en cards compactas.
+Cada alerta debe incluir:
+- foto de la mascota
+- nombre
+- especie / raza
+- zona
+- tiempo desde el reporte
+- distancia
+- estado
+- CTA: Ver detalle / La vi / Compartir
+
+4. INTERACCIÓN CON EL MAPA
+Al tocar un pin, mostrar una mini ficha o bottom sheet con:
+- foto
+- nombre
+- última ubicación
+- tiempo del reporte
+- CTA rápidos:
+  - La vi
+  - Ver detalle
+  - Compartir
+
+5. ACCIONES PRINCIPALES
+Debe existir acceso muy claro a:
+- Reportar mascota perdida
+- Reportar avistamiento
+- Compartir alerta
+- Contactar tutor
+- Abrir mapa / ruta
+
+6. DETALLE DE ALERTA
+Preparar la experiencia para una vista de detalle de alerta con:
+- foto grande
+- datos de la mascota
+- descripción
+- última vez vista
+- mapa
+- historial de avistamientos
+- botones de acción
+
+7. DISEÑO VISUAL
+Quiero que Alertas se sienta:
+- más urgente
+- más visual
+- más tipo mapa de incidentes
+- más accionable
+- menos tipo landing informativa
+- más producto real
+
+8. LAYOUT
+Desktop:
+- mapa grande + listado de alertas + filtros + acciones
+Mobile:
+- mapa primero
+- listado abajo
+- botón flotante para reportar
+- bottom sheet para filtros o detalle
+
+IMPORTANTE
+- menos texto explicativo
+- más foco en incidentes, cercanía y acción
+- no perder la estética de la app
+- hacerlo más útil y vivo
+
+ENTREGABLE
+Quiero una nueva versión de Alertas tipo mapa de reportes pet, con pines, filtros, alertas activas y acciones rápidas, inspirada en herramientas como SOSAFE pero adaptada a mascotas perdidas y avistamientos.

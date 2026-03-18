@@ -102,7 +102,11 @@ export function isAuthRoute(pathname: string) {
 }
 
 export function isMapRoute(pathname: string) {
-  return pathname === "/explore" || pathname.startsWith("/explore/");
+  return (
+    pathname === "/explore" ||
+    pathname.startsWith("/explore/") ||
+    pathname === "/lost-pets"
+  );
 }
 
 export function isMinimalShellRoute(pathname: string) {
