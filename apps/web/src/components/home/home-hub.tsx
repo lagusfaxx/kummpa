@@ -92,14 +92,6 @@ function IcoChevronLeft() {
     </svg>
   );
 }
-function IcoSearch() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
 /* ─── Quick nav ──────────────────────────────────────────────── */
 const QUICK_NAV = [
   { label: "Mapa",        href: "/explore",     Icon: IcoMap      },
@@ -276,45 +268,21 @@ export function HomeHub() {
           {/* Search bar */}
           <form
             onSubmit={handleSearch}
-            className="mt-8 flex max-w-lg overflow-hidden rounded-2xl bg-white/12 backdrop-blur-sm ring-1 ring-white/20 transition focus-within:bg-white/18 focus-within:ring-white/40"
+            className="mt-8 flex max-w-lg overflow-hidden rounded-2xl bg-white shadow-lg"
           >
-            <span className="flex items-center pl-5 text-white/60">
-              <IcoSearch />
-            </span>
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="¿Qué necesitas para tu mascota?"
-              className="flex-1 bg-transparent px-4 py-4 text-sm font-medium text-white outline-none placeholder:text-white/45"
+              className="flex-1 bg-transparent px-5 py-4 text-sm text-[hsl(var(--foreground))] outline-none placeholder:text-[hsl(var(--muted-foreground))]"
             />
             <button
               type="submit"
-              className="m-1.5 rounded-xl bg-[hsl(var(--accent))] px-5 py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90 active:scale-95"
+              className="m-1.5 rounded-xl bg-[hsl(var(--accent))] px-6 py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90 active:scale-95"
             >
               Buscar
             </button>
           </form>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["veterinaria", "peluquería", "parque", "paseador"].map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => router.push(`/explore?q=${encodeURIComponent(s)}`)}
-                className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-white/20"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-
-          {!isAuthenticated && (
-            <div className="mt-8">
-              <Link href="/register" className="rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/18 active:scale-95">
-                Crear cuenta gratis
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 
