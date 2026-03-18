@@ -218,14 +218,26 @@ function bookingPath(type: MapServiceType, sourceId: string): string | null {
   if (type === "LOST_PET" || type === "PARK") {
     return null;
   }
-  return `/appointments?providerType=${type}&providerId=${sourceId}`;
+  if (type === "VET") {
+    return `/explore/vet/${sourceId}`;
+  }
+  if (type === "SHOP") {
+    return `/explore/shop/${sourceId}`;
+  }
+  return null;
 }
 
 function profilePath(type: MapServiceType, sourceId: string): string | null {
   if (type === "LOST_PET") {
     return `/lost-pets/${sourceId}`;
   }
-  return `/map?focus=${sourceId}`;
+  if (type === "VET") {
+    return `/explore/vet/${sourceId}`;
+  }
+  if (type === "SHOP") {
+    return `/explore/shop/${sourceId}`;
+  }
+  return `/explore?focus=${sourceId}`;
 }
 
 async function loadBaseMapPoints(includeLostPets: boolean): Promise<MapServicePoint[]> {

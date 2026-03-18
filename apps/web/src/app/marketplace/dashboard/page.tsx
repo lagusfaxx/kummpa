@@ -194,10 +194,17 @@ function SectionTienda({ shop, accessToken, onSaved }: { shop: ShopProfile | nul
     contactPhone: shop?.contactPhone ?? "",
     contactEmail: shop?.contactEmail ?? "",
     websiteUrl: shop?.websiteUrl ?? "",
+    latitude:  shop?.latitude  ?? null as number | null,
+    longitude: shop?.longitude ?? null as number | null,
   });
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const setNum = (k: "latitude" | "longitude") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value.trim();
+    setForm(f => ({ ...f, [k]: v === "" ? null : Number(v) }));
+  };
 
   async function save() {
     setSaving(true);
@@ -238,6 +245,22 @@ function SectionTienda({ shop, accessToken, onSaved }: { shop: ShopProfile | nul
           </FormRow>
         </div>
 
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-amber-600 mb-2">📍 Ubicación en el mapa</p>
+          <p className="text-xs text-amber-700 mb-3">Para aparecer en "Cerca de ti" necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu tienda → "¿Qué hay aquí?"</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormRow label="Latitud">
+              <Inp type="number" step="any" value={form.latitude ?? ""} onChange={setNum("latitude")} placeholder="-33.4489" />
+            </FormRow>
+            <FormRow label="Longitud">
+              <Inp type="number" step="any" value={form.longitude ?? ""} onChange={setNum("longitude")} placeholder="-70.6693" />
+            </FormRow>
+          </div>
+          {form.latitude && form.longitude && (
+            <p className="mt-2 text-xs font-semibold text-amber-700">✓ Coordenadas guardadas: {form.latitude}, {form.longitude}</p>
+          )}
+        </div>
+
         {ok && (
           <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">
             ✓ Información guardada correctamente
@@ -251,9 +274,9 @@ function SectionTienda({ shop, accessToken, onSaved }: { shop: ShopProfile | nul
         </div>
       </div>
 
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-        <p className="text-sm font-semibold text-amber-800">Logo y banner — Próximamente</p>
-        <p className="mt-1 text-xs text-amber-600">La carga de imágenes de tienda estará disponible cuando se integre el servicio de almacenamiento.</p>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-sm font-semibold text-slate-700">Logo y banner — Próximamente</p>
+        <p className="mt-1 text-xs text-slate-500">La carga de imágenes de tienda estará disponible cuando se integre el servicio de almacenamiento.</p>
       </div>
     </div>
   );

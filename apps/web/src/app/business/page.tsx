@@ -197,10 +197,17 @@ function SectionPerfil({ vet, accessToken, onSaved }: { vet?: VetProfile | null;
     websiteUrl:     vet?.websiteUrl     ?? "",
     description:    vet?.description    ?? "",
     isEmergency24x7: vet?.isEmergency24x7 ?? false,
+    latitude:  vet?.latitude  ?? null as number | null,
+    longitude: vet?.longitude ?? null as number | null,
   });
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const setNum = (k: "latitude" | "longitude") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value.trim();
+    setForm(f => ({ ...f, [k]: v === "" ? null : Number(v) }));
+  };
 
   async function save() {
     setSaving(true);
@@ -227,6 +234,21 @@ function SectionPerfil({ vet, accessToken, onSaved }: { vet?: VetProfile | null;
         <FormRow label="Descripción de la clínica">
           <Textarea rows={3} value={form.description} onChange={set("description")} placeholder="Contá un poco sobre tu clínica, especialidades y filosofía de atención..." />
         </FormRow>
+        <div className="rounded-xl border border-teal-200 bg-teal-50 p-4">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-teal-600 mb-2">📍 Ubicación en el mapa</p>
+          <p className="text-xs text-teal-700 mb-3">Para aparecer en "Cerca de ti" necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu clínica → "¿Qué hay aquí?"</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormRow label="Latitud">
+              <Inp type="number" step="any" value={form.latitude ?? ""} onChange={setNum("latitude")} placeholder="-33.4489" />
+            </FormRow>
+            <FormRow label="Longitud">
+              <Inp type="number" step="any" value={form.longitude ?? ""} onChange={setNum("longitude")} placeholder="-70.6693" />
+            </FormRow>
+          </div>
+          {form.latitude && form.longitude && (
+            <p className="mt-2 text-xs text-teal-700">✓ Coordenadas ingresadas: {form.latitude}, {form.longitude}</p>
+          )}
+        </div>
         <Toggle checked={form.isEmergency24x7} onChange={(v) => setForm(f => ({ ...f, isEmergency24x7: v }))} label="Atención de urgencias 24/7" />
         {ok && <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">✓ Perfil guardado</div>}
         <div className="flex justify-end pt-2"><Btn onClick={() => void save()} disabled={saving}>{saving ? "Guardando..." : "Guardar perfil"}</Btn></div>
