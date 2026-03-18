@@ -9,25 +9,120 @@ import type { MapServicePoint, MapServiceType } from "@/features/map/types";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
+/* ─── Typing placeholder hook ────────────────────────────────── */
+const SEARCH_PHRASES = [
+  "Veterinarias en Providencia...",
+  "Peluquerías para mi perro...",
+  "Parques pet-friendly...",
+  "Paseadores cerca de ti...",
+  "Tiendas con descuento...",
+];
+
+function useTypingPlaceholder(phrases: string[]) {
+  const [text, setText] = useState("");
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = phrases[phraseIdx] ?? "";
+    let timeout: ReturnType<typeof setTimeout>;
+
+    if (!deleting && text === current) {
+      timeout = setTimeout(() => setDeleting(true), 1800);
+    } else if (deleting && text === "") {
+      setDeleting(false);
+      setPhraseIdx((p) => (p + 1) % phrases.length);
+    } else if (deleting) {
+      timeout = setTimeout(() => setText((t) => t.slice(0, -1)), 32);
+    } else if (current) {
+      timeout = setTimeout(() => setText(current.slice(0, text.length + 1)), 52);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [text, deleting, phraseIdx, phrases]);
+
+  return text;
+}
+
 /* ─── Category definitions ───────────────────────────────────── */
 type Category = {
   label: string;
   type?: MapServiceType;
-  dot: string;
-  activeCls: string;
+  color: string;
+  activeBg: string;
+  activeText: string;
+  icon: () => JSX.Element;
 };
 
-const CATEGORIES: Category[] = [
-  { label: "Todo",        dot: "#475569", activeCls: "bg-slate-800 text-white"   },
-  { label: "Veterinarias",type: "VET",       dot: "#0f766e", activeCls: "bg-teal-700 text-white"   },
-  { label: "Peluquerías", type: "GROOMING",  dot: "#be185d", activeCls: "bg-pink-700 text-white"   },
-  { label: "Paseos",      type: "CAREGIVER", dot: "#0369a1", activeCls: "bg-blue-700 text-white"   },
-  { label: "Tiendas",     type: "SHOP",      dot: "#b45309", activeCls: "bg-amber-700 text-white"  },
-  { label: "Hoteles",     type: "HOTEL",     dot: "#6d28d9", activeCls: "bg-violet-700 text-white" },
-  { label: "Parques",     type: "PARK",      dot: "#15803d", activeCls: "bg-green-700 text-white"  },
-];
+function IcoCatAll() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+    </svg>
+  );
+}
+function IcoCatVet() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 3.1 1.7 5.8 4.2 7.2L8 21h8l-1.2-4.8A8 8 0 0 0 19 9c0-3.87-3.13-7-7-7z"/>
+      <line x1="12" y1="7" x2="12" y2="13"/><line x1="9" y1="10" x2="15" y2="10"/>
+    </svg>
+  );
+}
+function IcoCatGrooming() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+      <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/>
+      <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+    </svg>
+  );
+}
+function IcoCatWalk() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <circle cx="12" cy="5" r="2"/>
+      <path d="M6 20l3-6 2 3 2-7 3 4"/>
+      <path d="M3 12c3-3 5-4 9-4"/>
+    </svg>
+  );
+}
+function IcoCatShop() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+  );
+}
+function IcoCatPark() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M17 14c1.66 0 3-1.34 3-3 0-1.27-.8-2.36-1.93-2.8.17-.38.26-.8.26-1.2a3.5 3.5 0 0 0-6.58-1.65A3.5 3.5 0 0 0 6 8.5c0 .19.01.37.04.55A3 3 0 0 0 7 14"/>
+      <line x1="12" y1="14" x2="12" y2="21"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+    </svg>
+  );
+}
+function IcoCatHotel() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  );
+}
 
-const INACTIVE_CLS = "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700";
+const CATEGORIES: Category[] = [
+  { label: "Todo",        color: "#334155", activeBg: "bg-slate-700",   activeText: "text-white", icon: IcoCatAll      },
+  { label: "Tiendas",     type: "SHOP",      color: "#b45309", activeBg: "bg-amber-700",  activeText: "text-white", icon: IcoCatShop     },
+  { label: "Paseos",      type: "CAREGIVER", color: "#0369a1", activeBg: "bg-blue-700",   activeText: "text-white", icon: IcoCatWalk     },
+  { label: "Parques",     type: "PARK",      color: "#15803d", activeBg: "bg-green-700",  activeText: "text-white", icon: IcoCatPark     },
+  { label: "Peluquerías", type: "GROOMING",  color: "#be185d", activeBg: "bg-pink-700",   activeText: "text-white", icon: IcoCatGrooming },
+  { label: "Veterinarias",type: "VET",       color: "#0f766e", activeBg: "bg-teal-700",   activeText: "text-white", icon: IcoCatVet      },
+];
 
 /* ─── Helpers ────────────────────────────────────────────────── */
 function typeLabel(type: MapServiceType): string {
@@ -47,10 +142,10 @@ function categoryFor(type: MapServiceType): Category {
   return CATEGORIES.find((c) => c.type === type) ?? CATEGORIES[0]!;
 }
 
-/* ─── Icons ──────────────────────────────────────────────────── */
+/* ─── SVG icons ──────────────────────────────────────────────── */
 function IcoSearch() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[15px] w-[15px] shrink-0">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
   );
@@ -101,7 +196,7 @@ function SkeletonRow() {
   return (
     <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
       <div className="h-10 w-10 shrink-0 animate-pulse rounded-xl bg-slate-100" />
-      <div className="flex-1 space-y-1.5">
+      <div className="flex-1 space-y-2">
         <div className="h-3 w-3/5 animate-pulse rounded-full bg-slate-100" />
         <div className="h-2.5 w-2/5 animate-pulse rounded-full bg-slate-100" />
       </div>
@@ -128,10 +223,7 @@ function EmptyState({ query, onClear }: { query: string; onClear: () => void }) 
         Prueba con otra categoría<br />o amplía tu búsqueda
       </p>
       {query && (
-        <button
-          onClick={onClear}
-          className="mt-5 rounded-full bg-slate-100 px-5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200"
-        >
+        <button onClick={onClear} className="mt-5 rounded-full bg-slate-100 px-5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200">
           Limpiar búsqueda
         </button>
       )}
@@ -152,10 +244,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
       </div>
       <p className="text-[15px] font-bold text-slate-800">Sin conexión</p>
       <p className="mt-1.5 text-sm text-slate-400">No pudimos cargar los lugares</p>
-      <button
-        onClick={onRetry}
-        className="mt-5 rounded-full bg-slate-100 px-5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200"
-      >
+      <button onClick={onRetry} className="mt-5 rounded-full bg-slate-100 px-5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200">
         Intentar de nuevo
       </button>
     </div>
@@ -164,11 +253,12 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 
 /* ─── Service card ────────────────────────────────────────────── */
 function ServiceCard({
-  service, selected, onSelect
+  service, selected, onSelect, animIndex
 }: {
   service: MapServicePoint;
   selected: boolean;
   onSelect: () => void;
+  animIndex: number;
 }) {
   const cat = categoryFor(service.type);
   const price = priceText(service);
@@ -176,127 +266,85 @@ function ServiceCard({
   return (
     <article
       onClick={onSelect}
-      className={`relative cursor-pointer transition-all duration-150 ${
+      style={{ animationDelay: `${Math.min(animIndex * 28, 280)}ms` }}
+      className={`explore-card relative cursor-pointer transition-all duration-150 ${
         selected
           ? "bg-white shadow-[0_2px_16px_-2px_rgba(0,0,0,0.10)]"
           : "hover:bg-slate-50/70"
       }`}
     >
-      {/* Left accent bar on selected */}
       {selected && (
-        <div
-          className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full"
-          style={{ backgroundColor: cat.dot }}
-        />
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full" style={{ backgroundColor: cat.color }} />
       )}
 
-      {/* Card body */}
       <div className="flex items-start gap-3 border-b border-slate-100 px-4 py-3">
-        {/* Avatar */}
         <div
           className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
-          style={{ backgroundColor: service.imageUrl ? "transparent" : cat.dot }}
+          style={{ backgroundColor: service.imageUrl ? "transparent" : cat.color }}
         >
-          {service.imageUrl ? (
-            <img src={service.imageUrl} alt={service.name} className="h-full w-full object-cover" />
-          ) : (
-            service.name.slice(0, 1)
-          )}
+          {service.imageUrl
+            ? <img src={service.imageUrl} alt={service.name} className="h-full w-full object-cover" />
+            : service.name.slice(0, 1)
+          }
           {service.isEmergency24x7 && (
-            <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-px text-center text-[7px] font-black tracking-wider text-white">
-              24/7
-            </span>
+            <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-px text-center text-[7px] font-black tracking-wider text-white">24/7</span>
           )}
         </div>
 
-        {/* Info */}
         <div className="min-w-0 flex-1">
-          {/* Row 1: name + status */}
           <div className="flex items-baseline justify-between gap-2">
-            <p className="truncate text-[13px] font-semibold leading-tight text-slate-800">
-              {service.name}
-            </p>
+            <p className="truncate text-[13px] font-semibold leading-tight text-slate-800">{service.name}</p>
             {service.isOpenNow !== null && (
               <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                service.isOpenNow
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-slate-100 text-slate-400"
+                service.isOpenNow ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
               }`}>
                 {service.isOpenNow ? "Abierto" : "Cerrado"}
               </span>
             )}
           </div>
-
-          {/* Row 2: type + location */}
           <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-slate-400">
-            <span
-              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
-              style={{ backgroundColor: cat.dot }}
-            />
+            <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
             {typeLabel(service.type)}
             {(service.district ?? service.address) && (
               <><span className="opacity-40">·</span>{service.district ?? service.address}</>
             )}
           </p>
-
-          {/* Row 3: meta (rating + price + discount + distance) */}
           <div className="mt-1 flex flex-wrap items-center gap-2">
             {service.rating !== null && (
               <span className="flex items-center gap-0.5 text-[11px] font-semibold text-amber-500">
                 <IcoStar /> {service.rating.toFixed(1)}
               </span>
             )}
-            {price && (
-              <span className="text-[11px] font-medium text-slate-500">{price}</span>
-            )}
+            {price && <span className="text-[11px] font-medium text-slate-500">{price}</span>}
             {service.discountLabel && (
-              <span className="rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-600">
-                {service.discountLabel}
-              </span>
+              <span className="rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-600">{service.discountLabel}</span>
             )}
             {service.distanceKm !== null && (
-              <span className="ml-auto shrink-0 text-[10px] font-medium text-slate-400">
-                {service.distanceKm.toFixed(1)} km
-              </span>
+              <span className="ml-auto shrink-0 text-[10px] font-medium text-slate-400">{service.distanceKm.toFixed(1)} km</span>
             )}
           </div>
         </div>
 
-        {/* Right arrow */}
-        {!selected && (
-          <div className="mt-1 shrink-0 text-slate-300">
-            <IcoChev />
-          </div>
-        )}
+        {!selected && <div className="mt-1 shrink-0 text-slate-300"><IcoChev /></div>}
       </div>
 
-      {/* Expanded CTAs */}
       {selected && (
         <div className="flex flex-wrap gap-2 border-b border-slate-100 px-4 pb-3 pl-[68px]">
           {service.bookingUrl && (
-            <Link
-              href={service.bookingUrl}
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90"
-            >
+            <Link href={service.bookingUrl} onClick={(e) => e.stopPropagation()}
+              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
               Reservar
             </Link>
           )}
           {service.phone && (
-            <a
-              href={`tel:${service.phone}`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
+            <a href={`tel:${service.phone}`} onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               <IcoPhone /> Llamar
             </a>
           )}
           {service.profileUrl && (
-            <Link
-              href={service.profileUrl}
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
+            <Link href={service.profileUrl} onClick={(e) => e.stopPropagation()}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               Ver ficha
             </Link>
           )}
@@ -306,33 +354,37 @@ function ServiceCard({
   );
 }
 
-/* ─── Category strip ──────────────────────────────────────────── */
-function CategoryStrip({
+/* ─── Category grid ──────────────────────────────────────────── */
+function CategoryGrid({
   selectedType, onSelect
 }: {
   selectedType: MapServiceType | null;
   onSelect: (t: MapServiceType | null) => void;
 }) {
   return (
-    <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-      {CATEGORIES.map((cat) => {
+    <div className="grid grid-cols-3 gap-2">
+      {CATEGORIES.map((cat, i) => {
         const active = cat.type ? selectedType === cat.type : selectedType === null;
+        const Icon = cat.icon;
         return (
           <button
             key={cat.label}
             type="button"
             onClick={() => onSelect(cat.type ?? null)}
-            className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${
-              active ? cat.activeCls + " shadow-sm" : INACTIVE_CLS
+            style={active ? { backgroundColor: cat.color } : { animationDelay: `${i * 40}ms` }}
+            className={`category-chip relative flex flex-col items-center gap-1.5 rounded-2xl px-1 py-3 text-center transition-all duration-200 active:scale-95 ${
+              active
+                ? "text-white shadow-md"
+                : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-100"
             }`}
           >
-            {!active && (
-              <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: cat.dot }}
-              />
+            <span className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}>
+              <Icon />
+            </span>
+            <span className="text-[10px] font-semibold leading-none">{cat.label}</span>
+            {active && (
+              <span className="absolute inset-0 animate-ping rounded-2xl opacity-0" style={{ backgroundColor: cat.color }} />
             )}
-            {cat.label}
           </button>
         );
       })}
@@ -343,9 +395,11 @@ function CategoryStrip({
 /* ─── Page ────────────────────────────────────────────────────── */
 export default function ExplorePage() {
   const params = useSearchParams();
+  const typingText = useTypingPlaceholder(SEARCH_PHRASES);
 
   const [search, setSearch]             = useState(params.get("q") ?? "");
   const [inputValue, setInputValue]     = useState(params.get("q") ?? "");
+  const [inputFocused, setInputFocused] = useState(false);
   const [selectedType, setSelectedType] = useState<MapServiceType | null>(null);
   const [openNow, setOpenNow]           = useState(false);
   const [withDiscount, setWithDiscount] = useState(params.get("withDiscount") === "1");
@@ -355,7 +409,9 @@ export default function ExplorePage() {
   const [error, setError]               = useState<string | null>(null);
   const [mobileTab, setMobileTab]       = useState<"map" | "list">("map");
   const [retryKey, setRetryKey]         = useState(0);
+  const [resultKey, setResultKey]       = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -375,6 +431,7 @@ export default function ExplorePage() {
         if (ctrl.signal.aborted) return;
         setServices(res.items);
         setSelectedId(res.items[0]?.id ?? null);
+        setResultKey((k) => k + 1);
       })
       .catch((err) => {
         if (ctrl.signal.aborted) return;
@@ -398,6 +455,7 @@ export default function ExplorePage() {
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     setSearch(inputValue.trim());
+    inputRef.current?.blur();
   }
 
   function clearSearch() {
@@ -405,295 +463,346 @@ export default function ExplorePage() {
     setSearch("");
   }
 
-  /* Active filter count */
-  const activeFilters = [openNow, withDiscount, selectedType !== null].filter(Boolean).length;
+  const activeFilters = [openNow, withDiscount, selectedType !== null, !!search].filter(Boolean).length;
 
-  /* ─── Panel ─────────────────────────────────────────────────── */
-  const Panel = (
-    <div className="flex h-full flex-col bg-white">
+  /* ─── Shared panel header ───────────────────────────────────── */
+  const PanelHeader = (compact = false) => (
+    <div className={`sticky top-0 z-10 bg-white/96 backdrop-blur-sm ${compact ? "" : ""}`}>
 
-      {/* Sticky header */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm">
-
-        {/* Search row */}
-        <div className="px-4 pt-4 pb-3">
-          <form onSubmit={submitSearch}>
-            <div className="relative flex items-center">
-              <span className="absolute left-3 text-slate-400">
-                <IcoSearch />
-              </span>
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Veterinarias, peluquerías, parques..."
-                className="h-10 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-8 text-[13px] text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-[hsl(var(--secondary)/0.5)] focus:bg-white focus:shadow-[0_0_0_3px_hsl(var(--secondary)/0.08)]"
-              />
-              {inputValue && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-3 flex h-4 w-4 items-center justify-center rounded-full bg-slate-300 text-white transition hover:bg-slate-400"
-                >
-                  <IcoX />
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* Quick filters */}
-        <div className="flex items-center gap-1.5 px-4 pb-3">
-          <button
-            onClick={() => setOpenNow((v) => !v)}
-            className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${
-              openNow ? "bg-emerald-600 text-white shadow-sm" : INACTIVE_CLS
-            }`}
-          >
-            {openNow && <span className="inline-block h-1.5 w-1.5 rounded-full bg-white/70" />}
-            Abierto ahora
-          </button>
-          <button
-            onClick={() => setWithDiscount((v) => !v)}
-            className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${
-              withDiscount ? "bg-orange-600 text-white shadow-sm" : INACTIVE_CLS
-            }`}
-          >
-            {withDiscount && <span className="inline-block h-1.5 w-1.5 rounded-full bg-white/70" />}
-            Con descuento
-          </button>
-        </div>
-
-        {/* Categories */}
-        <div className="px-4 pb-3">
-          <CategoryStrip selectedType={selectedType} onSelect={setSelectedType} />
-        </div>
-
-        {/* Results count */}
-        <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2">
-          <span className="text-[11px] font-semibold text-slate-400">
-            {isLoading
-              ? "Buscando..."
-              : error
-              ? "Sin resultados"
-              : `${services.length} lugar${services.length !== 1 ? "es" : ""}`}
-          </span>
-          <div className="flex items-center gap-2">
-            {activeFilters > 0 && (
-              <button
-                onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
-                className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 transition hover:bg-slate-200"
-              >
-                Limpiar ({activeFilters}) <IcoX />
-              </button>
-            )}
-            {search && (
-              <span className="max-w-[100px] truncate rounded-full bg-[hsl(var(--primary)/0.08)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--primary))]">
-                «{search}»
-              </span>
-            )}
-          </div>
-        </div>
+      {/* Category section */}
+      <div className="px-4 pt-4 pb-3">
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          ¿Qué quieres explorar?
+        </p>
+        <CategoryGrid selectedType={selectedType} onSelect={setSelectedType} />
       </div>
 
-      {/* List */}
-      <div ref={listRef} className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          Array.from({ length: 7 }).map((_, i) => <SkeletonRow key={i} />)
-        ) : error ? (
-          <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />
-        ) : services.length === 0 ? (
-          <EmptyState query={search} onClear={clearSearch} />
-        ) : (
-          services.map((s) => (
+      {/* Divider */}
+      <div className="mx-4 border-t border-slate-100" />
+
+      {/* Search bar */}
+      <div className="px-4 pt-3 pb-2">
+        <form onSubmit={submitSearch}>
+          <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 transition-all duration-200 ${
+            inputFocused
+              ? "border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]"
+              : "border-slate-200 bg-slate-50"
+          }`}>
+            <span className="shrink-0 text-slate-400 transition-colors duration-200" style={inputFocused ? { color: "hsl(var(--secondary))" } : {}}>
+              <IcoSearch />
+            </span>
+            <div className="relative min-w-0 flex-1">
+              <input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
+                placeholder=""
+                className="relative z-10 w-full bg-transparent text-[13px] text-slate-800 outline-none"
+              />
+              {/* Typing animation overlay — visible only when empty + unfocused */}
+              {!inputValue && !inputFocused && (
+                <span className="pointer-events-none absolute inset-0 flex items-center text-[13px] text-slate-400" aria-hidden>
+                  {typingText}
+                  <span className="ml-px inline-block h-3.5 w-px animate-pulse bg-slate-400" />
+                </span>
+              )}
+            </div>
+            {inputValue && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 transition hover:bg-slate-300"
+              >
+                <IcoX />
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Secondary filters */}
+      <div className="flex items-center gap-1.5 overflow-x-auto px-4 pb-2.5" style={{ scrollbarWidth: "none" }}>
+        {[
+          { label: "Abierto ahora", active: openNow, toggle: () => setOpenNow((v) => !v), activeColor: "bg-emerald-600 text-white" },
+          { label: "Con descuento", active: withDiscount, toggle: () => setWithDiscount((v) => !v), activeColor: "bg-orange-600 text-white" },
+        ].map(({ label, active, toggle, activeColor }) => (
+          <button
+            key={label}
+            onClick={toggle}
+            className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-150 ${
+              active ? activeColor + " shadow-sm" : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+            }`}
+          >
+            {active && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Results count + clear */}
+      {(services.length > 0 || activeFilters > 0 || isLoading) && (
+        <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2">
+          <span className="text-[11px] font-semibold text-slate-400">
+            {isLoading ? "Buscando..." : `${services.length} lugar${services.length !== 1 ? "es" : ""}`}
+          </span>
+          {activeFilters > 0 && (
+            <button
+              onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
+              className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 transition hover:bg-slate-200"
+            >
+              Limpiar <IcoX />
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  /* ─── Result list ───────────────────────────────────────────── */
+  const ResultList = (
+    <div ref={listRef} className="flex-1 overflow-y-auto">
+      {isLoading ? (
+        Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+      ) : error ? (
+        <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />
+      ) : services.length === 0 ? (
+        <EmptyState query={search} onClear={clearSearch} />
+      ) : (
+        <div key={resultKey}>
+          {services.map((s, i) => (
             <div key={s.id} data-id={s.id}>
               <ServiceCard
                 service={s}
                 selected={selectedId === s.id}
                 onSelect={() => setSelectedId(s.id)}
+                animIndex={i}
               />
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
   /* ─── Layout ─────────────────────────────────────────────────── */
   return (
-    <div className="flex h-full w-full overflow-hidden">
+    <>
+      {/* Keyframe animations injected inline */}
+      <style>{`
+        @keyframes exploreCardIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .explore-card {
+          animation: exploreCardIn 0.22s ease both;
+        }
+        @keyframes catChipIn {
+          from { opacity: 0; transform: scale(0.92); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .category-chip {
+          animation: catChipIn 0.18s ease both;
+        }
+      `}</style>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden w-[360px] shrink-0 flex-col overflow-hidden border-r border-slate-200 shadow-[4px_0_30px_-8px_rgba(0,0,0,0.10)] lg:flex">
-        {Panel}
-      </aside>
+      <div className="flex h-full w-full overflow-hidden">
 
-      {/* Mobile */}
-      <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
+        {/* Desktop sidebar */}
+        <aside className="hidden w-[360px] shrink-0 flex-col overflow-hidden border-r border-slate-200 shadow-[4px_0_30px_-8px_rgba(0,0,0,0.08)] lg:flex">
+          <div className="flex h-full flex-col bg-white">
+            {PanelHeader()}
+            {ResultList}
+          </div>
+        </aside>
 
-        {/* Mobile sticky header */}
-        <div className="border-b border-slate-200 bg-white/95 backdrop-blur-sm">
-          <div className="px-3 pt-3 pb-2">
-            <form onSubmit={submitSearch} className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <IcoSearch />
-              </span>
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Veterinarias, peluquerías, parques..."
-                className="h-10 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-8 text-[13px] outline-none focus:border-[hsl(var(--secondary)/0.5)] focus:bg-white"
-              />
-              {inputValue && (
-                <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-slate-300 text-white">
-                  <IcoX />
-                </button>
-              )}
-            </form>
-            <div className="mt-2 flex items-center gap-1.5">
-              <button
-                onClick={() => setOpenNow((v) => !v)}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${openNow ? "bg-emerald-600 text-white" : INACTIVE_CLS}`}
-              >
+        {/* Mobile */}
+        <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
+
+          {/* Mobile sticky header */}
+          <div className="border-b border-slate-200 bg-white/96 backdrop-blur-sm">
+            <div className="px-3 pt-3">
+              <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                ¿Qué quieres explorar?
+              </p>
+              <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                {CATEGORIES.map((cat) => {
+                  const active = cat.type ? selectedType === cat.type : selectedType === null;
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.label}
+                      onClick={() => setSelectedType(cat.type ?? null)}
+                      style={active ? { backgroundColor: cat.color } : {}}
+                      className={`flex shrink-0 items-center gap-1.5 rounded-2xl px-3 py-2 transition-all duration-200 active:scale-95 ${
+                        active ? "text-white shadow-md" : "border border-slate-200 bg-white text-slate-500"
+                      }`}
+                    >
+                      <Icon />
+                      <span className="text-[11px] font-semibold">{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mobile search */}
+            <div className="px-3 pb-2 pt-2">
+              <form onSubmit={submitSearch}>
+                <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 transition-all ${
+                  inputFocused ? "border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]" : "border-slate-200 bg-slate-50"
+                }`}>
+                  <span className="shrink-0 text-slate-400"><IcoSearch /></span>
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => setInputFocused(false)}
+                      placeholder=""
+                      className="relative z-10 w-full bg-transparent text-[13px] text-slate-800 outline-none"
+                    />
+                    {!inputValue && !inputFocused && (
+                      <span className="pointer-events-none absolute inset-0 flex items-center text-[13px] text-slate-400" aria-hidden>
+                        {typingText}
+                        <span className="ml-px inline-block h-3.5 w-px animate-pulse bg-slate-400" />
+                      </span>
+                    )}
+                  </div>
+                  {inputValue && (
+                    <button type="button" onClick={clearSearch} className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
+                      <IcoX />
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* Mobile quick filters */}
+            <div className="flex gap-1.5 overflow-x-auto px-3 pb-2" style={{ scrollbarWidth: "none" }}>
+              <button onClick={() => setOpenNow((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${openNow ? "bg-emerald-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
                 Abierto ahora
               </button>
-              <button
-                onClick={() => setWithDiscount((v) => !v)}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${withDiscount ? "bg-orange-600 text-white" : INACTIVE_CLS}`}
-              >
+              <button onClick={() => setWithDiscount((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${withDiscount ? "bg-orange-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
                 Con descuento
               </button>
             </div>
-            <div className="mt-2">
-              <CategoryStrip selectedType={selectedType} onSelect={setSelectedType} />
-            </div>
-          </div>
 
-          {/* Segmented tabs */}
-          <div className="mx-3 mb-3 flex overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-0.5">
-            {(["map", "list"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setMobileTab(tab)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-1.5 text-xs font-semibold transition-all ${
-                  mobileTab === tab
-                    ? "bg-white text-slate-800 shadow-sm"
-                    : "text-slate-500"
-                }`}
-              >
-                {tab === "map" ? <><IcoMapTab /> Mapa</> : <><IcoListTab /> Lista {!isLoading && `(${services.length})`}</>}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile content */}
-        <div className="relative flex-1 overflow-hidden">
-          {mobileTab === "map" ? (
-            <MapCanvas
-              accessToken={MAPBOX_TOKEN}
-              points={services}
-              selectedPointId={selectedId}
-              onSelectPoint={(id) => { setSelectedId(id); setMobileTab("list"); }}
-              className="h-full w-full"
-              borderless
-            />
-          ) : (
-            <div className="h-full overflow-y-auto bg-white">
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-                : error
-                ? <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />
-                : services.length === 0
-                ? <EmptyState query={search} onClear={clearSearch} />
-                : services.map((s) => (
-                    <div key={s.id} data-id={s.id}>
-                      <ServiceCard service={s} selected={selectedId === s.id} onSelect={() => setSelectedId(s.id)} />
-                    </div>
-                  ))
-              }
-            </div>
-          )}
-
-          {/* Mobile bottom sheet */}
-          {mobileTab === "map" && selectedService && (
-            <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white px-5 pt-3 pb-safe-bottom shadow-[0_-8px_40px_-4px_rgba(0,0,0,0.15)]">
-              {/* Drag handle */}
-              <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-slate-200" />
-              <div className="flex items-start gap-3">
-                <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-base font-bold text-white"
-                  style={{ backgroundColor: categoryFor(selectedService.type).dot }}
-                >
-                  {selectedService.imageUrl
-                    ? <img src={selectedService.imageUrl} alt="" className="h-full w-full object-cover" />
-                    : selectedService.name.slice(0, 1)
-                  }
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-bold text-slate-800">{selectedService.name}</p>
-                  <p className="mt-0.5 text-[12px] text-slate-400">
-                    {typeLabel(selectedService.type)}
-                    {selectedService.distanceKm !== null && <> · {selectedService.distanceKm.toFixed(1)} km</>}
-                    {priceText(selectedService) && <> · {priceText(selectedService)}</>}
-                  </p>
-                </div>
-                {selectedService.isOpenNow !== null && (
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${
-                    selectedService.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+            {/* Mobile tabs */}
+            <div className="mx-3 mb-3 flex overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-0.5">
+              {(["map", "list"] as const).map((tab) => (
+                <button key={tab} onClick={() => setMobileTab(tab)}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-1.5 text-xs font-semibold transition-all ${
+                    mobileTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500"
                   }`}>
-                    {selectedService.isOpenNow ? "Abierto" : "Cerrado"}
-                  </span>
-                )}
-              </div>
-              <div className="mt-4 flex gap-2 pb-2">
-                {selectedService.bookingUrl && (
-                  <Link href={selectedService.bookingUrl} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
-                    Reservar
-                  </Link>
-                )}
-                {selectedService.phone && (
-                  <a href={`tel:${selectedService.phone}`} className="flex-1 rounded-2xl border border-slate-200 py-3 text-center text-[13px] font-semibold text-slate-700">
-                    Llamar
-                  </a>
-                )}
-                <button onClick={() => setMobileTab("list")} className="rounded-2xl border border-slate-200 px-5 py-3 text-[13px] font-semibold text-slate-700">
-                  Lista
+                  {tab === "map" ? <><IcoMapTab /> Mapa</> : <><IcoListTab /> Lista {!isLoading && `(${services.length})`}</>}
                 </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile content */}
+          <div className="relative flex-1 overflow-hidden">
+            {mobileTab === "map" ? (
+              <MapCanvas
+                accessToken={MAPBOX_TOKEN}
+                points={services}
+                selectedPointId={selectedId}
+                onSelectPoint={(id) => { setSelectedId(id); setMobileTab("list"); }}
+                className="h-full w-full"
+                borderless
+              />
+            ) : (
+              <div className="h-full overflow-y-auto bg-white">
+                {isLoading
+                  ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                  : error ? <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />
+                  : services.length === 0 ? <EmptyState query={search} onClear={clearSearch} />
+                  : <div key={resultKey}>{services.map((s, i) => (
+                      <div key={s.id} data-id={s.id}>
+                        <ServiceCard service={s} selected={selectedId === s.id} onSelect={() => setSelectedId(s.id)} animIndex={i} />
+                      </div>
+                    ))}</div>
+                }
+              </div>
+            )}
+
+            {/* Mobile bottom sheet */}
+            {mobileTab === "map" && selectedService && (
+              <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white px-5 pt-3 pb-safe-bottom shadow-[0_-8px_40px_-4px_rgba(0,0,0,0.15)]">
+                <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-slate-200" />
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-base font-bold text-white"
+                    style={{ backgroundColor: categoryFor(selectedService.type).color }}>
+                    {selectedService.imageUrl
+                      ? <img src={selectedService.imageUrl} alt="" className="h-full w-full object-cover" />
+                      : selectedService.name.slice(0, 1)
+                    }
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-bold text-slate-800">{selectedService.name}</p>
+                    <p className="mt-0.5 text-[12px] text-slate-400">
+                      {typeLabel(selectedService.type)}
+                      {selectedService.distanceKm !== null && <> · {selectedService.distanceKm.toFixed(1)} km</>}
+                      {priceText(selectedService) && <> · {priceText(selectedService)}</>}
+                    </p>
+                  </div>
+                  {selectedService.isOpenNow !== null && (
+                    <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${selectedService.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                      {selectedService.isOpenNow ? "Abierto" : "Cerrado"}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-4 flex gap-2 pb-2">
+                  {selectedService.bookingUrl && (
+                    <Link href={selectedService.bookingUrl} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
+                      Reservar
+                    </Link>
+                  )}
+                  {selectedService.phone && (
+                    <a href={`tel:${selectedService.phone}`} className="flex-1 rounded-2xl border border-slate-200 py-3 text-center text-[13px] font-semibold text-slate-700">
+                      Llamar
+                    </a>
+                  )}
+                  <button onClick={() => setMobileTab("list")} className="rounded-2xl border border-slate-200 px-5 py-3 text-[13px] font-semibold text-slate-700">
+                    Lista
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop map */}
+        <div className="relative hidden flex-1 overflow-hidden lg:block">
+          <MapCanvas
+            accessToken={MAPBOX_TOKEN}
+            points={services}
+            selectedPointId={selectedId}
+            onSelectPoint={setSelectedId}
+            className="h-full w-full"
+            borderless
+          />
+
+          {!isLoading && services.length > 0 && (
+            <div className="pointer-events-none absolute left-4 top-4 z-10">
+              <div className="rounded-full border border-white/15 bg-black/50 px-4 py-1.5 text-[12px] font-semibold text-white shadow-lg backdrop-blur-md">
+                {services.length} lugar{services.length !== 1 ? "es" : ""} en el área
+              </div>
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="pointer-events-none absolute left-4 top-4 z-10">
+              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-4 py-1.5 text-[12px] font-semibold text-white backdrop-blur-md">
+                <span className="h-1.5 w-1.5 animate-ping rounded-full bg-white" />
+                Buscando...
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* Desktop map */}
-      <div className="relative hidden flex-1 overflow-hidden lg:block">
-        <MapCanvas
-          accessToken={MAPBOX_TOKEN}
-          points={services}
-          selectedPointId={selectedId}
-          onSelectPoint={setSelectedId}
-          className="h-full w-full"
-          borderless
-        />
-
-        {/* Floating badge */}
-        {!isLoading && services.length > 0 && (
-          <div className="pointer-events-none absolute left-4 top-4 z-10">
-            <div className="rounded-full border border-white/15 bg-black/50 px-4 py-1.5 text-[12px] font-semibold text-white shadow-lg backdrop-blur-md">
-              {services.length} lugar{services.length !== 1 ? "es" : ""} en el área
-            </div>
-          </div>
-        )}
-
-        {isLoading && (
-          <div className="pointer-events-none absolute left-4 top-4 z-10">
-            <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-4 py-1.5 text-[12px] font-semibold text-white backdrop-blur-md">
-              <span className="h-1.5 w-1.5 animate-ping rounded-full bg-white" />
-              Buscando...
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }

@@ -1,0 +1,89 @@
+Refactoriza la parte superior de la sección “Cerca de ti” para mejorar radicalmente la jerarquía de categorías y hacer que la experiencia se sienta más viva, premium y guiada.
+
+OBJETIVO
+Quiero que la primera interacción del usuario en esta vista sea elegir qué quiere explorar. Las categorías principales deben tener mucho más protagonismo visual y dejar de sentirse como filtros pequeños secundarios.
+
+PROBLEMAS ACTUALES
+- Las categorías se ven demasiado pequeñas.
+- No se sienten importantes.
+- La jerarquía entre categorías y filtros no es clara.
+- La pantalla no guía bien la primera acción del usuario.
+- La interfaz aún se siente estática.
+
+CAMBIOS PEDIDOS
+
+1. Convertir las categorías principales en el elemento central de entrada.
+Categorías principales:
+- Todo
+- Tiendas
+- Paseos
+- Parques
+- Peluquerías
+- Veterinarias
+
+Estas categorías deben:
+- ser más grandes
+- tener mejor padding
+- mejor altura
+- mejor tipografía
+- iconos si ayudan
+- estado activo muy claro
+- sentirse táctiles y modernas
+- verse premium, no como chips básicos
+
+2. Crear mejor jerarquía visual.
+Orden sugerido dentro del panel izquierdo:
+- título o texto guía breve
+- barra de categorías principales
+- buscador
+- filtros secundarios
+- resultados
+
+3. Separar categorías de filtros.
+Las categorías principales no deben mezclarse visualmente con filtros secundarios.
+Filtros secundarios pueden ser:
+- Abierto ahora
+- Con descuento
+- Cerca de mí
+- Mejor valorados
+
+4. Agregar animaciones sutiles y elegantes.
+La app debe sentirse viva.
+Agregar microinteracciones como:
+- transición suave al cambiar categoría
+- animación del estado activo
+- entrada suave de resultados
+- hover / tap states refinados
+- pequeños fades o slides
+- skeleton loading elegante si corresponde
+
+Las animaciones deben ser:
+- rápidas
+- suaves
+- premium
+- no exageradas
+
+5. Mejorar la primera interacción.
+Quiero que la interfaz invite a elegir una categoría al entrar.
+Agregar un pequeño encabezado o texto guía como:
+- “¿Qué quieres explorar?”
+- “Explora lugares y servicios para tu mascota”
+- “Elige una categoría para comenzar”
+
+6. Responsive.
+En móvil:
+- categorías en scroll horizontal suave
+- tamaño cómodo para tocar
+- buena separación
+- mantener sensación premium
+
+7. No romper funcionalidad.
+Mantener lógica actual, filtros y conexión con resultados/mapa.
+Priorizar refactor visual, jerarquía y animación.
+
+RESULTADO ESPERADO
+- categorías mucho más protagonistas
+- experiencia más guiada
+- interfaz más viva
+- mejor sensación de producto
+- vista “Cerca de ti” más fuerte, más clara y más comercial
