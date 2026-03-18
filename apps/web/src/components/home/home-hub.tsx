@@ -232,7 +232,7 @@ function useTypingPlaceholder(phrases: string[]) {
       setPhraseIdx((p) => (p + 1) % phrases.length);
     } else if (deleting) {
       timeout = setTimeout(() => setText((t) => t.slice(0, -1)), 35);
-    } else {
+    } else if (current) {
       timeout = setTimeout(() => setText(current.slice(0, text.length + 1)), 55);
     }
 
@@ -403,7 +403,7 @@ export function HomeHub() {
                   ? "w-5 bg-[hsl(var(--secondary))]"
                   : "w-1.5 bg-[hsl(var(--border))]"
               }`}
-              aria-label={`Ir a ${FEATURES[i].label}`}
+              aria-label={`Ir a ${FEATURES[i]?.label ?? ""}`}
             />
           ))}
         </div>

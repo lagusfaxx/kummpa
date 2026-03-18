@@ -415,9 +415,25 @@ export function MapCanvas({
   if (!accessToken) {
     return (
       <div
-        className={`${className ?? ""} ${borderless ? "" : "rounded-2xl border border-amber-200"} flex items-center justify-center bg-amber-50 p-6 text-sm text-amber-900`}
+        className={`${className ?? ""} ${borderless ? "" : "rounded-2xl"} flex flex-col items-center justify-center gap-5 bg-[hsl(210_20%_14%)] p-8 text-center`}
+        style={{
+          backgroundImage:
+            "radial-gradient(ellipse at 60% 40%, hsl(155_48%_20%/0.4) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, hsl(220_40%_20%/0.5) 0%, transparent 55%)",
+        }}
       >
-        Configura{" "}<code className="font-mono">NEXT_PUBLIC_MAPBOX_TOKEN</code>{" "}para visualizar el mapa.
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 opacity-70">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-white/90">Mapa no configurado</p>
+          <p className="mt-1 max-w-[200px] text-xs leading-relaxed text-white/45">
+            Agrega tu token de Mapbox para activar el mapa interactivo
+          </p>
+        </div>
       </div>
     );
   }

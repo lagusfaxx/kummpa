@@ -1,0 +1,155 @@
+Rediseña la sección “Explorar” para que se vea mucho más profesional, moderna y premium, tipo app real de marketplace + mapa.
+
+CONTEXTO
+La vista tiene dos zonas principales:
+- izquierda: panel de exploración, filtros y resultados
+- derecha: mapa principal
+
+La idea es que esta sección sea una de las más importantes y llamativas de toda la app. Debe sentirse útil, limpia, ordenada, visual y confiable. Quiero que se vea “producto serio”, no una interfaz básica.
+
+OBJETIVO GENERAL
+Convertir “Explorar” en una experiencia de descubrimiento clara y atractiva:
+- buscar servicios/lugares
+- filtrar por categorías
+- ver resultados ordenados
+- usar el mapa como pieza central
+- entender todo rápido
+- mantener estética premium, ligera y moderna
+
+PROBLEMAS ACTUALES A CORREGIR
+- La columna izquierda se ve plana y poco trabajada.
+- Los filtros y chips se sienten básicos.
+- El mapa no tiene suficiente presencia visual.
+- El estado vacío (“Sin resultados”) es demasiado genérico.
+- Hay poca jerarquía entre búsqueda, filtros y resultados.
+- Se siente funcional, pero no “fino”.
+- El diseño todavía no parece una app fuerte de descubrimiento geolocalizado.
+
+INSTRUCCIONES DE DISEÑO
+
+1. Mejorar el layout general.
+- Mantener estructura izquierda/derecha.
+- Hacer que la composición se vea más equilibrada.
+- Dar más protagonismo al mapa.
+- El panel izquierdo debe sentirse como un panel serio de exploración, no como una simple columna blanca.
+- Mejorar spacing, bordes, divisiones, fondos y profundidad visual.
+
+2. Refinar el panel izquierdo.
+- Crear mejor jerarquía visual:
+  1. buscador / filtros principales
+  2. chips de categorías
+  3. resultados
+  4. estados vacíos / carga / error
+- Hacer que el panel tenga mejor padding, más aire y mejor separación entre bloques.
+- Se puede usar header sticky dentro del panel izquierdo para búsqueda y filtros.
+
+3. Mejorar la experiencia de búsqueda.
+- Revisar si realmente se necesitan dos buscadores visibles al mismo tiempo.
+- Si el buscador superior sobra, simplificarlo o integrarlo mejor.
+- El buscador principal debe ser más limpio, útil y claro.
+- Incluir placeholder mejor redactado, ejemplo:
+  “Busca veterinarias, peluquerías, parques o cuidadores”
+- Mejorar iconografía y botón de filtros.
+
+4. Rediseñar chips/categorías.
+- Deben verse más premium y más claros.
+- Mejor spacing horizontal y vertical.
+- Estados activos/inactivos más evidentes.
+- Mejor contraste y diseño más moderno.
+- Mantenerlos compactos, elegantes y fáciles de tocar en móvil.
+- Evitar que se vean genéricos o demasiado “default”.
+
+5. Rediseñar lista de resultados.
+- Cuando haya resultados, cada item debe verse como una card compacta y profesional.
+- Mostrar:
+  - nombre
+  - categoría
+  - distancia o zona
+  - rating si existe
+  - estado (abierto / disponible)
+  - CTA breve
+- Las cards deben ser escaneables y rápidas de entender.
+- Evitar exceso de texto.
+- Hacer hover/active states sutiles.
+- Cuando el usuario seleccione una card, debe sentirse conectada con el mapa.
+
+6. Mejorar el estado vacío.
+- El estado “Sin resultados” debe verse mucho mejor.
+- Más visual, más amistoso y más premium.
+- Cambiar el copy por algo más útil y natural, por ejemplo:
+  “No encontramos resultados con esos filtros”
+  “Prueba otra categoría o amplía la búsqueda”
+- Añadir mejor composición visual para que no se vea vacío de forma pobre.
+
+7. Mejorar estados de error y carga.
+- El texto “Error al cargar” es demasiado básico.
+- Rediseñar mensajes de error con mejor copy y mejor presentación.
+- Agregar skeleton loaders para resultados y mapa si hace falta.
+- Todo debe sentirse más pulido y comercial.
+
+8. Hacer que el mapa se vea protagonista.
+- El mapa debe ocupar bien el espacio derecho.
+- Debe verse limpio, grande y con buena integración con el panel.
+- Si no está configurado Mapbox, el estado fallback debe verse elegante, no como texto crudo.
+- Crear un placeholder/fallback más bonito:
+  - mensaje claro
+  - icono o ilustración simple
+  - botón o hint para activar el mapa
+- Evitar mensajes técnicos visibles al usuario final.
+
+9. Mejorar la interfaz tipo marketplace geolocalizado.
+- Quiero que se sienta como una mezcla entre:
+  - mapa + directorio + descubrimiento local
+- Debe verse moderna, útil y confiable.
+- Menos sensación de panel técnico.
+- Más sensación de producto real listo para usarse.
+
+10. Responsive importante.
+- En desktop:
+  - panel izquierdo cómodo y elegante
+  - mapa amplio y protagonista
+- En móvil:
+  - convertir la experiencia en tabs o drawer si hace falta
+  - mapa y lista deben convivir bien
+  - filtros fáciles de usar
+- No romper la funcionalidad actual.
+
+11. Copy/UI tone
+- Todo debe sonar más natural y profesional.
+- No mostrar mensajes técnicos al usuario.
+- Menos texto genérico.
+- Más claridad y confianza.
+
+12. Estilo visual buscado
+- limpio
+- premium
+- moderno
+- minimalista
+- marketplace geolocalizado
+- bordes suaves
+- sombras sutiles
+- buena jerarquía tipográfica
+- excelente spacing
+
+MEJORAS CONCRETAS ESPERADAS
+- Columna izquierda más trabajada visualmente
+- Chips más premium
+- Resultados más bonitos y escaneables
+- Estado vacío bonito
+- Estado sin token de mapa más elegante
+- Mapa más protagonista
+- Diseño general más fino, más serio y más comercial
+
+IMPORTANTE
+- No romper la lógica actual.
+- Mantener la funcionalidad existente.
+- Priorizar refactor visual, layout, copy, estados y jerarquía.
+- Si hace falta reorganizar componentes para dejarlo más profesional, hazlo.
+
+ENTREGABLE
+Quiero una nueva versión de “Explorar” que se vea claramente superior:
+- más premium
+- más usable
+- más limpia
+- más enfocada en descubrimiento local
+- más parecida a una app seria de mapa + servicios

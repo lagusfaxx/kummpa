@@ -10,23 +10,29 @@ import type { MapServicePoint, MapServiceType } from "@/features/map/types";
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 /* ─── Category definitions ───────────────────────────────────── */
-type Category = { label: string; type?: MapServiceType; color: string; dot: string };
+type Category = {
+  label: string;
+  type?: MapServiceType;
+  dot: string;
+  activeBg: string;
+  activeText: string;
+};
 
 const CATEGORIES: Category[] = [
-  { label: "Todo",         color: "bg-slate-100 text-slate-700 border-slate-200",       dot: "#64748b" },
-  { label: "Veterinarias", type: "VET",       color: "bg-teal-50 text-teal-800 border-teal-200",        dot: "#0f766e" },
-  { label: "Peluquerías",  type: "GROOMING",  color: "bg-pink-50 text-pink-800 border-pink-200",        dot: "#be185d" },
-  { label: "Paseos",       type: "CAREGIVER", color: "bg-blue-50 text-blue-800 border-blue-200",        dot: "#0369a1" },
-  { label: "Tiendas",      type: "SHOP",      color: "bg-amber-50 text-amber-800 border-amber-200",     dot: "#b45309" },
-  { label: "Hoteles",      type: "HOTEL",     color: "bg-violet-50 text-violet-800 border-violet-200",  dot: "#6d28d9" },
-  { label: "Parques",      type: "PARK",      color: "bg-green-50 text-green-800 border-green-200",     dot: "#15803d" },
+  { label: "Todo",         dot: "#64748b", activeBg: "bg-slate-700",   activeText: "text-white" },
+  { label: "Vets",         type: "VET",       dot: "#0f766e", activeBg: "bg-teal-700",   activeText: "text-white" },
+  { label: "Peluquerías",  type: "GROOMING",  dot: "#be185d", activeBg: "bg-pink-700",   activeText: "text-white" },
+  { label: "Paseos",       type: "CAREGIVER", dot: "#0369a1", activeBg: "bg-blue-700",   activeText: "text-white" },
+  { label: "Tiendas",      type: "SHOP",      dot: "#b45309", activeBg: "bg-amber-700",  activeText: "text-white" },
+  { label: "Hoteles",      type: "HOTEL",     dot: "#6d28d9", activeBg: "bg-violet-700", activeText: "text-white" },
+  { label: "Parques",      type: "PARK",      dot: "#15803d", activeBg: "bg-green-700",  activeText: "text-white" },
 ];
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 function typeLabel(type: MapServiceType): string {
   const map: Record<MapServiceType, string> = {
-    VET: "Veterinaria", CAREGIVER: "Paseador / cuidador", SHOP: "Tienda",
-    GROOMING: "Peluquería", HOTEL: "Hotel", PARK: "Parque", LOST_PET: "Mascota perdida"
+    VET: "Veterinaria", CAREGIVER: "Paseador", SHOP: "Pet shop",
+    GROOMING: "Peluquería", HOTEL: "Hotel", PARK: "Parque", LOST_PET: "Alerta"
   };
   return map[type] ?? type;
 }
@@ -52,16 +58,6 @@ function IcoX() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-    </svg>
-  );
-}
-function IcoSliders() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-      <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
-      <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
-      <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
-      <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
     </svg>
   );
 }
@@ -95,6 +91,66 @@ function IcoPhone() {
     </svg>
   );
 }
+function IcoChevRight() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  );
+}
+
+/* ─── Loading skeleton ────────────────────────────────────────── */
+function SkeletonCard() {
+  return (
+    <div className="flex gap-3 px-4 py-3.5 border-b border-[hsl(var(--border)/0.4)]">
+      <div className="h-14 w-14 shrink-0 animate-pulse rounded-2xl bg-[hsl(var(--muted))]" />
+      <div className="flex-1 space-y-2 pt-0.5">
+        <div className="h-3.5 animate-pulse rounded-full bg-[hsl(var(--muted))] w-2/3" />
+        <div className="h-2.5 animate-pulse rounded-full bg-[hsl(var(--muted))] w-1/2" />
+        <div className="h-2.5 animate-pulse rounded-full bg-[hsl(var(--muted))] w-1/3" />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Empty state ─────────────────────────────────────────────── */
+function EmptyState({ query }: { query: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center px-8 py-16 text-center">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[hsl(var(--muted))]">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.5)]">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="11" y1="8" x2="11" y2="14"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+      </div>
+      <p className="font-semibold text-[hsl(var(--foreground))]">
+        {query ? `Sin resultados para "${query}"` : "No hay resultados"}
+      </p>
+      <p className="mt-1.5 max-w-[200px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+        Prueba otra categoría o amplía tu búsqueda
+      </p>
+    </div>
+  );
+}
+
+/* ─── Error state ─────────────────────────────────────────────── */
+function ErrorState() {
+  return (
+    <div className="flex flex-col items-center justify-center px-8 py-16 text-center">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-red-400">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <p className="font-semibold">No pudimos cargar los resultados</p>
+      <p className="mt-1.5 text-sm text-[hsl(var(--muted-foreground))]">Verifica tu conexión e intenta de nuevo</p>
+    </div>
+  );
+}
 
 /* ─── Result card ─────────────────────────────────────────────── */
 function ServiceCard({
@@ -112,83 +168,97 @@ function ServiceCard({
   return (
     <article
       onClick={onSelect}
-      className={`cursor-pointer border-b border-[hsl(var(--border)/0.6)] p-4 transition-colors hover:bg-white/60 ${
-        selected ? "bg-white shadow-sm" : "bg-transparent"
+      className={`cursor-pointer border-b border-[hsl(var(--border)/0.5)] px-4 py-3.5 transition-all ${
+        selected
+          ? "bg-white shadow-[0_1px_8px_hsl(var(--foreground)/0.06)]"
+          : "hover:bg-white/70"
       }`}
     >
       <div className="flex gap-3">
-        {/* Image or placeholder */}
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[hsl(var(--muted))]">
+        {/* Avatar */}
+        <div
+          className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-lg font-bold text-white"
+          style={{ backgroundColor: service.imageUrl ? "transparent" : cat.dot }}
+        >
           {service.imageUrl ? (
             <img src={service.imageUrl} alt={service.name} className="h-full w-full object-cover" />
           ) : (
-            <div
-              className="flex h-full w-full items-center justify-center text-xl font-bold text-white"
-              style={{ backgroundColor: cat.dot }}
-            >
-              {service.name.slice(0, 1)}
-            </div>
+            <span>{service.name.slice(0, 1)}</span>
           )}
           {service.isEmergency24x7 && (
-            <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-0.5 text-center text-[9px] font-bold text-white">24/7</span>
+            <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-0.5 text-center text-[8px] font-bold text-white tracking-wide">
+              24/7
+            </span>
           )}
         </div>
 
         {/* Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="truncate text-sm font-semibold leading-tight">{service.name}</p>
+            <p className="truncate text-[0.875rem] font-semibold leading-snug">{service.name}</p>
             {service.isOpenNow !== null && (
               <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                service.isOpenNow ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+                service.isOpenNow
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-slate-100 text-slate-500"
               }`}>
                 {service.isOpenNow ? "Abierto" : "Cerrado"}
               </span>
             )}
           </div>
 
-          <p className="mt-0.5 text-[11px] text-[hsl(var(--muted-foreground))]">
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[hsl(var(--muted-foreground))]">
             <span
-              className="mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle"
+              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
               style={{ backgroundColor: cat.dot }}
             />
-            {typeLabel(service.type)}
+            <span>{typeLabel(service.type)}</span>
             {(service.address || service.district) && (
-              <> · {service.address ?? service.district}</>
+              <>
+                <span className="opacity-40">·</span>
+                <span className="truncate">{service.district ?? service.address}</span>
+              </>
             )}
-          </p>
+          </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             {service.distanceKm !== null && (
-              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              <span className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
                 {service.distanceKm.toFixed(1)} km
               </span>
             )}
             {price && (
-              <span className="text-[11px] font-medium text-[hsl(var(--foreground)/0.75)]">{price}</span>
+              <span className="text-[11px] font-semibold text-[hsl(var(--foreground)/0.7)]">{price}</span>
             )}
             {service.rating !== null && (
-              <span className="flex items-center gap-0.5 text-[11px] text-amber-600">
+              <span className="flex items-center gap-0.5 text-[11px] font-semibold text-amber-500">
                 <IcoStar /> {service.rating.toFixed(1)}
               </span>
             )}
             {service.discountLabel && (
-              <span className="rounded-full bg-[hsl(var(--accent)/0.15)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--accent))]">
+              <span className="rounded-full bg-[hsl(var(--accent)/0.12)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--accent))]">
                 {service.discountLabel}
               </span>
             )}
           </div>
         </div>
+
+        {/* Chevron (not selected) */}
+        {!selected && (
+          <div className="flex shrink-0 items-center self-center text-[hsl(var(--muted-foreground)/0.4)]">
+            <IcoChevRight />
+          </div>
+        )}
       </div>
 
-      {/* Action row */}
+      {/* Expanded CTAs */}
       {selected && (
-        <div className="mt-3 flex flex-wrap gap-2 pl-[76px]">
+        <div className="mt-3 flex flex-wrap gap-2 pl-[68px]">
           {service.bookingUrl && (
             <Link
               href={service.bookingUrl}
               onClick={(e) => e.stopPropagation()}
-              className="rounded-full bg-[hsl(var(--primary))] px-3.5 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90"
+              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:opacity-90"
             >
               Reservar
             </Link>
@@ -197,7 +267,7 @@ function ServiceCard({
             <a
               href={`tel:${service.phone}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 rounded-full border border-[hsl(var(--border))] bg-white px-3 py-1.5 text-[11px] font-semibold transition hover:bg-[hsl(var(--muted))]"
+              className="flex items-center gap-1.5 rounded-full border border-[hsl(var(--border))] bg-white px-3.5 py-1.5 text-[11px] font-semibold shadow-sm transition hover:bg-[hsl(var(--muted))]"
             >
               <IcoPhone /> Llamar
             </a>
@@ -206,7 +276,7 @@ function ServiceCard({
             <Link
               href={service.profileUrl}
               onClick={(e) => e.stopPropagation()}
-              className="rounded-full border border-[hsl(var(--border))] bg-white px-3 py-1.5 text-[11px] font-semibold transition hover:bg-[hsl(var(--muted))]"
+              className="rounded-full border border-[hsl(var(--border))] bg-white px-3.5 py-1.5 text-[11px] font-semibold shadow-sm transition hover:bg-[hsl(var(--muted))]"
             >
               Ver ficha
             </Link>
@@ -217,15 +287,37 @@ function ServiceCard({
   );
 }
 
-/* ─── Empty state ─────────────────────────────────────────────── */
-function EmptyState({ query }: { query: string }) {
+/* ─── Category pills strip ────────────────────────────────────── */
+function CategoryStrip({
+  selectedType,
+  onSelect
+}: {
+  selectedType: MapServiceType | null;
+  onSelect: (t: MapServiceType | null) => void;
+}) {
   return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <div className="text-5xl">🔍</div>
-      <p className="mt-4 font-semibold">Sin resultados</p>
-      <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-        {query ? `No encontramos nada para "${query}".` : "Prueba cambiando la categoría o amplía el radio."}
-      </p>
+    <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
+      {CATEGORIES.map((cat) => {
+        const active = cat.type ? selectedType === cat.type : selectedType === null;
+        return (
+          <button
+            key={cat.label}
+            type="button"
+            onClick={() => onSelect(cat.type ?? null)}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-all ${
+              active
+                ? `${cat.activeBg} ${cat.activeText} shadow-sm`
+                : "bg-white border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--secondary)/0.3)] hover:text-[hsl(var(--foreground))]"
+            }`}
+          >
+            <span
+              className={`h-2 w-2 shrink-0 rounded-full ${active ? "bg-white/60" : ""}`}
+              style={active ? {} : { backgroundColor: cat.dot }}
+            />
+            {cat.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -239,7 +331,6 @@ export default function ExplorePage() {
   const [selectedType, setSelectedType] = useState<MapServiceType | null>(null);
   const [openNow, setOpenNow]           = useState(false);
   const [withDiscount, setWithDiscount] = useState(params.get("withDiscount") === "1");
-  const [showFilters, setShowFilters]   = useState(false);
   const [services, setServices]         = useState<MapServicePoint[]>([]);
   const [selectedId, setSelectedId]     = useState<string | null>(null);
   const [isLoading, setIsLoading]       = useState(false);
@@ -269,7 +360,7 @@ export default function ExplorePage() {
       })
       .catch((err) => {
         if (ctrl.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Error al cargar.");
+        setError(err instanceof Error ? err.message : "Error desconocido");
       })
       .finally(() => {
         if (!ctrl.signal.aborted) setIsLoading(false);
@@ -300,120 +391,115 @@ export default function ExplorePage() {
     setSearch("");
   }
 
-  /* ── Sidebar panel ── */
+  /* ── Sidebar panel ───────────────────────────────────────────── */
   const Sidebar = (
-    <div className="flex h-full flex-col bg-[hsl(var(--background)/0.98)] backdrop-blur-sm">
+    <div className="flex h-full flex-col bg-[hsl(var(--background))]">
 
-      {/* Search bar */}
-      <div className="border-b border-[hsl(var(--border)/0.7)] p-3">
-        <form onSubmit={submitSearch} className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]">
-              <IcoSearch />
-            </span>
-            <input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Veterinaria, peluquería, parque…"
-              className="h-10 w-full rounded-xl border border-[hsl(var(--border))] bg-white/80 pl-9 pr-8 text-sm outline-none focus:border-[hsl(var(--secondary)/0.5)] focus:ring-0"
-            />
-            {inputValue && (
-              <button type="button" onClick={clearSearch} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
-                <IcoX />
-              </button>
+      {/* Sticky header: search + categories */}
+      <div className="sticky top-0 z-10 border-b border-[hsl(var(--border)/0.6)] bg-[hsl(var(--background)/0.96)] backdrop-blur-md">
+
+        {/* Panel title */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-3">
+          <div>
+            <h1 className="text-base font-bold">Explorar</h1>
+            <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+              Servicios y lugares cerca de ti
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {(openNow || withDiscount) && (
+              <span className="rounded-full bg-[hsl(var(--secondary)/0.12)] px-2.5 py-0.5 text-[10px] font-bold text-[hsl(var(--secondary))]">
+                Filtros activos
+              </span>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => setShowFilters((f) => !f)}
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition ${
-              showFilters || openNow || withDiscount
-                ? "border-[hsl(var(--secondary)/0.5)] bg-[hsl(var(--secondary)/0.08)] text-[hsl(var(--secondary))]"
-                : "border-[hsl(var(--border))] bg-white/80 text-[hsl(var(--muted-foreground))]"
-            }`}
-            aria-label="Filtros"
-          >
-            <IcoSliders />
-          </button>
-        </form>
+        </div>
+
+        {/* Search bar */}
+        <div className="px-4 pb-3">
+          <form onSubmit={submitSearch}>
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 text-[hsl(var(--muted-foreground)/0.6)]">
+                <IcoSearch />
+              </span>
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Veterinarias, peluquerías, parques..."
+                className="h-11 w-full rounded-2xl border border-[hsl(var(--border))] bg-white pl-10 pr-10 text-sm shadow-sm outline-none transition focus:border-[hsl(var(--secondary)/0.5)] focus:shadow-md"
+              />
+              {inputValue ? (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-3.5 rounded-full p-0.5 text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]"
+                >
+                  <IcoX />
+                </button>
+              ) : null}
+            </div>
+          </form>
+        </div>
 
         {/* Quick filters */}
-        {showFilters && (
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setOpenNow((v) => !v)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                openNow ? "border-green-300 bg-green-50 text-green-800" : "border-[hsl(var(--border))] bg-white/80 text-[hsl(var(--muted-foreground))]"
-              }`}
-            >
-              Abierto ahora
-            </button>
-            <button
-              type="button"
-              onClick={() => setWithDiscount((v) => !v)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                withDiscount ? "border-orange-300 bg-orange-50 text-orange-800" : "border-[hsl(var(--border))] bg-white/80 text-[hsl(var(--muted-foreground))]"
-              }`}
-            >
-              Con descuento
-            </button>
-          </div>
-        )}
-      </div>
+        <div className="flex items-center gap-2 px-4 pb-3">
+          <button
+            type="button"
+            onClick={() => setOpenNow((v) => !v)}
+            className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${
+              openNow
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm"
+                : "border-[hsl(var(--border))] bg-white text-[hsl(var(--muted-foreground))] hover:bg-white/80"
+            }`}
+          >
+            Abierto ahora
+          </button>
+          <button
+            type="button"
+            onClick={() => setWithDiscount((v) => !v)}
+            className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${
+              withDiscount
+                ? "border-orange-300 bg-orange-50 text-orange-800 shadow-sm"
+                : "border-[hsl(var(--border))] bg-white text-[hsl(var(--muted-foreground))] hover:bg-white/80"
+            }`}
+          >
+            Con descuento
+          </button>
+        </div>
 
-      {/* Category pills */}
-      <div className="border-b border-[hsl(var(--border)/0.7)] px-3 py-2.5">
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
-          {CATEGORIES.map((cat) => {
-            const active = cat.type ? selectedType === cat.type : selectedType === null;
-            return (
-              <button
-                key={cat.label}
-                type="button"
-                onClick={() => setSelectedType(cat.type ?? null)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${
-                  active ? cat.color + " border-opacity-60 font-bold shadow-sm" : "border-[hsl(var(--border))] bg-white/60 text-[hsl(var(--muted-foreground))] hover:bg-white"
-                }`}
-              >
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: cat.dot }}
-                />
-                {cat.label}
-              </button>
-            );
-          })}
+        {/* Category strip */}
+        <div className="px-4 pb-3">
+          <CategoryStrip selectedType={selectedType} onSelect={setSelectedType} />
         </div>
       </div>
 
-      {/* Results count */}
-      <div className="flex items-center justify-between border-b border-[hsl(var(--border)/0.5)] px-4 py-2">
+      {/* Results count bar */}
+      <div className="flex items-center justify-between border-b border-[hsl(var(--border)/0.4)] px-5 py-2.5">
         <p className="text-[11px] font-semibold text-[hsl(var(--muted-foreground))]">
-          {isLoading ? "Buscando…" : error ? "Error al cargar" : `${services.length} resultado${services.length !== 1 ? "s" : ""}`}
+          {isLoading
+            ? "Buscando..."
+            : error
+            ? "No se pudieron cargar"
+            : `${services.length} lugar${services.length !== 1 ? "es" : ""} encontrado${services.length !== 1 ? "s" : ""}`}
         </p>
-        {search && (
-          <span className="rounded-full bg-[hsl(var(--primary)/0.08)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--primary))]">
-            «{search}»
-          </span>
+        {search && !isLoading && (
+          <button
+            onClick={clearSearch}
+            className="flex items-center gap-1 rounded-full bg-[hsl(var(--primary)/0.08)] px-2.5 py-0.5 text-[10px] font-bold text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.14)] transition"
+          >
+            «{search}» <IcoX />
+          </button>
         )}
       </div>
 
       {/* Results list */}
       <div ref={listRef} className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="space-y-0">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-3 border-b border-[hsl(var(--border)/0.5)] p-4">
-                <div className="h-16 w-16 shrink-0 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
-                <div className="flex-1 space-y-2 pt-1">
-                  <div className="h-3.5 animate-pulse rounded-full bg-[hsl(var(--muted))] w-3/4" />
-                  <div className="h-2.5 animate-pulse rounded-full bg-[hsl(var(--muted))] w-1/2" />
-                  <div className="h-2.5 animate-pulse rounded-full bg-[hsl(var(--muted))] w-1/3" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <>
+            {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonCard key={i} />)}
+          </>
+        ) : error ? (
+          <ErrorState />
         ) : services.length === 0 ? (
           <EmptyState query={search} />
         ) : (
@@ -436,52 +522,62 @@ export default function ExplorePage() {
     <div className="flex h-full w-full overflow-hidden">
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-[370px] shrink-0 flex-col overflow-hidden border-r border-[hsl(var(--border)/0.7)] lg:flex">
+      <aside className="hidden w-[380px] shrink-0 flex-col overflow-hidden border-r border-[hsl(var(--border)/0.6)] shadow-[1px_0_8px_hsl(var(--foreground)/0.04)] lg:flex">
         {Sidebar}
       </aside>
 
       {/* Mobile: tabs + content */}
       <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
-        {/* Mobile search + tabs */}
-        <div className="border-b border-[hsl(var(--border)/0.7)] bg-[hsl(var(--background)/0.98)]">
-          <div className="p-3">
-            <form onSubmit={submitSearch} className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]">
-                  <IcoSearch />
-                </span>
-                <input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Busca veterinarias, parques, paseos…"
-                  className="h-10 w-full rounded-xl border border-[hsl(var(--border))] bg-white/80 pl-9 pr-8 text-sm outline-none focus:border-[hsl(var(--secondary)/0.5)]"
-                />
-                {inputValue && (
-                  <button type="button" onClick={clearSearch} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]">
-                    <IcoX />
-                  </button>
-                )}
-              </div>
+
+        {/* Mobile sticky header */}
+        <div className="border-b border-[hsl(var(--border)/0.6)] bg-[hsl(var(--background)/0.96)] backdrop-blur-md">
+          <div className="p-3 pb-2">
+            <form onSubmit={submitSearch} className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground)/0.6)]">
+                <IcoSearch />
+              </span>
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Veterinarias, peluquerías, parques..."
+                className="h-11 w-full rounded-2xl border border-[hsl(var(--border))] bg-white pl-10 pr-10 text-sm shadow-sm outline-none focus:border-[hsl(var(--secondary)/0.5)]"
+              />
+              {inputValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]"
+                >
+                  <IcoX />
+                </button>
+              )}
             </form>
 
-            {/* Mobile category pills */}
-            <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
-              {CATEGORIES.map((cat) => {
-                const active = cat.type ? selectedType === cat.type : selectedType === null;
-                return (
-                  <button
-                    key={cat.label}
-                    type="button"
-                    onClick={() => setSelectedType(cat.type ?? null)}
-                    className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold transition ${
-                      active ? cat.color + " shadow-sm" : "border-[hsl(var(--border))] bg-white/60 text-[hsl(var(--muted-foreground))]"
-                    }`}
-                  >
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.dot }} />
-                    {cat.label}
-                  </button>
-                );
-              })}
+            {/* Mobile quick filters */}
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setOpenNow((v) => !v)}
+                className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition ${
+                  openNow ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-[hsl(var(--border))] bg-white text-[hsl(var(--muted-foreground))]"
+                }`}
+              >
+                Abierto ahora
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithDiscount((v) => !v)}
+                className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition ${
+                  withDiscount ? "border-orange-300 bg-orange-50 text-orange-800" : "border-[hsl(var(--border))] bg-white text-[hsl(var(--muted-foreground))]"
+                }`}
+              >
+                Con descuento
+              </button>
+            </div>
+
+            {/* Mobile category strip */}
+            <div className="mt-2">
+              <CategoryStrip selectedType={selectedType} onSelect={setSelectedType} />
             </div>
           </div>
 
@@ -498,7 +594,10 @@ export default function ExplorePage() {
                     : "text-[hsl(var(--muted-foreground))]"
                 }`}
               >
-                {tab === "map" ? <><IcoMap /> Mapa</> : <><IcoList /> Lista ({services.length})</>}
+                {tab === "map"
+                  ? <><IcoMap /> Mapa</>
+                  : <><IcoList /> Lista {!isLoading && `(${services.length})`}</>
+                }
               </button>
             ))}
           </div>
@@ -518,7 +617,9 @@ export default function ExplorePage() {
           ) : (
             <div className="h-full overflow-y-auto">
               {isLoading ? (
-                [1,2,3].map((i) => <div key={i} className="h-20 animate-pulse border-b border-[hsl(var(--border)/0.5)] m-3 rounded-xl bg-[hsl(var(--muted))]" />)
+                [1,2,3].map((i) => <SkeletonCard key={i} />)
+              ) : error ? (
+                <ErrorState />
               ) : services.length === 0 ? (
                 <EmptyState query={search} />
               ) : (
@@ -531,35 +632,40 @@ export default function ExplorePage() {
             </div>
           )}
 
-          {/* Mobile selected service bottom card */}
+          {/* Mobile bottom sheet for selected service */}
           {mobileTab === "map" && selectedService && (
-            <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl border-t border-[hsl(var(--border))] bg-white/95 p-4 shadow-2xl backdrop-blur-sm">
+            <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl border-t border-[hsl(var(--border)/0.6)] bg-white/96 px-5 pt-4 pb-6 shadow-2xl backdrop-blur-sm">
+              {/* Handle */}
+              <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[hsl(var(--border))]" />
               <div className="flex gap-3">
                 <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-bold text-white"
                   style={{ backgroundColor: categoryFor(selectedService.type).dot }}
                 >
-                  {selectedService.name.slice(0, 1)}
+                  {selectedService.imageUrl
+                    ? <img src={selectedService.imageUrl} alt={selectedService.name} className="h-full w-full rounded-2xl object-cover" />
+                    : selectedService.name.slice(0, 1)
+                  }
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{selectedService.name}</p>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                  <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">
                     {typeLabel(selectedService.type)}
                     {selectedService.distanceKm !== null && <> · {selectedService.distanceKm.toFixed(1)} km</>}
                     {priceText(selectedService) && <> · {priceText(selectedService)}</>}
                   </p>
                 </div>
                 {selectedService.isOpenNow !== null && (
-                  <span className={`shrink-0 self-start rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    selectedService.isOpenNow ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+                  <span className={`shrink-0 self-start rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                    selectedService.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
                   }`}>
                     {selectedService.isOpenNow ? "Abierto" : "Cerrado"}
                   </span>
                 )}
               </div>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-4 flex gap-2.5">
                 {selectedService.bookingUrl && (
-                  <Link href={selectedService.bookingUrl} className="flex-1 rounded-full bg-[hsl(var(--primary))] py-2.5 text-center text-xs font-bold text-white">
+                  <Link href={selectedService.bookingUrl} className="flex-1 rounded-full bg-[hsl(var(--primary))] py-2.5 text-center text-xs font-bold text-white shadow-sm">
                     Reservar
                   </Link>
                 )}
@@ -568,8 +674,12 @@ export default function ExplorePage() {
                     Llamar
                   </a>
                 )}
-                <button type="button" onClick={() => setMobileTab("list")} className="rounded-full border border-[hsl(var(--border))] px-4 py-2.5 text-xs font-semibold">
-                  Lista
+                <button
+                  type="button"
+                  onClick={() => setMobileTab("list")}
+                  className="rounded-full border border-[hsl(var(--border))] px-5 py-2.5 text-xs font-semibold"
+                >
+                  Ver lista
                 </button>
               </div>
             </div>
@@ -588,11 +698,21 @@ export default function ExplorePage() {
           borderless
         />
 
-        {/* Results badge on map */}
+        {/* Floating result count badge */}
         {!isLoading && services.length > 0 && (
           <div className="pointer-events-none absolute left-4 top-4">
-            <div className="rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-              {services.length} resultados en el mapa
+            <div className="rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm shadow-lg">
+              {services.length} lugar{services.length !== 1 ? "es" : ""} en el mapa
+            </div>
+          </div>
+        )}
+
+        {/* Loading overlay on map */}
+        {isLoading && (
+          <div className="pointer-events-none absolute left-4 top-4">
+            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+              <div className="h-2 w-2 animate-ping rounded-full bg-white opacity-75" />
+              Buscando...
             </div>
           </div>
         )}
