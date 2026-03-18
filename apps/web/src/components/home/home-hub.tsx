@@ -287,34 +287,33 @@ export function HomeHub() {
   const showTyping = !inputFocused && searchQuery === "";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-16 pt-2">
+    <div className="pb-16">
 
-      {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-[2rem] bg-[hsl(var(--primary))] px-6 py-14 text-white sm:px-12 sm:py-18">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[hsl(22_92%_60%/0.3)] blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-[hsl(155_60%_40%/0.28)] blur-3xl" />
+      {/* ── Hero — full-width, breaks out of shell container ──── */}
+      <section className="relative -mx-4 -mt-5 overflow-hidden bg-[hsl(var(--primary))] px-4 pb-14 pt-14 text-white sm:-mx-6 sm:-mt-7 sm:px-6 sm:pb-16 sm:pt-16 lg:-mx-8 lg:px-8">
+        {/* Glow blobs */}
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[hsl(22_92%_60%/0.28)] blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-[hsl(155_60%_40%/0.25)] blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[hsl(155_48%_38%/0.15)] blur-2xl" />
 
-        <div className="relative flex flex-col items-center text-center">
-          {/* Badge */}
+        {/* Content centered inside the full-width hero */}
+        <div className="relative mx-auto flex max-w-2xl flex-col items-center text-center">
           <span className="mb-5 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-sm">
             Todo para tu mascota en un solo lugar
           </span>
 
-          <h1 className="text-[2.2rem] font-bold leading-[1.1] tracking-tight sm:text-[3rem]">
+          <h1 className="text-[2.4rem] font-bold leading-[1.08] tracking-tight sm:text-[3.2rem]">
             Tu mascota,{" "}
             <span className="text-[hsl(var(--accent))]">más protegida.</span>
           </h1>
 
-          <p className="mt-4 max-w-sm text-[0.98rem] leading-relaxed text-white/60">
+          <p className="mt-4 max-w-sm text-[1rem] leading-relaxed text-white/60">
             Salud, comunidad, alertas y beneficios — desde una sola app.
           </p>
 
-          {/* Search bar with typing animation */}
-          <form
-            onSubmit={handleSearch}
-            className="relative mt-8 w-full max-w-md"
-          >
-            <div className="flex overflow-hidden rounded-2xl bg-white shadow-xl">
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="relative mt-8 w-full max-w-md">
+            <div className="flex overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-white/10">
               <div className="relative flex-1">
                 <input
                   value={searchQuery}
@@ -343,7 +342,17 @@ export function HomeHub() {
             </div>
           </form>
         </div>
+
+        {/* Bottom fade transition to page background */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+          style={{ background: "linear-gradient(to bottom, transparent, hsl(var(--background)))" }}
+        />
       </section>
+
+      {/* ── Rest of content in centered container ─────────────── */}
+      <div className="mx-auto max-w-5xl space-y-8 pt-4">
 
       {/* ── Quick nav pills ───────────────────────────────────── */}
       <nav>
@@ -526,6 +535,7 @@ export function HomeHub() {
           </div>
         </section>
       )}
+      </div>
     </div>
   );
 }
