@@ -1,0 +1,87 @@
+Quiero replantear completamente la sección “Cuenta” para que deje de mostrar todo de una vez y pase a funcionar como un panel de opciones moderno, parecido a una cuenta bien organizada de app real.
+
+PROBLEMA ACTUAL
+- La sección Cuenta muestra demasiada información al mismo tiempo.
+- Perfil, historial y reservas están mezclados.
+- Se siente rara y poco natural.
+- “Reservas” no debería aparecer pegado al perfil como bloque principal.
+- Parece más una pantalla administrativa que una cuenta moderna de usuario.
+
+OBJETIVO
+Convertir “Cuenta” en un panel con navegación interna, más limpio, más normal y más premium.
+
+NUEVA ESTRUCTURA
+La sección Cuenta debe funcionar como un hub o panel de usuario.
+
+Opciones principales:
+- Perfil
+- Reservas
+- Configuración
+- Cerrar sesión
+
+Opcionales si encajan:
+- Favoritos
+- Notificaciones
+- Actividad
+
+LAYOUT
+Desktop:
+- menú lateral izquierdo o superior con las opciones
+- contenido dinámico a la derecha según la opción seleccionada
+
+Mobile:
+- tabs horizontales o menú compacto
+- navegación clara y cómoda
+
+SECCIÓN PERFIL
+Quiero que Perfil se sienta más parecido a Instagram:
+- foto de perfil grande y visible
+- botón para cambiar o subir foto
+- nombre
+- correo
+- teléfono
+- ciudad
+- bio opcional
+- botón Editar perfil
+- experiencia visual limpia y moderna
+
+IMPORTANTE SOBRE FOTO DE PERFIL
+Agregar funcionalidad visual para:
+- subir foto de perfil
+- cambiar foto
+- mostrar avatar si no hay foto
+- que se sienta natural, simple y moderna, como una red social o app actual
+
+SECCIÓN RESERVAS
+Reservas debe ser una vista aparte dentro de Cuenta, no estar mezclada con Perfil.
+Debe tener:
+- próximas reservas
+- historial
+- estados
+- estado vacío elegante si no hay reservas
+- CTA para explorar servicios si está vacío
+
+SECCIÓN CONFIGURACIÓN
+Debe incluir:
+- datos de cuenta
+- contraseña
+- notificaciones
+- privacidad si aplica
+- cerrar sesión
+
+DISEÑO
+- más limpio
+- más parecido a panel de usuario real
+- menos dashboard informativo
+- más navegación clara
+- más sensación de producto premium
+- mantener estilo visual actual de la app
+
+IMPORTANTE
+- No mostrar todo el contenido junto en una sola pantalla.
+- La navegación debe ordenar la experiencia.
+- Priorizar UX normal y moderna.
+- Mantener consistencia visual con el resto del producto.
+
+ENTREGABLE
+Quiero una nueva versión de Cuenta como panel de opciones moderno, con Perfil, Reservas y Configuración separadas, y con Perfil más social/visual, incluyendo foto de perfil editable estilo app moderna.
