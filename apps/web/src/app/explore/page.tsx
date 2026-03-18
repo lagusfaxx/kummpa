@@ -24,7 +24,7 @@ const SEARCH_PHRASES = [
 ];
 
 function useTypingPlaceholder(phrases: string[]) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(phrases[0] ?? "");
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
@@ -496,24 +496,15 @@ export default function ExplorePage() {
             <span className="shrink-0 text-slate-400 transition-colors duration-200" style={inputFocused ? { color: "hsl(var(--secondary))" } : {}}>
               <IcoSearch />
             </span>
-            <div className="relative min-w-0 flex-1">
-              <input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
-                placeholder=""
-                className="relative z-10 w-full bg-transparent text-[13px] text-slate-800 outline-none"
-              />
-              {/* Typing animation overlay — visible only when empty + unfocused */}
-              {!inputValue && !inputFocused && (
-                <span className="pointer-events-none absolute inset-0 flex items-center text-[13px] text-slate-400" aria-hidden>
-                  {typingText}
-                  <span className="ml-px inline-block h-3.5 w-px animate-pulse bg-slate-400" />
-                </span>
-              )}
-            </div>
+            <input
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
+              placeholder={inputFocused ? "Buscar lugares, marcas..." : (typingText || (SEARCH_PHRASES[0] ?? ""))}
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400"
+            />
             {inputValue && (
               <button
                 type="button"
@@ -659,22 +650,14 @@ export default function ExplorePage() {
                   inputFocused ? "border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]" : "border-slate-200 bg-slate-50"
                 }`}>
                   <span className="shrink-0 text-slate-400"><IcoSearch /></span>
-                  <div className="relative min-w-0 flex-1">
-                    <input
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onFocus={() => setInputFocused(true)}
-                      onBlur={() => setInputFocused(false)}
-                      placeholder=""
-                      className="relative z-10 w-full bg-transparent text-[13px] text-slate-800 outline-none"
-                    />
-                    {!inputValue && !inputFocused && (
-                      <span className="pointer-events-none absolute inset-0 flex items-center text-[13px] text-slate-400" aria-hidden>
-                        {typingText}
-                        <span className="ml-px inline-block h-3.5 w-px animate-pulse bg-slate-400" />
-                      </span>
-                    )}
-                  </div>
+                  <input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    placeholder={inputFocused ? "Buscar lugares, marcas..." : (typingText || (SEARCH_PHRASES[0] ?? ""))}
+                    className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400"
+                  />
                   {inputValue && (
                     <button type="button" onClick={clearSearch} className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
                       <IcoX />
