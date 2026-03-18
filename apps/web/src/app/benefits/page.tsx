@@ -191,6 +191,66 @@ export default function BenefitsPage() {
         </div>
       </section>
 
+      {/* ── BCI section ───────────────────────────────────────── */}
+      <section>
+        {/* Section header */}
+        <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center gap-5 px-6 py-5" style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 60%, #404040 100%)" }}>
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md">
+              <Image
+                src="/brand/bci-logo.png"
+                alt="BCI"
+                width={52}
+                height={52}
+                className="object-contain p-1"
+              />
+            </div>
+            <div className="text-white">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Convenio vigente</p>
+              <h2 className="text-lg font-bold leading-tight">Tarjetas BCI</h2>
+              <p className="mt-0.5 text-[12px] opacity-75">
+                Descuento exclusivo para clientes BCI en tiendas de mascotas asociadas
+              </p>
+            </div>
+            <div className="ml-auto shrink-0">
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                1 comercio <IcoChevRight />
+              </span>
+            </div>
+          </div>
+
+          {/* How to use */}
+          <div className="flex items-start gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-3.5">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-bold" style={{ background: "#2d2d2d" }}>i</span>
+            <p className="text-[12px] text-slate-600 leading-relaxed">
+              Presenta tu tarjeta BCI al momento de pagar en la tienda. Válido para compras presenciales y online en comercios adheridos.
+            </p>
+          </div>
+        </div>
+
+        {/* BCI promo card */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
+            {/* Club de Perros y Gatos image */}
+            <div className="flex h-[140px] items-center justify-center bg-[#FFF3E0] px-6">
+              <div className="relative h-[72px] w-full">
+                <Image
+                  src="/brand/club-perros-gatos.png"
+                  alt="Club de Perros y Gatos"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+            <div className="px-4 py-3.5">
+              <p className="text-[13px] font-bold text-slate-900 leading-tight">Club de Perros y Gatos</p>
+              <p className="mt-1 text-[14px] font-bold text-[#2d2d2d]">10% dto.</p>
+              <p className="mt-0.5 text-[11.5px] text-slate-500 leading-snug">todos los días</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── More benefits CTA ──────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-2xl border border-[hsl(45_90%_55%/0.25)] bg-[hsl(45_90%_55%/0.07)] px-7 py-8 text-center">
         <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[hsl(45_90%_55%/0.18)] blur-3xl" />
