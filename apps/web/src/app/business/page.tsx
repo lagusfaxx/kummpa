@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { InlineBanner } from "@/components/feedback/inline-banner";
 import { useAuth } from "@/features/auth/auth-context";
@@ -493,6 +494,7 @@ const ROLE_META: Record<string, { title: string; subtitle: string; color: string
 /* ─── Page ───────────────────────────────────────────────────── */
 export default function BusinessPage() {
   const { session } = useAuth();
+  const router = useRouter();
   const token = session?.tokens.accessToken ?? "";
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -502,7 +504,12 @@ export default function BusinessPage() {
     if (!token) return;
     setIsLoading(true);
     try {
-      setProfile(await getMyProfile(token));
+      const data = await getMyProfile(token);
+      setProfile(data);
+      if (data.user.role === "SHOP") {
+        router.replace("/marketplace/dashboard");
+        return;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cargar el panel.");
     } finally {
@@ -510,7 +517,13 @@ export default function BusinessPage() {
     }
   }
 
-  useEffect(() => { void loadProfile(); }, [token]);
+  useEffect(() => {
+    if (session?.user.role === "SHOP") {
+      router.replace("/marketplace/dashboard");
+      return;
+    }
+    void loadProfile();
+  }, [token, session?.user.role]);
 
   const role = profile?.user.role ?? "";
   const meta = ROLE_META[role] ?? ROLE_META["VET"]!;
