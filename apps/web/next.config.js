@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
+/** @type {import("next").NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   transpilePackages: ["@kumpa/ui", "@kumpa/types", "@kumpa/config"],
   async rewrites() {

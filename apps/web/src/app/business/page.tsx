@@ -236,7 +236,7 @@ function SectionPerfil({ vet, accessToken, onSaved }: { vet?: VetProfile | null;
         </FormRow>
         <div className="rounded-xl border border-teal-200 bg-teal-50 p-4">
           <p className="text-[11px] font-bold uppercase tracking-widest text-teal-600 mb-2">📍 Ubicación en el mapa</p>
-          <p className="text-xs text-teal-700 mb-3">Para aparecer en "Cerca de ti" necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu clínica → "¿Qué hay aquí?"</p>
+          <p className="text-xs text-teal-700 mb-3">Para aparecer en &quot;Cerca de ti&quot; necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu clínica → &quot;¿Qué hay aquí?&quot;</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <FormRow label="Latitud">
               <Inp type="number" step="any" value={form.latitude ?? ""} onChange={setNum("latitude")} placeholder="-33.4489" />
@@ -459,7 +459,7 @@ function SectionReservas({ appointments, accessToken, onRefresh }: {
                   <p className="mt-0.5 text-xs text-slate-500">🐾 {a.pet.name} · {a.pet.species} · {a.pet.breed}</p>
                   <p className="mt-0.5 text-xs text-slate-500">🩺 {a.serviceTypeLabel} · {a.durationMinutes} min</p>
                   <p className="mt-0.5 text-xs text-slate-500">📅 {fmtDate(a.scheduledAt)}</p>
-                  {a.reason && <p className="mt-1 text-xs italic text-slate-400">"{a.reason}"</p>}
+                  {a.reason && <p className="mt-1 text-xs italic text-slate-400">&ldquo;{a.reason}&rdquo;</p>}
                 </div>
                 {a.permissions.canConfirm || a.permissions.canReject ? (
                   <div className="flex shrink-0 gap-2">
