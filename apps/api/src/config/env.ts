@@ -19,9 +19,9 @@ const envSchema = z.object({
   REMINDER_DISPATCH_BATCH_LIMIT: z.coerce.number().int().positive().default(100),
   APPOINTMENT_DEFAULT_DURATION_MINUTES: z.coerce.number().int().min(15).max(240).default(30),
   APPOINTMENT_MIN_NOTICE_MINUTES: z.coerce.number().int().min(0).max(43200).default(30),
-  MAPBOX_ACCESS_TOKEN: z.string().min(1),
-  RESEND_API_KEY: z.string().min(1),
-  EMAIL_FROM: z.string().email(),
+  MAPBOX_ACCESS_TOKEN: z.string().default(""),
+  RESEND_API_KEY: z.string().default(""),
+  EMAIL_FROM: z.string().default("noreply@kummpa.cl"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info")
 });
 

@@ -46,6 +46,10 @@ waitForPort = 3000
 outputType = "console"
 
 [[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
 localPort = 5000
 externalPort = 80
 
@@ -58,3 +62,5 @@ APP_BASE_URL = "https://d57ab4ab-a41e-4f06-8076-8045ed608152-00-1sgrywejabk34.sp
 CORS_ORIGIN = "https://d57ab4ab-a41e-4f06-8076-8045ed608152-00-1sgrywejabk34.spock.replit.dev"
 EMAIL_FROM = "noreply@kumpa.app"
 LOG_LEVEL = "info"
+JWT_ACCESS_SECRET = "517967e2f5785032edc05fa7b38cf3cf90ade3f54d6896ccf486a5c7aa777ae866780e06bf584cf18599671efa922837"
+JWT_REFRESH_SECRET = "6a2aa9566f6d9a8d25fb0ddb408af237ab23b673a2f0e4db52ffe79f8cf0e23337753a817139f9f632c0632080fdf329"

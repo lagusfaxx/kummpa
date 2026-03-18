@@ -3,7 +3,12 @@ import { Resend } from "resend";
 import { env } from "../../config/env";
 import { prisma } from "../../lib/prisma";
 
-const resend = new Resend(env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
+  if (!_resend) _resend = new Resend(env.RESEND_API_KEY);
+  return _resend;
+}
 const EMAIL_MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [0, 600, 1500] as const;
 
@@ -183,7 +188,7 @@ async function sendEmail(payload: MailPayload): Promise<boolean> {
     await wait(waitMs);
 
     try {
-      const response = await resend.emails.send({
+      const response = await getResend().emails.send({
         from: env.EMAIL_FROM,
         to: payload.to,
         subject: payload.subject,
