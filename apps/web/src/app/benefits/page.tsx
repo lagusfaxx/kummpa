@@ -109,21 +109,117 @@ function IcoChevRight() {
 
 function PromoCard({ promo }: { promo: BdcPromo }) {
   return (
-    <div className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
-      {/* Image / gradient area */}
-      <div className={`relative flex h-[140px] items-center justify-center bg-gradient-to-br ${promo.gradient}`}>
+    <div className="group flex-shrink-0 w-[160px] sm:w-auto overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
+      <div className={`relative flex h-[120px] sm:h-[140px] items-center justify-center bg-gradient-to-br ${promo.gradient}`}>
         <span className={`select-none text-3xl font-black tracking-tight opacity-90 ${promo.initialsColor}`}>
           {promo.initials}
         </span>
       </div>
-
-      {/* Content */}
-      <div className="px-4 py-3.5">
-        <p className="text-[13px] font-bold text-slate-900 leading-tight">{promo.name}</p>
-        <p className="mt-1 text-[14px] font-bold" style={{ color: "#0033A0" }}>
+      <div className="px-3.5 py-3 sm:px-4 sm:py-3.5">
+        <p className="text-[12.5px] sm:text-[13px] font-bold text-slate-900 leading-tight">{promo.name}</p>
+        <p className="mt-1 text-[13px] sm:text-[14px] font-bold" style={{ color: "#0033A0" }}>
           {promo.discount}
         </p>
-        <p className="mt-0.5 text-[11.5px] text-slate-500 leading-snug">{promo.schedule}</p>
+        <p className="mt-0.5 text-[11px] sm:text-[11.5px] text-slate-500 leading-snug">{promo.schedule}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Carousel wrapper (mobile) / Grid (desktop) ─────────────── */
+function PromoList({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {/* Mobile: horizontal carousel */}
+      <div className="sm:hidden -mx-4 px-4">
+        <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {children}
+        </div>
+      </div>
+      {/* Desktop: grid */}
+      <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {children}
+      </div>
+    </>
+  );
+}
+
+/* ─── Section bank header ─────────────────────────────────────── */
+interface BankHeaderProps {
+  logoSrc: string;
+  logoAlt: string;
+  logoBg?: string;
+  logoContain?: boolean;
+  title: string;
+  subtitle: string;
+  badge: string;
+  gradient: string;
+  infoColor: string;
+  infoText: string;
+}
+
+function BankHeader({
+  logoSrc, logoAlt, logoBg, logoContain,
+  title, subtitle, badge,
+  gradient, infoColor, infoText,
+}: BankHeaderProps) {
+  return (
+    <div className="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="px-5 py-4 sm:px-6 sm:py-5" style={{ background: gradient }}>
+        {/* Mobile layout: logo + badge row, then text */}
+        <div className="flex items-center justify-between gap-3 sm:hidden">
+          <div className={`relative h-11 w-24 shrink-0 overflow-hidden rounded-xl shadow-md ${logoBg ?? ""}`}>
+            <Image
+              src={logoSrc}
+              alt={logoAlt}
+              fill
+              sizes="96px"
+              className={logoContain ? "object-contain p-1.5" : "object-cover"}
+            />
+          </div>
+          <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur whitespace-nowrap">
+            {badge} <IcoChevRight />
+          </span>
+        </div>
+        <div className="mt-2.5 text-white sm:hidden">
+          <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Convenio vigente</p>
+          <h2 className="text-base font-bold leading-tight">{title}</h2>
+          <p className="mt-0.5 text-[12px] opacity-75">{subtitle}</p>
+        </div>
+
+        {/* Desktop layout: everything in one row */}
+        <div className="hidden sm:flex items-center gap-5">
+          <div className={`relative h-14 w-32 shrink-0 overflow-hidden rounded-xl shadow-md ${logoBg ?? ""}`}>
+            <Image
+              src={logoSrc}
+              alt={logoAlt}
+              fill
+              sizes="128px"
+              className={logoContain ? "object-contain p-2" : "object-cover"}
+            />
+          </div>
+          <div className="text-white">
+            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Convenio vigente</p>
+            <h2 className="text-lg font-bold leading-tight">{title}</h2>
+            <p className="mt-0.5 text-[12px] opacity-75">{subtitle}</p>
+          </div>
+          <div className="ml-auto shrink-0">
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur">
+              {badge} <IcoChevRight />
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* How to use */}
+      <div className="flex items-start gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-3 sm:px-6 sm:py-3.5">
+        <span
+          className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-bold"
+          style={{ background: infoColor }}
+        >
+          i
+        </span>
+        <p className="text-[12px] text-slate-600 leading-relaxed">{infoText}</p>
       </div>
     </div>
   );
@@ -148,106 +244,57 @@ export default function BenefitsPage() {
 
       {/* ── Banco de Chile section ─────────────────────────────── */}
       <section>
-        {/* Section header */}
-        <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-5 px-6 py-5" style={{ background: "linear-gradient(135deg, #001F5B 0%, #0033A0 60%, #0055CC 100%)" }}>
-            <div className="relative h-14 w-32 shrink-0 overflow-hidden rounded-xl shadow-md">
-              <Image
-                src="/brand/banco-chile-logo.png"
-                alt="Banco de Chile"
-                fill
-                sizes="128px"
-                className="object-cover"
-              />
-            </div>
-            <div className="text-white">
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Convenio vigente</p>
-              <h2 className="text-lg font-bold leading-tight">Tarjetas Banco de Chile</h2>
-              <p className="mt-0.5 text-[12px] opacity-75">
-                Descuentos exclusivos para titulares de tarjetas de crédito y débito
-              </p>
-            </div>
-            <div className="ml-auto shrink-0">
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur">
-                {BDC_PROMOS.length} comercios <IcoChevRight />
-              </span>
-            </div>
-          </div>
-
-          {/* How to use */}
-          <div className="flex items-start gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-3.5">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-bold" style={{ background: "#0033A0" }}>i</span>
-            <p className="text-[12px] text-slate-600 leading-relaxed">
-              Presenta tu tarjeta Banco de Chile al momento de comprar o indica que eres cliente. En compras online ingresa el código de descuento asociado a tu tarjeta.
-            </p>
-          </div>
-        </div>
-
-        {/* 4-column promo grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <BankHeader
+          logoSrc="/brand/banco-chile-logo.png"
+          logoAlt="Banco de Chile"
+          title="Tarjetas Banco de Chile"
+          subtitle="Descuentos exclusivos para titulares de tarjetas de crédito y débito"
+          badge={`${BDC_PROMOS.length} comercios`}
+          gradient="linear-gradient(135deg, #001F5B 0%, #0033A0 60%, #0055CC 100%)"
+          infoColor="#0033A0"
+          infoText="Presenta tu tarjeta Banco de Chile al momento de comprar o indica que eres cliente. En compras online ingresa el código de descuento asociado a tu tarjeta."
+        />
+        <PromoList>
           {BDC_PROMOS.map((promo) => (
-            <PromoCard key={promo.id} promo={promo} />
+            <div key={promo.id} className="snap-start">
+              <PromoCard promo={promo} />
+            </div>
           ))}
-        </div>
+        </PromoList>
       </section>
 
       {/* ── BCI section ───────────────────────────────────────── */}
       <section>
-        {/* Section header */}
-        <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-5 px-6 py-5" style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 60%, #404040 100%)" }}>
-            <div className="relative h-14 w-32 shrink-0 overflow-hidden rounded-xl bg-white shadow-md">
-              <Image
-                src="/brand/bci-logo.png"
-                alt="BCI"
-                fill
-                sizes="128px"
-                className="object-contain p-2"
-              />
-            </div>
-            <div className="text-white">
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Convenio vigente</p>
-              <h2 className="text-lg font-bold leading-tight">Tarjetas BCI</h2>
-              <p className="mt-0.5 text-[12px] opacity-75">
-                Descuento exclusivo para clientes BCI en tiendas de mascotas asociadas
-              </p>
-            </div>
-            <div className="ml-auto shrink-0">
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur">
-                1 comercio <IcoChevRight />
-              </span>
-            </div>
-          </div>
-
-          {/* How to use */}
-          <div className="flex items-start gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-3.5">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-bold" style={{ background: "#2d2d2d" }}>i</span>
-            <p className="text-[12px] text-slate-600 leading-relaxed">
-              Presenta tu tarjeta BCI al momento de pagar en la tienda. Válido para compras presenciales y online en comercios adheridos.
-            </p>
-          </div>
-        </div>
-
-        {/* BCI promo card */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
-            {/* Club de Perros y Gatos image */}
-            <div className="relative h-[140px] w-full overflow-hidden">
+        <BankHeader
+          logoSrc="/brand/bci-logo.png"
+          logoAlt="BCI"
+          logoBg="bg-white"
+          logoContain
+          title="Tarjetas BCI"
+          subtitle="Descuento exclusivo para clientes BCI en tiendas de mascotas asociadas"
+          badge="1 comercio"
+          gradient="linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 60%, #404040 100%)"
+          infoColor="#2d2d2d"
+          infoText="Presenta tu tarjeta BCI al momento de pagar en la tienda. Válido para compras presenciales y online en comercios adheridos."
+        />
+        <PromoList>
+          <div className="snap-start flex-shrink-0 w-[160px] sm:w-auto overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
+            <div className="relative h-[120px] sm:h-[140px] w-full overflow-hidden">
               <Image
                 src="/brand/club-perros-gatos.png"
                 alt="Club de Perros y Gatos"
                 fill
-                sizes="(max-width: 640px) 50vw, 25vw"
+                sizes="(max-width: 640px) 160px, 25vw"
                 className="object-cover"
               />
             </div>
-            <div className="px-4 py-3.5">
-              <p className="text-[13px] font-bold text-slate-900 leading-tight">Club de Perros y Gatos</p>
-              <p className="mt-1 text-[14px] font-bold text-[#2d2d2d]">10% dto.</p>
-              <p className="mt-0.5 text-[11.5px] text-slate-500 leading-snug">todos los días</p>
+            <div className="px-3.5 py-3 sm:px-4 sm:py-3.5">
+              <p className="text-[12.5px] sm:text-[13px] font-bold text-slate-900 leading-tight">Club de Perros y Gatos</p>
+              <p className="mt-1 text-[13px] sm:text-[14px] font-bold text-[#2d2d2d]">10% dto.</p>
+              <p className="mt-0.5 text-[11px] sm:text-[11.5px] text-slate-500 leading-snug">todos los días</p>
             </div>
           </div>
-        </div>
+        </PromoList>
       </section>
 
       {/* ── More benefits CTA ──────────────────────────────────── */}
