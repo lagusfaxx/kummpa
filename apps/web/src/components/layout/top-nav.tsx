@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { BrandLogo } from "@/components/brand/brand-logo";
 import { useAuth } from "@/features/auth/auth-context";
 import {
   ACCOUNT_NAV_ITEM,
@@ -59,12 +59,20 @@ export function TopNav() {
 
   return (
     <header className="safe-area-top sticky top-0 z-40 border-b border-[hsl(var(--border)/0.9)] bg-[hsl(var(--background)/0.9)] backdrop-blur-xl">
-      <div className="safe-area-x mx-auto flex h-[4.5rem] max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <div className="safe-area-x mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6">
 
-        {/* Brand — icon arriba, nombre abajo */}
-        <Link href="/" className="flex shrink-0 flex-col items-center gap-0.5">
-          <BrandLogo variant="icon" className="h-9 w-9" priority />
-          <p className="font-display text-[11px] font-bold tracking-wide">Kummpa</p>
+        {/* Brand — wordmark (ícono + texto del asset oficial) */}
+        <Link href="/" className="flex shrink-0 items-center">
+          <div className="relative h-20 w-20 overflow-hidden">
+            <Image
+              src="/brand/logo-con-titulo.png"
+              alt="Kummpa"
+              fill
+              sizes="80px"
+              priority
+              className="select-none object-contain scale-[1.55] translate-y-[5%]"
+            />
+          </div>
         </Link>
 
         {/* Desktop nav — shown at md: (768px+) */}
