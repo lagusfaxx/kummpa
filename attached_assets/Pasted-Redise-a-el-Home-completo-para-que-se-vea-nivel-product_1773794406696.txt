@@ -1,0 +1,102 @@
+Rediseña el Home completo para que se vea nivel producto profesional / startup seria, más premium, más limpio y con mucha mejor jerarquía visual.
+
+OBJETIVO GENERAL
+Quiero que el Home se sienta como una app comercial moderna y confiable, no como una landing cargada de texto. Debe verse más visual, más liviano, más ordenado y más “producto real”.
+
+PROBLEMAS ACTUALES A CORREGIR
+- Hay demasiado texto en el hero y en las cards.
+- Falta jerarquía visual clara.
+- Todo compite por atención.
+- Se siente más como una página explicativa que como una home premium.
+- Las cards son muy altas y con demasiado contenido.
+- La home no guía bien la mirada del usuario.
+- Falta sensación de app moderna, minimalista y profesional.
+
+INSTRUCCIONES DE DISEÑO
+1. Reducir texto en todo el Home.
+   - Titulares más cortos y más fuertes.
+   - Subtítulos máximos de 1 o 2 líneas.
+   - Descripciones de cards mucho más resumidas.
+   - Evitar párrafos largos.
+   - Priorizar frases simples, claras y comerciales.
+
+2. Mejorar el hero.
+   - Debe ser más limpio, más premium y más impactante.
+   - Mantener una propuesta de valor clara, pero breve.
+   - El título debe ocupar menos líneas y verse más sólido.
+   - El subtítulo debe resumir la app sin explicar demasiado.
+   - El buscador debe verse más protagonista.
+   - Añadir mejor balance entre texto y espacio vacío.
+   - Que el hero se vea bien en desktop y móvil.
+   - Si ayuda, usar un pequeño badge superior tipo “Todo para tu mascota en una sola app”.
+
+3. Convertir la home en una experiencia más visual.
+   - Menos bloques largos.
+   - Más aire entre secciones.
+   - Más énfasis en iconos, jerarquía, spacing y composición.
+   - Las secciones deben respirar y no verse apretadas.
+
+4. Rediseñar las secciones de funcionalidades.
+   - Mostrar menos texto por card.
+   - Máximo 1 título corto + 1 descripción corta + CTA breve.
+   - Hacer cards más elegantes, más limpias y menos “informativas”.
+   - Mejorar el tamaño del padding, radios, bordes y sombras sutiles.
+   - Mantener consistencia entre todas las cards.
+
+5. Reordenar el contenido del Home para que tenga flujo profesional.
+   Orden sugerido:
+   - Header limpio
+   - Hero premium con buscador
+   - Accesos rápidos / chips funcionales
+   - Sección de beneficios principales (3 o 4 cards máximo)
+   - Sección destacada de alertas / descuentos / mapa
+   - Noticias o contenido útil más abajo
+   - CTA final o bloque de registro
+
+6. Reducir el número de elementos visibles al mismo tiempo.
+   - No mostrar demasiadas cards seguidas sin separación visual.
+   - Agrupar mejor la información.
+   - Limitar lo que aparece “above the fold”.
+
+7. Mejorar el copy para que sea más comercial y natural.
+   - No sonar robótico.
+   - No sonar “demasiado explicativo”.
+   - Sonar como marca real, moderna y confiable.
+   - Lenguaje simple, humano y directo.
+
+8. Mantener estética premium y suave.
+   - Paleta actual puede mantenerse, pero con mejor contraste y orden.
+   - Más minimalismo.
+   - Más consistencia en colores de botones, pills y CTAs.
+   - Menos ruido visual.
+   - Bordes, sombras y fondos más refinados.
+
+9. Responsive mobile importante.
+   - En móvil el Home debe sentirse aún más limpio.
+   - Reducir alturas excesivas.
+   - Evitar bloques largos de texto.
+   - Mejorar espaciado vertical.
+   - Hacer que cada sección tenga propósito claro.
+
+10. No romper funcionalidad existente.
+   - Mantener componentes reutilizables si sirve.
+   - Priorizar cambios visuales, copy, orden y layout.
+   - No eliminar funciones útiles, solo presentarlas mejor.
+
+COPY DIRECTION
+Quiero copy más corto, premium y claro.
+Ejemplos del tono buscado:
+- “Todo para tu mascota, en un solo lugar”
+- “Alertas, salud, comunidad y beneficios”
+- “Encuentra servicios, organiza cuidados y recibe avisos importantes”
+- “Tu mascota, más protegida y mejor acompañada”
+
+ENTREGABLE
+- Refactor completo del Home para que se vea nivel profesional.
+- Menos texto.
+- Mejor jerarquía visual.
+- Mejor composición.
+- Mejor flujo entre secciones.
+- Mejor apariencia desktop y mobile.
+
+Antes de implementar, analiza la estructura actual del Home y simplifica todo lo que esté sobrecargando la experiencia visual.
