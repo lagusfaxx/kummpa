@@ -1,0 +1,112 @@
+Quiero rediseñar la sección “Mis mascotas” / “/pets” para que se vea mucho más profesional, premium y bien estructurada.
+
+CONTEXTO
+El formulario para crear mascota ya está funcionando bien. Ahora el problema está en la vista donde se muestran las mascotas creadas. Quiero que esta sección deje de sentirse como una card larga con muchos botones y pase a verse como una sección realmente cuidada, útil y emocional.
+
+PROBLEMAS ACTUALES
+- La card de mascota se ve demasiado larga y angosta.
+- Hay mucho espacio vacío alrededor.
+- La foto/header de la mascota se siente vacía o poco trabajada.
+- Las acciones están todas al mismo nivel visual.
+- Hay demasiados botones compitiendo entre sí.
+- Falta una jerarquía clara entre acciones principales y secundarias.
+- La sección funciona, pero aún no se siente premium ni producto final.
+
+OBJETIVO
+Rediseñar “Mis mascotas” para que:
+- se sienta emocional y útil
+- tenga una visual mucho más fuerte
+- se vea como una sección importante del producto
+- tenga mejor jerarquía
+- sea escalable si el usuario tiene varias mascotas
+
+NUEVA DIRECCIÓN
+
+1. Mejorar la estructura general de la sección.
+- Mantener el bloque superior de resumen, pero pulirlo si hace falta.
+- Hacer que el listado o presentación de mascotas se vea más premium.
+- Si hay varias mascotas, preparar layout tipo grid o lista visualmente consistente.
+- Si hay una sola, que igualmente se vea como una card fuerte y elegante, no como una columna demasiado larga.
+
+2. Rediseñar la card de mascota.
+Cada mascota debe mostrar:
+- foto protagonista o fallback elegante
+- nombre
+- tipo / raza / edad
+- badge de estado (al día, pendiente, atención, etc.)
+- resumen breve de salud o carnet
+- información rápida escaneable
+
+La card debe sentirse más compacta, mejor proporcionada y más útil.
+
+3. Mejorar el header visual de la mascota.
+- La parte de imagen o cover debe verse más trabajada.
+- Si no hay foto real, usar fallback bonito y premium.
+- Mejorar overlay, legibilidad y composición del nombre / metadata.
+- Evitar que se vea vacía o plana.
+
+4. Reorganizar acciones por jerarquía.
+Acciones principales:
+- Ver carnet
+- Ver perfil
+
+Acciones secundarias:
+- Editar
+- Compartir perfil
+- Ver QR / identidad
+- Historial médico
+
+Acciones sensibles o de baja prioridad:
+- Activar perfil público
+- Archivar
+
+Estas últimas no deben competir con los botones principales.
+
+5. Mejorar el bloque de salud/carnet.
+- Mostrar de forma más visual y clara si está al día o pendiente.
+- Mantener timeline simple, pero más refinado.
+- Hacerlo más escaneable.
+- Menos sensación de lista cruda, más sensación de estado de salud rápido.
+
+6. Escalabilidad para varias mascotas.
+La sección debe quedar preparada para:
+- una mascota
+- varias mascotas
+
+Si hay varias, pensar en:
+- grid de cards
+- o resumen + detalle de mascota seleccionada
+
+Debe seguir viéndose bien y no romper la experiencia.
+
+7. Diseño visual buscado.
+Quiero que se vea:
+- premium
+- moderno
+- emocional
+- limpio
+- útil
+- con mejor jerarquía
+- más cercano a app real de mascotas / salud / identidad digital
+
+8. No romper funcionalidad.
+Mantener lógica existente:
+- ver carnet
+- ver perfil
+- editar
+- compartir
+- QR
+- historial
+- perfil público
+- archivar
+
+Pero reorganizar mejor la experiencia y el peso visual de cada acción.
+
+ENTREGABLE
+Quiero una nueva versión de “Mis mascotas” mucho más pulida:
+- mejor proporción
+- mejor header visual
+- mejor card de mascota
+- mejor jerarquía de acciones
+- mejor preparación para múltiples mascotas
+- sensación clara de producto premium
