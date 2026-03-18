@@ -1,483 +1,213 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { AuthGate } from "@/components/auth/auth-gate";
-import { InlineBanner } from "@/components/feedback/inline-banner";
-import { PageIntro } from "@/components/layout/page-intro";
-import { useAuth } from "@/features/auth/auth-context";
-import {
-  createBenefit,
-  listBenefits,
-  listMyRedemptions,
-  redeemBenefit,
-  saveBenefit,
-  unsaveBenefit,
-  updateBenefit
-} from "@/features/benefits/benefits-api";
-import type { BenefitItem, BenefitProviderType, BenefitRedemptionItem } from "@/features/benefits/types";
+import Image from "next/image";
+import Link from "next/link";
 
-const providerLabels: Record<BenefitProviderType, string> = {
-  VET: "Veterinaria",
-  CAREGIVER: "Cuidador",
-  SHOP: "Pet shop",
-  GROOMING: "Peluqueria",
-  HOTEL: "Hotel/guarderia",
-  OTHER: "Otro"
-};
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("es-CL", { dateStyle: "medium" });
+/* ─── Data ───────────────────────────────────────────────────── */
+interface BdcPromo {
+  id: string;
+  name: string;
+  discount: string;
+  schedule: string;
+  gradient: string;
+  initials: string;
+  initialsColor: string;
 }
 
-export default function BenefitsPage() {
-  const { session } = useAuth();
-  const accessToken = session?.tokens.accessToken;
-  const isAdmin = session?.user.role === "ADMIN";
+const BDC_PROMOS: BdcPromo[] = [
+  {
+    id: "wildvet",
+    name: "WildVet",
+    discount: "15% dto.",
+    schedule: "lunes, miércoles y domingo presencial",
+    gradient: "from-teal-400 to-cyan-600",
+    initials: "WV",
+    initialsColor: "text-white",
+  },
+  {
+    id: "sense",
+    name: "Sense",
+    discount: "30% dto.",
+    schedule: "todos los días en compra online",
+    gradient: "from-violet-400 to-purple-600",
+    initials: "Se",
+    initialsColor: "text-white",
+  },
+  {
+    id: "puppies-kittens",
+    name: "Puppies & Kittens",
+    discount: "Hasta 30% dto.",
+    schedule: "jueves y viernes presencial y online",
+    gradient: "from-pink-400 to-rose-500",
+    initials: "P&K",
+    initialsColor: "text-white",
+  },
+  {
+    id: "pet-family",
+    name: "PET FAMILY",
+    discount: "Hasta 15% dto.",
+    schedule: "todos los días",
+    gradient: "from-orange-400 to-amber-500",
+    initials: "PF",
+    initialsColor: "text-white",
+  },
+  {
+    id: "orangepet",
+    name: "OrangePet",
+    discount: "Hasta 20% dto.",
+    schedule: "martes y miércoles presencial",
+    gradient: "from-orange-500 to-red-500",
+    initials: "OP",
+    initialsColor: "text-white",
+  },
+  {
+    id: "my-family-pets",
+    name: "MY FAMILY PETS",
+    discount: "Hasta 15% dto.",
+    schedule: "todos los días",
+    gradient: "from-slate-500 to-slate-700",
+    initials: "MFP",
+    initialsColor: "text-white",
+  },
+  {
+    id: "laqu",
+    name: "Laqu",
+    discount: "20% dto.",
+    schedule: "todos los días",
+    gradient: "from-green-400 to-emerald-600",
+    initials: "Lq",
+    initialsColor: "text-white",
+  },
+  {
+    id: "bug-me",
+    name: "BUG ME",
+    discount: "20% dto.",
+    schedule: "todos los días en compra online",
+    gradient: "from-yellow-400 to-lime-500",
+    initials: "BM",
+    initialsColor: "text-slate-800",
+  },
+];
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [workingId, setWorkingId] = useState<string | null>(null);
-
-  const [q, setQ] = useState("");
-  const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
-  const [providerType, setProviderType] = useState("");
-  const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [savedOnly, setSavedOnly] = useState(false);
-  const [benefits, setBenefits] = useState<BenefitItem[]>([]);
-  const [redemptions, setRedemptions] = useState<BenefitRedemptionItem[]>([]);
-
-  const [newTitle, setNewTitle] = useState("");
-  const [newSummary, setNewSummary] = useState("");
-  const [newProviderType, setNewProviderType] = useState<BenefitProviderType>("OTHER");
-  const [newCity, setNewCity] = useState("");
-  const [newDistrict, setNewDistrict] = useState("");
-  const [newValidFrom, setNewValidFrom] = useState("");
-  const [newValidTo, setNewValidTo] = useState("");
-  const [newDiscount, setNewDiscount] = useState("");
-  const [newCouponCode, setNewCouponCode] = useState("");
-
-  const loadBenefits = async () => {
-    if (!accessToken) return;
-    const rows = await listBenefits(accessToken, {
-      q: q || undefined,
-      city: city || undefined,
-      district: district || undefined,
-      providerType: (providerType || undefined) as BenefitProviderType | undefined,
-      featuredOnly,
-      savedOnly,
-      activeOnly: false,
-      validOnly: false,
-      sortBy: "featured",
-      limit: 80
-    });
-    setBenefits(rows);
-  };
-
-  const loadRedemptions = async () => {
-    if (!accessToken) return;
-    const rows = await listMyRedemptions(accessToken, { limit: 80 });
-    setRedemptions(rows);
-  };
-
-  const loadAll = async () => {
-    if (!accessToken) return;
-    setLoading(true);
-    setError(null);
-    try {
-      await Promise.all([loadBenefits(), loadRedemptions()]);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "No se pudo cargar beneficios.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
-
-  const handleFilterSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setWorkingId("search");
-    setError(null);
-    setSuccess(null);
-    try {
-      await loadBenefits();
-    } catch (filterError) {
-      setError(filterError instanceof Error ? filterError.message : "No se pudo filtrar beneficios.");
-    } finally {
-      setWorkingId(null);
-    }
-  };
-
-  const handleToggleSave = async (benefit: BenefitItem) => {
-    if (!accessToken) return;
-    setWorkingId(`save-${benefit.id}`);
-    setError(null);
-    setSuccess(null);
-    try {
-      if (benefit.viewer.isSaved) {
-        await unsaveBenefit(accessToken, benefit.id);
-      } else {
-        await saveBenefit(accessToken, benefit.id);
-      }
-      await loadBenefits();
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "No se pudo guardar beneficio.");
-    } finally {
-      setWorkingId(null);
-    }
-  };
-
-  const handleRedeem = async (benefit: BenefitItem) => {
-    if (!accessToken) return;
-    setWorkingId(`redeem-${benefit.id}`);
-    setError(null);
-    setSuccess(null);
-    try {
-      const redemption = await redeemBenefit(accessToken, benefit.id);
-      await Promise.all([loadBenefits(), loadRedemptions()]);
-      setSuccess(`Cupon activado: ${redemption.activationCode}`);
-    } catch (redeemError) {
-      setError(redeemError instanceof Error ? redeemError.message : "No se pudo canjear beneficio.");
-    } finally {
-      setWorkingId(null);
-    }
-  };
-
-  const handleCreateBenefit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!accessToken || !isAdmin) return;
-    setWorkingId("create-benefit");
-    setError(null);
-    setSuccess(null);
-    try {
-      await createBenefit(accessToken, {
-        title: newTitle,
-        summary: newSummary,
-        providerType: newProviderType,
-        city: newCity || undefined,
-        district: newDistrict || undefined,
-        discountLabel: newDiscount || undefined,
-        couponCode: newCouponCode || undefined,
-        validFrom: new Date(newValidFrom).toISOString(),
-        validTo: new Date(newValidTo).toISOString(),
-        isFeatured: true,
-        isActive: true
-      });
-      setNewTitle("");
-      setNewSummary("");
-      setNewCity("");
-      setNewDistrict("");
-      setNewDiscount("");
-      setNewCouponCode("");
-      setSuccess("Beneficio creado.");
-      await loadBenefits();
-    } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "No se pudo crear beneficio.");
-    } finally {
-      setWorkingId(null);
-    }
-  };
-
-  const handleToggleBenefitActive = async (benefit: BenefitItem) => {
-    if (!accessToken || !isAdmin) return;
-    setWorkingId(`active-${benefit.id}`);
-    setError(null);
-    setSuccess(null);
-    try {
-      await updateBenefit(accessToken, benefit.id, {
-        isActive: !benefit.flags.isActive
-      });
-      await loadBenefits();
-    } catch (toggleError) {
-      setError(toggleError instanceof Error ? toggleError.message : "No se pudo actualizar beneficio.");
-    } finally {
-      setWorkingId(null);
-    }
-  };
-
+/* ─── Sub-components ─────────────────────────────────────────── */
+function IcoTag() {
   return (
-    <AuthGate>
-      <div className="space-y-4">
-        <PageIntro
-          eyebrow="Convenios"
-          title="Beneficios y convenios"
-          description="Explora descuentos activables, cupones y alianzas del ecosistema pet con una capa visual mas alineada al producto."
-          tone="community"
-          metrics={[
-            { value: String(benefits.length), label: "beneficios" },
-            { value: String(redemptions.length), label: "cupones activos" }
-          ]}
-        />
-
-        {error && <InlineBanner tone="error">{error}</InlineBanner>}
-        {success && <InlineBanner tone="success">{success}</InlineBanner>}
-
-        {loading ? (
-          <div className="kumpa-panel p-6 text-sm text-slate-600">
-            Cargando beneficios...
-          </div>
-        ) : (
-          <div className="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)_360px]">
-            <aside className="space-y-4">
-              <section className="kumpa-panel p-4">
-                <h2 className="text-lg font-bold text-slate-900">Filtros</h2>
-                <form className="mt-2 grid gap-2" onSubmit={(event) => void handleFilterSubmit(event)}>
-                  <input
-                    value={q}
-                    onChange={(event) => setQ(event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    placeholder="Buscar beneficio"
-                  />
-                  <input
-                    value={city}
-                    onChange={(event) => setCity(event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    placeholder="Ciudad"
-                  />
-                  <input
-                    value={district}
-                    onChange={(event) => setDistrict(event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    placeholder="Comuna"
-                  />
-                  <select
-                    value={providerType}
-                    onChange={(event) => setProviderType(event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">Todos los tipos</option>
-                    {Object.entries(providerLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                  <label className="flex items-center gap-2 text-sm text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={featuredOnly}
-                      onChange={(event) => setFeaturedOnly(event.target.checked)}
-                    />
-                    Solo destacados
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={savedOnly}
-                      onChange={(event) => setSavedOnly(event.target.checked)}
-                    />
-                    Solo guardados
-                  </label>
-                  <button
-                    type="submit"
-                    disabled={workingId === "search"}
-                    className="kumpa-button-primary"
-                  >
-                    {workingId === "search" ? "Buscando..." : "Aplicar filtros"}
-                  </button>
-                </form>
-              </section>
-
-              {isAdmin && (
-                <section className="kumpa-panel p-4">
-                  <h2 className="text-lg font-bold text-slate-900">Nuevo convenio (ADMIN)</h2>
-                  <form className="mt-2 grid gap-2" onSubmit={(event) => void handleCreateBenefit(event)}>
-                    <input
-                      value={newTitle}
-                      onChange={(event) => setNewTitle(event.target.value)}
-                      required
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Titulo"
-                    />
-                    <textarea
-                      value={newSummary}
-                      onChange={(event) => setNewSummary(event.target.value)}
-                      required
-                      rows={3}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Resumen"
-                    />
-                    <select
-                      value={newProviderType}
-                      onChange={(event) => setNewProviderType(event.target.value as BenefitProviderType)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    >
-                      {Object.entries(providerLabels).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      value={newCity}
-                      onChange={(event) => setNewCity(event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Ciudad"
-                    />
-                    <input
-                      value={newDistrict}
-                      onChange={(event) => setNewDistrict(event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Comuna"
-                    />
-                    <input
-                      value={newDiscount}
-                      onChange={(event) => setNewDiscount(event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Etiqueta descuento (ej: 15% OFF)"
-                    />
-                    <input
-                      value={newCouponCode}
-                      onChange={(event) => setNewCouponCode(event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Codigo base cupon"
-                    />
-                    <label className="text-xs font-semibold text-slate-700">Vigencia desde</label>
-                    <input
-                      type="datetime-local"
-                      value={newValidFrom}
-                      onChange={(event) => setNewValidFrom(event.target.value)}
-                      required
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                    <label className="text-xs font-semibold text-slate-700">Vigencia hasta</label>
-                    <input
-                      type="datetime-local"
-                      value={newValidTo}
-                      onChange={(event) => setNewValidTo(event.target.value)}
-                      required
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="submit"
-                      disabled={workingId === "create-benefit"}
-                      className="kumpa-button-primary"
-                    >
-                      {workingId === "create-benefit" ? "Guardando..." : "Crear beneficio"}
-                    </button>
-                  </form>
-                </section>
-              )}
-            </aside>
-
-            <section className="space-y-4">
-              <section className="kumpa-panel p-4">
-                <h2 className="text-lg font-bold text-slate-900">Beneficios disponibles</h2>
-                <div className="mt-2 space-y-2">
-                  {benefits.length === 0 ? (
-                    <p className="text-sm text-slate-600">No hay beneficios para este filtro.</p>
-                  ) : (
-                    benefits.map((benefit) => (
-                      <article key={benefit.id} className="rounded-xl border border-slate-200 p-3">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div>
-                            <h3 className="text-sm font-bold text-slate-900">{benefit.title}</h3>
-                            <p className="text-xs text-slate-600">
-                              {providerLabels[benefit.provider.type]} |{" "}
-                              {benefit.provider.name ?? "Proveedor no informado"}
-                            </p>
-                          </div>
-                          {benefit.discountLabel && (
-                            <span className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-800">
-                              {benefit.discountLabel}
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="mt-2 text-sm text-slate-700">{benefit.summary}</p>
-                        <p className="mt-1 text-xs text-slate-600">
-                          {benefit.location.city ?? "Sin ciudad"} | {benefit.location.district ?? "Sin comuna"} |{" "}
-                          Vigente hasta {formatDate(benefit.validity.validTo)}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Estado: {benefit.validity.status} | Guardados: {benefit.stats.savesCount} |
-                          Canjes: {benefit.stats.redemptionsCount}
-                        </p>
-
-                        {benefit.viewer.redemption && (
-                          <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1 text-xs text-slate-700">
-                            Cupón activo: <strong>{benefit.viewer.redemption.activationCode}</strong>
-                          </p>
-                        )}
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            disabled={workingId === `save-${benefit.id}`}
-                            onClick={() => {
-                              void handleToggleSave(benefit);
-                            }}
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
-                          >
-                            {benefit.viewer.isSaved ? "Quitar guardado" : "Guardar"}
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={!benefit.viewer.canRedeem || workingId === `redeem-${benefit.id}`}
-                            onClick={() => {
-                              void handleRedeem(benefit);
-                            }}
-                            className="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 disabled:opacity-60"
-                          >
-                            {workingId === `redeem-${benefit.id}` ? "Canjeando..." : "Canjear cupón"}
-                          </button>
-
-                          {isAdmin && (
-                            <button
-                              type="button"
-                              disabled={workingId === `active-${benefit.id}`}
-                              onClick={() => {
-                                void handleToggleBenefitActive(benefit);
-                              }}
-                              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
-                            >
-                              {benefit.flags.isActive ? "Desactivar" : "Activar"}
-                            </button>
-                          )}
-                        </div>
-                      </article>
-                    ))
-                  )}
-                </div>
-              </section>
-            </section>
-
-            <aside className="space-y-4">
-              <section className="kumpa-panel p-4">
-                <h2 className="text-lg font-bold text-slate-900">Mis cupones activos</h2>
-                <div className="mt-2 max-h-[560px] space-y-2 overflow-y-auto pr-1">
-                  {redemptions.length === 0 ? (
-                    <p className="text-xs text-slate-600">Aun no tienes cupones activados.</p>
-                  ) : (
-                    redemptions.map((item) => (
-                      <article key={item.id} className="rounded-xl border border-slate-200 p-3">
-                        <p className="text-sm font-semibold text-slate-900">{item.benefit.title}</p>
-                        <p className="mt-1 rounded-lg bg-slate-50 px-2 py-1 text-xs text-slate-700">
-                          Codigo: <strong>{item.activationCode}</strong>
-                        </p>
-                        <p className="mt-1 text-xs text-slate-600">
-                          Estado: {item.status} | Expira: {formatDate(item.expiresAt)}
-                        </p>
-                        <p className="mt-1 text-[11px] text-slate-500">
-                          {providerLabels[item.benefit.provider.type]} |{" "}
-                          {item.benefit.provider.name ?? "Proveedor no informado"}
-                        </p>
-                      </article>
-                    ))
-                  )}
-                </div>
-              </section>
-            </aside>
-          </div>
-        )}
-      </div>
-    </AuthGate>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
+    </svg>
   );
 }
 
+function IcoChevRight() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+function PromoCard({ promo }: { promo: BdcPromo }) {
+  return (
+    <div className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
+      {/* Image / gradient area */}
+      <div className={`relative flex h-[140px] items-center justify-center bg-gradient-to-br ${promo.gradient}`}>
+        <span className={`select-none text-3xl font-black tracking-tight opacity-90 ${promo.initialsColor}`}>
+          {promo.initials}
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 py-3.5">
+        <p className="text-[13px] font-bold text-slate-900 leading-tight">{promo.name}</p>
+        <p className="mt-1 text-[14px] font-bold" style={{ color: "#0033A0" }}>
+          {promo.discount}
+        </p>
+        <p className="mt-0.5 text-[11.5px] text-slate-500 leading-snug">{promo.schedule}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Page ───────────────────────────────────────────────────── */
+export default function BenefitsPage() {
+  return (
+    <div className="mx-auto max-w-5xl space-y-10 pb-16 pt-2">
+
+      {/* ── Page header ────────────────────────────────────────── */}
+      <header className="space-y-1">
+        <div className="flex items-center gap-2 text-[hsl(45_70%_32%)]">
+          <IcoTag />
+          <span className="text-xs font-bold uppercase tracking-widest">Convenios y descuentos</span>
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900">Beneficios exclusivos</h1>
+        <p className="text-sm text-slate-500">
+          Descuentos y convenios negociados para la comunidad Kummpa. Presenta tu tarjeta o código al momento de comprar.
+        </p>
+      </header>
+
+      {/* ── Banco de Chile section ─────────────────────────────── */}
+      <section>
+        {/* Section header */}
+        <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center gap-5 px-6 py-5" style={{ background: "linear-gradient(135deg, #001F5B 0%, #0033A0 60%, #0055CC 100%)" }}>
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md">
+              <Image
+                src="/brand/banco-chile-logo.png"
+                alt="Banco de Chile"
+                width={52}
+                height={52}
+                className="object-contain p-1"
+              />
+            </div>
+            <div className="text-white">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Convenio vigente</p>
+              <h2 className="text-lg font-bold leading-tight">Tarjetas Banco de Chile</h2>
+              <p className="mt-0.5 text-[12px] opacity-75">
+                Descuentos exclusivos para titulares de tarjetas de crédito y débito
+              </p>
+            </div>
+            <div className="ml-auto shrink-0">
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                {BDC_PROMOS.length} comercios <IcoChevRight />
+              </span>
+            </div>
+          </div>
+
+          {/* How to use */}
+          <div className="flex items-start gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-3.5">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-bold" style={{ background: "#0033A0" }}>i</span>
+            <p className="text-[12px] text-slate-600 leading-relaxed">
+              Presenta tu tarjeta Banco de Chile al momento de comprar o indica que eres cliente. En compras online ingresa el código de descuento asociado a tu tarjeta.
+            </p>
+          </div>
+        </div>
+
+        {/* 4-column promo grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {BDC_PROMOS.map((promo) => (
+            <PromoCard key={promo.id} promo={promo} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── More benefits CTA ──────────────────────────────────── */}
+      <section className="relative overflow-hidden rounded-2xl border border-[hsl(45_90%_55%/0.25)] bg-[hsl(45_90%_55%/0.07)] px-7 py-8 text-center">
+        <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[hsl(45_90%_55%/0.18)] blur-3xl" />
+        <div className="relative">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(45_70%_32%)]">Próximamente</p>
+          <h3 className="mt-1 text-lg font-bold text-slate-900">Más convenios en camino</h3>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-slate-500">
+            Estamos incorporando nuevas alianzas con veterinarias, tiendas y servicios pet de todo Chile.
+          </p>
+          <Link
+            href="/"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-[hsl(45_70%_32%)] px-6 py-2.5 text-sm font-bold text-white transition hover:opacity-90 active:scale-95"
+          >
+            Volver al inicio
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}
