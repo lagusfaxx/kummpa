@@ -247,7 +247,7 @@ function SectionTienda({ shop, accessToken, onSaved }: { shop: ShopProfile | nul
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-[11px] font-bold uppercase tracking-widest text-amber-600 mb-2">📍 Ubicación en el mapa</p>
-          <p className="text-xs text-amber-700 mb-3">Para aparecer en "Cerca de ti" necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu tienda → "¿Qué hay aquí?"</p>
+          <p className="text-xs text-amber-700 mb-3">Para aparecer en &quot;Cerca de ti&quot; necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu tienda → &quot;¿Qué hay aquí?&quot;</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <FormRow label="Latitud">
               <Inp type="number" step="any" value={form.latitude ?? ""} onChange={setNum("latitude")} placeholder="-33.4489" />
@@ -658,7 +658,7 @@ function SectionPedidos() {
   const statuses = [
     { label: "Nuevos", count: 0, color: "blue" as const },
     { label: "Pagados", count: 0, color: "green" as const },
-    { label: "Preparando", count: 0, color: "amber" as const },
+    { label: "Preparando", count: 0, color: "orange" as const },
     { label: "Enviados", count: 0, color: "blue" as const },
     { label: "Entregados", count: 0, color: "green" as const },
     { label: "Cancelados", count: 0, color: "red" as const },
