@@ -335,19 +335,29 @@ function ServiceCard({
 
       {selected && (
         <div className="flex flex-wrap gap-2 border-b border-slate-100 px-4 pb-3 pl-[68px]">
-          {service.bookingUrl && (
-            <Link href={service.bookingUrl} onClick={(e) => e.stopPropagation()}
+          {service.type === "SHOP" ? (
+            <Link href={`/explore/shop/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
+              className="rounded-full bg-[hsl(22_92%_60%)] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
+              Ver tienda
+            </Link>
+          ) : service.type === "VET" ? (
+            <Link href={`/explore/vet/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
               className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
               Reservar
             </Link>
-          )}
+          ) : (service.bookingUrl ?? service.profileUrl) ? (
+            <Link href={service.bookingUrl ?? service.profileUrl ?? "#"} onClick={(e) => e.stopPropagation()}
+              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
+              Reservar
+            </Link>
+          ) : null}
           {service.phone && (
             <a href={`tel:${service.phone}`} onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               <IcoPhone /> Llamar
             </a>
           )}
-          {service.profileUrl && (
+          {service.profileUrl && service.type !== "VET" && service.type !== "SHOP" && (
             <Link href={service.profileUrl} onClick={(e) => e.stopPropagation()}
               className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               Ver ficha
@@ -743,11 +753,19 @@ export default function ExplorePage() {
                   )}
                 </div>
                 <div className="mt-4 flex gap-2 pb-2">
-                  {selectedService.bookingUrl && (
-                    <Link href={selectedService.bookingUrl} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
+                  {selectedService.type === "SHOP" ? (
+                    <Link href={`/explore/shop/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-center text-[13px] font-bold text-white">
+                      Ver tienda
+                    </Link>
+                  ) : selectedService.type === "VET" ? (
+                    <Link href={`/explore/vet/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
                       Reservar
                     </Link>
-                  )}
+                  ) : (selectedService.bookingUrl ?? selectedService.profileUrl) ? (
+                    <Link href={selectedService.bookingUrl ?? selectedService.profileUrl ?? "#"} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
+                      Reservar
+                    </Link>
+                  ) : null}
                   {selectedService.phone && (
                     <a href={`tel:${selectedService.phone}`} className="flex-1 rounded-2xl border border-slate-200 py-3 text-center text-[13px] font-semibold text-slate-700">
                       Llamar

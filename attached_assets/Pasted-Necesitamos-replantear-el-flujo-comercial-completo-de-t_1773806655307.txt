@@ -1,0 +1,174 @@
+Necesitamos replantear el flujo comercial completo de tiendas y veterinarias dentro de Kummpa.
+
+OBJETIVO GENERAL
+La plataforma debe distinguir claramente entre dos tipos de negocios:
+1. Tienda
+2. Veterinaria
+
+Y cada uno debe tener:
+- dashboard de administración correcto
+- vista pública correcta
+- acción principal correcta para el cliente
+
+REGLA PRINCIPAL EN CERCA DE TI / RESULTADOS
+- Si el resultado es una tienda, el CTA principal debe ser: "Ver tienda"
+- Si el resultado es una veterinaria, el CTA principal debe ser: "Reservar"
+
+1. FLUJO TIENDA
+Al entrar a "Ver tienda", el cliente debe ver:
+- nombre de la tienda
+- logo / banner
+- descripción
+- dirección
+- horarios
+- métodos de pago disponibles
+- opciones de entrega:
+  - retiro
+  - despacho
+- descuentos activos
+- categorías de productos
+- productos visibles con precio
+- carrito de compras
+
+Cada producto debe mostrar:
+- foto
+- nombre
+- precio
+- precio oferta si aplica
+- categoría
+- descripción corta
+- botón agregar al carrito
+
+CARRITO
+El cliente debe poder:
+- agregar productos
+- modificar cantidades
+- ver subtotal
+- ver descuentos
+- elegir tipo de entrega:
+  - retiro
+  - despacho
+- elegir método de pago según lo configurado por la tienda
+- confirmar pedido
+
+PEDIDO
+Al confirmar:
+- guardar pedido
+- guardar método de pago
+- guardar tipo de entrega
+- permitir coordinación para despacho/retiro
+- reflejarlo en historial del cliente y del comercio
+
+2. FLUJO VETERINARIA
+Al entrar a "Reservar", el cliente debe ver:
+- nombre de la clínica
+- portada / fotos
+- dirección
+- horarios
+- especialidades
+- servicios veterinarios
+- valor consulta
+- precios referenciales
+- descuentos activos
+- urgencias 24/7 si aplica
+- especialistas si existen
+- calendario / agenda disponible
+
+RESERVA
+El cliente debe poder:
+- elegir servicio o especialidad
+- ver precio
+- abrir calendario
+- elegir fecha
+- elegir hora
+- confirmar reserva
+
+Al confirmar:
+- guardar reserva
+- asociar cliente
+- asociar veterinaria
+- asociar mascota si corresponde
+- guardar estado (pendiente, confirmada, cancelada, completada)
+
+3. DASHBOARD TIENDA
+Debe evolucionar a un panel comercial profesional con secciones:
+- Resumen
+- Tienda
+- Productos
+- Categorías
+- Inventario
+- Promociones
+- Pagos
+- Envíos
+- Pedidos
+
+Debe permitir configurar:
+- catálogo
+- stock
+- precios
+- descuentos
+- métodos de pago
+- retiro / despacho
+- pedidos
+
+4. DASHBOARD VETERINARIA
+Debe tener secciones:
+- Resumen
+- Perfil clínica
+- Especialidades
+- Servicios
+- Precios
+- Horarios
+- Agenda / disponibilidad
+- Promociones
+- Pagos
+- Reservas
+
+Debe permitir configurar:
+- especialidades
+- servicios veterinarios
+- valor de consulta
+- precios referenciales
+- horarios generales
+- horarios por especialista si aplica
+- descuentos
+- fotos
+- reserva habilitada o no
+- agenda y disponibilidad
+
+5. BÚSQUEDA GLOBAL
+La búsqueda del home y de explorar debe ser global y útil.
+
+Debe encontrar:
+- tiendas
+- veterinarias
+- productos
+- servicios
+- categorías
+- coincidencias similares / semánticas
+- ordenar por cercanía
+
+Ejemplo:
+Si alguien busca "Bravery", debe aparecer la tienda que vende Bravery y, justo bajo ella o dentro del resultado, debe aparecer el producto encontrado con nombre y precio.
+
+ORDEN DE RESULTADOS
+Priorizar por:
+1. cercanía
+2. relevancia del texto / similitud
+3. disponibilidad
+4. descuentos
+5. calidad/destacado si aplica
+
+6. IMPORTANTE UX
+- No mezclar flujo tienda con flujo veterinaria
+- Cada tipo de negocio debe tener su experiencia correcta
+- Tienda = catálogo + carrito + pedido
+- Veterinaria = servicios + calendario + reserva
+
+ENTREGABLE
+Proponer y comenzar a implementar esta estructura completa:
+- dashboard tienda profesional
+- dashboard veterinaria profesional
+- vista pública tienda con catálogo y carrito
+- vista pública veterinaria con servicios y reservas
+- búsqueda global con productos/servicios/cercanía/similitudes
