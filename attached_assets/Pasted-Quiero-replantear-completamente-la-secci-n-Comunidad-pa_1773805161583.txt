@@ -1,0 +1,116 @@
+Quiero replantear completamente la sección “Comunidad” para que deje de sentirse como una colección de módulos informativos y pase a sentirse como una comunidad viva, visual y útil, con una dirección más cercana a una experiencia tipo Instagram, pero adaptada a mascotas y necesidades reales.
+
+OBJETIVO
+La comunidad debe convertirse en una parte central y emocional del producto. Quiero que se sienta viva, social, útil y visual. Debe permitir ver perfiles, publicaciones, mascotas asociadas y compartir contenido en formato feed.
+
+PROBLEMA ACTUAL
+- La sección Comunidad se siente muy modular e informativa.
+- Hay demasiados bloques estáticos.
+- Falta una identidad social fuerte.
+- No se siente como una comunidad viva.
+- No hay suficiente protagonismo del usuario, su perfil y sus publicaciones.
+- Se ve ordenada, pero no emocional ni social.
+
+NUEVA DIRECCIÓN
+Quiero una experiencia inspirada en patrones tipo Instagram / comunidad social, pero adaptada a mascotas:
+- perfiles de usuario
+- publicaciones en feed
+- mascotas visibles dentro del perfil
+- publicaciones asociadas a mascotas
+- espacio para compartir momentos, recomendaciones, consultas y paseos
+- experiencia más humana y viva
+
+ESTRUCTURA GENERAL
+La comunidad debe organizarse en tabs o navegación interna como:
+
+- Feed
+- Perfiles
+- Paseos
+- Preguntas
+- Noticias
+
+FEED
+El feed debe ser el centro de la experiencia.
+Debe mostrar publicaciones tipo:
+- fotos o historias de mascotas
+- recomendaciones locales
+- consultas a la comunidad
+- paseos / encuentros
+- tips útiles
+
+Cada publicación debe mostrar:
+- avatar del usuario
+- nombre del usuario
+- mascota asociada (si aplica)
+- tiempo
+- zona o comuna opcional
+- texto
+- imagen opcional
+- acciones simples (comentar, guardar, compartir, ver perfil, ver mascota)
+
+PERFIL DE USUARIO
+Cada usuario debe tener un perfil social dentro de la comunidad con:
+- foto de perfil
+- nombre
+- bio corta
+- comuna o zona
+- cantidad de mascotas
+- posts
+- seguidores
+- siguiendo
+- publicaciones
+- mascotas visibles asociadas al perfil
+
+MASCOTAS EN PERFIL
+Esto es muy importante:
+- mostrar las mascotas del usuario dentro de su perfil
+- mini cards o chips visuales
+- clic en mascota para ver su perfil
+- conectar publicaciones con la mascota que aparece en ellas
+
+COMPOSER / CREAR PUBLICACIÓN
+En la entrada de Comunidad debe existir una caja simple para publicar algo, con accesos rápidos tipo:
+- Foto / historia
+- Recomendación
+- Consulta
+- Paseo
+- Tip útil
+
+TIPOS DE CONTENIDO
+Permitir publicaciones de estos tipos:
+- historia / momento
+- recomendación
+- consulta
+- paseo / encuentro
+- tip útil
+
+DISEÑO
+Quiero una experiencia:
+- más visual
+- más viva
+- más emocional
+- más social
+- más moderna
+- más tipo producto real
+- menos dashboard informativo
+- menos bloques estáticos
+
+NOTICIAS PET
+Las noticias pueden seguir existiendo, pero deben quedar como una tab o bloque secundario.
+No deben dominar la experiencia social principal.
+
+PASEOS Y ENCUENTROS
+Mantenerlos dentro de comunidad, pero integrados de forma social.
+No como módulo aislado.
+
+IMPORTANTE
+- No quiero copiar Instagram literalmente.
+- Quiero tomar lo mejor del patrón social:
+  - perfil
+  - publicaciones
+  - descubrimiento
+  - identidad visual
+- y adaptarlo al mundo pet y a Kummpa.
+
+ENTREGABLE
+Quiero una nueva versión de Comunidad mucho más social, visual y viva, con feed, perfiles, publicaciones y mascotas visibles dentro del perfil del usuario.
