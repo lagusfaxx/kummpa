@@ -115,6 +115,7 @@ interface MapCanvasProps {
   onPickLocation?: (location: { lat: number; lng: number }) => void;
   center?: { lat: number; lng: number } | null;
   className?: string;
+  borderless?: boolean;
 }
 
 export function MapCanvas({
@@ -125,7 +126,8 @@ export function MapCanvas({
   pickedLocation = null,
   onPickLocation,
   center = null,
-  className
+  className,
+  borderless = false
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -408,12 +410,14 @@ export function MapCanvas({
     });
   }, [center]);
 
+  const borderClasses = borderless ? "" : "rounded-2xl border border-slate-200";
+
   if (!accessToken) {
     return (
       <div
-        className={`${className ?? ""} flex items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900`}
+        className={`${className ?? ""} ${borderless ? "" : "rounded-2xl border border-amber-200"} flex items-center justify-center bg-amber-50 p-6 text-sm text-amber-900`}
       >
-        Configura `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` para visualizar el mapa.
+        Configura{" "}<code className="font-mono">NEXT_PUBLIC_MAPBOX_TOKEN</code>{" "}para visualizar el mapa.
       </div>
     );
   }
@@ -421,7 +425,7 @@ export function MapCanvas({
   return (
     <div
       ref={containerRef}
-      className={`${className ?? ""} overflow-hidden rounded-2xl border border-slate-200 bg-slate-100`}
+      className={`${className ?? ""} ${borderClasses} overflow-hidden bg-slate-100`}
     />
   );
 }

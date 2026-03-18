@@ -101,6 +101,10 @@ export function isAuthRoute(pathname: string) {
   return AUTH_ROUTE_PREFIXES.some((candidate) => pathMatches(pathname, candidate));
 }
 
+export function isMapRoute(pathname: string) {
+  return pathname === "/explore" || pathname.startsWith("/explore/");
+}
+
 export function isMinimalShellRoute(pathname: string) {
   if (isAuthRoute(pathname)) {
     return true;

@@ -2,13 +2,26 @@
 
 import type { PropsWithChildren } from "react";
 import { usePathname } from "next/navigation";
-import { isMinimalShellRoute } from "@/features/navigation/site-map";
+import { isMapRoute, isMinimalShellRoute } from "@/features/navigation/site-map";
 import { BottomNav } from "./bottom-nav";
 import { TopNav } from "./top-nav";
 
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const isMinimalShell = isMinimalShellRoute(pathname);
+  const isMap = isMapRoute(pathname);
+
+  if (isMap) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden">
+        <TopNav />
+        <main className="relative flex-1 overflow-hidden">
+          {children}
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div
