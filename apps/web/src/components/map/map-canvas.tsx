@@ -415,24 +415,51 @@ export function MapCanvas({
   if (!accessToken) {
     return (
       <div
-        className={`${className ?? ""} ${borderless ? "" : "rounded-2xl"} flex flex-col items-center justify-center gap-5 bg-[hsl(210_20%_14%)] p-8 text-center`}
+        className={`${className ?? ""} ${borderless ? "" : "rounded-2xl"} relative flex flex-col items-center justify-center overflow-hidden bg-[hsl(215_28%_17%)] p-8 text-center`}
         style={{
-          backgroundImage:
-            "radial-gradient(ellipse at 60% 40%, hsl(155_48%_20%/0.4) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, hsl(220_40%_20%/0.5) 0%, transparent 55%)",
+          backgroundImage: [
+            "radial-gradient(ellipse 80% 60% at 65% 35%, hsl(164_35%_22%/0.7) 0%, transparent 55%)",
+            "radial-gradient(ellipse 60% 50% at 25% 75%, hsl(220_40%_22%/0.6) 0%, transparent 50%)",
+            "radial-gradient(ellipse 40% 35% at 80% 80%, hsl(240_30%_18%/0.4) 0%, transparent 45%)",
+          ].join(", "),
         }}
       >
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 opacity-70">
-            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-            <line x1="8" y1="2" x2="8" y2="18"/>
-            <line x1="16" y1="6" x2="16" y2="22"/>
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-white/90">Mapa no configurado</p>
-          <p className="mt-1 max-w-[200px] text-xs leading-relaxed text-white/45">
-            Agrega tu token de Mapbox para activar el mapa interactivo
-          </p>
+        {/* Topographic grid lines */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage: [
+              "repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(255,255,255,1) 48px, rgba(255,255,255,1) 49px)",
+              "repeating-linear-gradient(90deg, transparent, transparent 48px, rgba(255,255,255,1) 48px, rgba(255,255,255,1) 49px)",
+            ].join(", "),
+          }}
+        />
+        {/* Diagonal contour lines */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 24px, rgba(255,255,255,1) 24px, rgba(255,255,255,1) 25px)",
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center gap-5">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm"
+            style={{ background: "rgba(255,255,255,0.07)" }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 opacity-60">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-[14px] font-semibold text-white/80">Mapa interactivo</p>
+            <p className="mt-1.5 max-w-[180px] text-[12px] leading-relaxed text-white/35">
+              Configura tu token de Mapbox para activarlo
+            </p>
+          </div>
         </div>
       </div>
     );
