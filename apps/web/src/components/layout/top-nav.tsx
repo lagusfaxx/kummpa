@@ -59,12 +59,12 @@ export function TopNav() {
 
   return (
     <header className="safe-area-top sticky top-0 z-40 border-b border-[hsl(var(--border)/0.9)] bg-[hsl(var(--background)/0.9)] backdrop-blur-xl">
-      <div className="safe-area-x mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <div className="safe-area-x mx-auto flex h-[4.5rem] max-w-7xl items-center gap-4 px-4 sm:px-6">
 
-        {/* Brand */}
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <BrandLogo variant="icon" className="h-10 w-10" priority />
-          <p className="font-display text-xl font-bold">Kumpa</p>
+        {/* Brand — icon arriba, nombre abajo */}
+        <Link href="/" className="flex shrink-0 flex-col items-center gap-0.5">
+          <BrandLogo variant="icon" className="h-9 w-9" priority />
+          <p className="font-display text-[11px] font-bold tracking-wide">Kummpa</p>
         </Link>
 
         {/* Desktop nav — shown at md: (768px+) */}

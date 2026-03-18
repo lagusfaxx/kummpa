@@ -42,7 +42,7 @@ export function BrandLogo({
   variant = "icon",
   className,
   priority = false,
-  alt = "Kumpa"
+  alt = "Kummpa"
 }: BrandLogoProps) {
   const config = variants[variant];
   const containerClassName = ["relative overflow-hidden", config.containerClassName, className]

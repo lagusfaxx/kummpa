@@ -307,7 +307,7 @@ export function HomeHub() {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-              Qué hay en Kumpa
+              Qué hay en Kummpa
             </p>
             <h2 className="mt-0.5 text-xl font-bold">Todo desde una app</h2>
           </div>

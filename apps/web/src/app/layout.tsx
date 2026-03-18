@@ -18,7 +18,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Kumpa | Plataforma para mascotas",
+  title: "Kummpa | Plataforma para mascotas",
   description:
     "Cuida, reserva, explora, compra y actua rapido por tus mascotas desde una sola app.",
   icons: {
