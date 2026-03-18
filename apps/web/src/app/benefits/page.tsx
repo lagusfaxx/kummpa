@@ -151,13 +151,13 @@ export default function BenefitsPage() {
         {/* Section header */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-5 px-6 py-5" style={{ background: "linear-gradient(135deg, #001F5B 0%, #0033A0 60%, #0055CC 100%)" }}>
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md">
+            <div className="relative h-14 w-32 shrink-0 overflow-hidden rounded-xl shadow-md">
               <Image
                 src="/brand/banco-chile-logo.png"
                 alt="Banco de Chile"
-                width={52}
-                height={52}
-                className="object-contain p-1"
+                fill
+                sizes="128px"
+                className="object-cover"
               />
             </div>
             <div className="text-white">
@@ -196,13 +196,13 @@ export default function BenefitsPage() {
         {/* Section header */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-5 px-6 py-5" style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 60%, #404040 100%)" }}>
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md">
+            <div className="relative h-14 w-32 shrink-0 overflow-hidden rounded-xl bg-white shadow-md">
               <Image
                 src="/brand/bci-logo.png"
                 alt="BCI"
-                width={52}
-                height={52}
-                className="object-contain p-1"
+                fill
+                sizes="128px"
+                className="object-contain p-2"
               />
             </div>
             <div className="text-white">
@@ -232,15 +232,14 @@ export default function BenefitsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
             {/* Club de Perros y Gatos image */}
-            <div className="flex h-[140px] items-center justify-center bg-[#FFF3E0] px-6">
-              <div className="relative h-[72px] w-full">
-                <Image
-                  src="/brand/club-perros-gatos.png"
-                  alt="Club de Perros y Gatos"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+            <div className="relative h-[140px] w-full overflow-hidden">
+              <Image
+                src="/brand/club-perros-gatos.png"
+                alt="Club de Perros y Gatos"
+                fill
+                sizes="(max-width: 640px) 50vw, 25vw"
+                className="object-cover"
+              />
             </div>
             <div className="px-4 py-3.5">
               <p className="text-[13px] font-bold text-slate-900 leading-tight">Club de Perros y Gatos</p>
