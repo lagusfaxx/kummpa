@@ -40,25 +40,27 @@ export function TopNav() {
 
   return (
     <header className="safe-area-top sticky top-0 z-40 border-b border-slate-200/70 bg-[hsl(var(--background)/0.96)] backdrop-blur-xl">
-      <div className="safe-area-x mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
+      <div className="safe-area-x mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6">
 
-        {/* ── Brand ────────────────────────────────────────────── */}
-        <Link href="/" className="flex shrink-0 items-center">
-          <div className="relative h-14 w-14 overflow-hidden">
-            <Image
-              src="/brand/logo-con-titulo.png"
-              alt="Kummpa"
-              fill
-              sizes="56px"
-              priority
-              className="select-none object-contain scale-[1.55] translate-y-[5%]"
-            />
-          </div>
-        </Link>
+        {/* ── Left: Brand ───────────────────────────────────────── */}
+        <div className="flex flex-1 items-center">
+          <Link href="/" className="flex shrink-0 items-center">
+            <div className="relative h-14 w-14 overflow-hidden">
+              <Image
+                src="/brand/logo-con-titulo.png"
+                alt="Kummpa"
+                fill
+                sizes="56px"
+                priority
+                className="select-none object-contain scale-[1.55] translate-y-[5%]"
+              />
+            </div>
+          </Link>
+        </div>
 
-        {/* ── Desktop nav ──────────────────────────────────────── */}
+        {/* ── Center: Desktop nav ───────────────────────────────── */}
         {!isCompact && (
-          <nav className="hidden flex-1 items-center gap-0.5 md:flex">
+          <nav className="hidden items-center gap-0.5 md:flex">
             {PRIMARY_NAV_ITEMS.map((item) => {
               const active = isNavItemActive(pathname, item);
               return (
@@ -81,73 +83,72 @@ export function TopNav() {
           </nav>
         )}
 
-        {/* Spacer on compact mode */}
-        {isCompact && <div className="flex-1" />}
-
-        {/* ── Desktop auth ─────────────────────────────────────── */}
-        <div className="hidden items-center gap-1.5 md:flex">
-          {isAuthenticated ? (
-            <>
-              {utilityItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-                    isNavItemActive(pathname, item)
-                      ? "bg-[hsl(var(--primary)/0.08)] font-semibold text-[hsl(var(--primary))]"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
+        {/* ── Right: Auth ───────────────────────────────────────── */}
+        <div className="flex flex-1 items-center justify-end gap-1.5">
+          {/* Desktop */}
+          <div className="hidden items-center gap-1.5 md:flex">
+            {isAuthenticated ? (
+              <>
+                {utilityItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                      isNavItemActive(pathname, item)
+                        ? "bg-[hsl(var(--primary)/0.08)] font-semibold text-[hsl(var(--primary))]"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-800"
                 >
-                  {item.label}
-                </Link>
-              ))}
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-800"
+                  Salir
+                </button>
+              </>
+            ) : (
+              <>
+                {!isAuthRoute(pathname) && (
+                  <Link
+                    href="/login"
+                    className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900"
+                  >
+                    Ingresar
+                  </Link>
+                )}
+                {pathname !== "/register" && (
+                  <Link
+                    href="/register"
+                    className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[13px] font-bold text-white shadow-sm transition hover:opacity-90"
+                  >
+                    Crear cuenta
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
+          {/* Mobile */}
+          {!isAuthenticated && !isAuthRoute(pathname) && (
+            <div className="flex items-center gap-2 md:hidden">
+              <Link
+                href="/login"
+                className="text-[13px] font-medium text-slate-600"
               >
-                Salir
-              </button>
-            </>
-          ) : (
-            <>
-              {!isAuthRoute(pathname) && (
-                <Link
-                  href="/login"
-                  className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900"
-                >
-                  Ingresar
-                </Link>
-              )}
-              {pathname !== "/register" && (
-                <Link
-                  href="/register"
-                  className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[13px] font-bold text-white shadow-sm transition hover:opacity-90"
-                >
-                  Crear cuenta
-                </Link>
-              )}
-            </>
+                Ingresar
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[12px] font-bold text-white shadow-sm"
+              >
+                Crear cuenta
+              </Link>
+            </div>
           )}
         </div>
-
-        {/* ── Mobile auth ──────────────────────────────────────── */}
-        {!isAuthenticated && !isAuthRoute(pathname) && (
-          <div className="ml-auto flex items-center gap-2 md:hidden">
-            <Link
-              href="/login"
-              className="text-[13px] font-medium text-slate-600"
-            >
-              Ingresar
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[12px] font-bold text-white shadow-sm"
-            >
-              Crear cuenta
-            </Link>
-          </div>
-        )}
       </div>
     </header>
   );
