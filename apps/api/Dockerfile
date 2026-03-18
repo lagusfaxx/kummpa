@@ -1,5 +1,9 @@
-FROM node:22-alpine AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json turbo.json tsconfig.base.json ./
 COPY apps/api/package.json apps/api/package.json
@@ -10,8 +14,12 @@ COPY packages/ui/package.json packages/ui/package.json
 
 RUN npm ci --include=dev
 
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -19,13 +27,17 @@ COPY . .
 RUN npm run db:generate
 RUN npm run build --workspace @kumpa/api
 
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
 ENV PRISMA_MIGRATE_ON_START=true
 ENV PRISMA_MIGRATE_MAX_ATTEMPTS=10
 ENV PRISMA_MIGRATE_DELAY_SECONDS=5
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
