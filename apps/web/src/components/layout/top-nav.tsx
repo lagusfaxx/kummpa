@@ -18,8 +18,16 @@ import { useToast } from "@/features/ui/toast-context";
 
 function IcoSearch() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[14px] w-[14px] shrink-0">
       <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
+function IcoChevDown() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }
@@ -30,6 +38,7 @@ export function TopNav() {
   const { isAuthenticated, session, signOut } = useAuth();
   const { showToast } = useToast();
   const [searchValue, setSearchValue] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const isCompact = isMinimalShellRoute(pathname);
   const isHome = pathname === "/";
@@ -58,92 +67,116 @@ export function TopNav() {
   }
 
   return (
-    <header className="safe-area-top sticky top-0 z-40 border-b border-[hsl(var(--border)/0.9)] bg-[hsl(var(--background)/0.9)] backdrop-blur-xl">
-      <div className="safe-area-x mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6">
+    <header className="safe-area-top sticky top-0 z-40 border-b border-slate-200/70 bg-[hsl(var(--background)/0.96)] backdrop-blur-xl">
+      <div className="safe-area-x mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
 
-        {/* Brand — wordmark (ícono + texto del asset oficial) */}
+        {/* ── Brand ────────────────────────────────────────────── */}
         <Link href="/" className="flex shrink-0 items-center">
-          <div className="relative h-20 w-20 overflow-hidden">
+          <div className="relative h-14 w-14 overflow-hidden">
             <Image
               src="/brand/logo-con-titulo.png"
               alt="Kummpa"
               fill
-              sizes="80px"
+              sizes="56px"
               priority
               className="select-none object-contain scale-[1.55] translate-y-[5%]"
             />
           </div>
         </Link>
 
-        {/* Desktop nav — shown at md: (768px+) */}
+        {/* ── Desktop nav ──────────────────────────────────────── */}
         {!isCompact && (
-          <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
-            {PRIMARY_NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
-                  isNavItemActive(pathname, item)
-                    ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
-                    : "text-[hsl(var(--muted-foreground))] hover:bg-white/70 hover:text-[hsl(var(--foreground))]"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <nav className="hidden flex-1 items-center gap-0.5 md:flex">
+            {PRIMARY_NAV_ITEMS.map((item) => {
+              const active = isNavItemActive(pathname, item);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative rounded-full px-3.5 py-1.5 text-[13.5px] transition-colors ${
+                    active
+                      ? "font-semibold text-[hsl(var(--primary))]"
+                      : "font-medium text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {item.label}
+                  {active && (
+                    <span className="absolute -bottom-[1px] left-1/2 h-0.5 w-[60%] -translate-x-1/2 rounded-full bg-[hsl(var(--primary)/0.35)]" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         )}
 
-        {/* Global search (non-home, non-compact, desktop) */}
+        {/* Spacer on compact mode */}
+        {isCompact && <div className="flex-1" />}
+
+        {/* ── Global search (non-home, non-compact, desktop) ──── */}
         {!isCompact && !isHome && (
           <form
             onSubmit={handleSearch}
-            className="hidden min-w-[200px] max-w-[260px] items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-white/85 py-1.5 pl-3.5 pr-1.5 shadow-sm transition focus-within:border-[hsl(var(--secondary)/0.5)] lg:flex"
+            className={`hidden items-center gap-2 rounded-full border px-3 py-1.5 transition-all lg:flex ${
+              searchFocused
+                ? "w-[240px] border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]"
+                : "w-[180px] border-slate-200/80 bg-slate-100/60 hover:border-slate-300 hover:bg-slate-100"
+            }`}
           >
-            <span className="text-[hsl(var(--muted-foreground))]"><IcoSearch /></span>
+            <span className="shrink-0 text-slate-400">
+              <IcoSearch />
+            </span>
             <input
               ref={searchRef}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
               placeholder="Buscar..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+              className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-slate-800 outline-none placeholder:text-slate-400"
             />
-            <button type="submit" className="rounded-full bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-bold text-white transition hover:opacity-90">
-              Ir
-            </button>
           </form>
         )}
 
-        {/* Desktop auth — shown at md: */}
-        <div className="hidden items-center gap-2 md:flex">
+        {/* ── Desktop auth ─────────────────────────────────────── */}
+        <div className="hidden items-center gap-1.5 md:flex">
           {isAuthenticated ? (
             <>
               {utilityItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-full px-3 py-2 text-sm font-medium ${
+                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
                     isNavItemActive(pathname, item)
-                      ? "bg-[hsl(var(--accent))] text-white"
-                      : "bg-[hsl(var(--card)/0.7)] text-[hsl(var(--foreground))]"
+                      ? "bg-[hsl(var(--primary)/0.08)] font-semibold text-[hsl(var(--primary))]"
+                      : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   {item.label}
                 </Link>
               ))}
-              <button type="button" onClick={() => void handleLogout()} className="btn btn-outline text-sm">
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-800"
+              >
                 Salir
               </button>
             </>
           ) : (
             <>
               {!isAuthRoute(pathname) && (
-                <Link href="/login" className="btn btn-ghost text-sm">
+                <Link
+                  href="/login"
+                  className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900"
+                >
                   Ingresar
                 </Link>
               )}
               {pathname !== "/register" && (
-                <Link href="/register" className="btn btn-primary text-sm">
+                <Link
+                  href="/register"
+                  className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[13px] font-bold text-white shadow-sm transition hover:opacity-90"
+                >
                   Crear cuenta
                 </Link>
               )}
@@ -151,13 +184,19 @@ export function TopNav() {
           )}
         </div>
 
-        {/* Mobile auth (only show Ingresar/Crear when NOT authenticated) */}
+        {/* ── Mobile auth ──────────────────────────────────────── */}
         {!isAuthenticated && !isAuthRoute(pathname) && (
           <div className="ml-auto flex items-center gap-2 md:hidden">
-            <Link href="/login" className="rounded-full border border-[hsl(var(--border))] px-3.5 py-1.5 text-xs font-semibold">
+            <Link
+              href="/login"
+              className="text-[13px] font-medium text-slate-600"
+            >
               Ingresar
             </Link>
-            <Link href="/register" className="rounded-full bg-[hsl(var(--primary))] px-3.5 py-1.5 text-xs font-bold text-white">
+            <Link
+              href="/register"
+              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[12px] font-bold text-white shadow-sm"
+            >
               Crear cuenta
             </Link>
           </div>

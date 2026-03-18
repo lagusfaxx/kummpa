@@ -154,7 +154,7 @@ const FEATURES: FeatureDef[] = [
     label: "Comunidad",
     title: "Perfil para tu mascota y tu barrio",
     href: "/community",
-    cta: "Explorar",
+    cta: "Cerca de ti",
     accent: "bg-[hsl(164_30%_18%/0.05)]",
     iconBg: "bg-[hsl(164_30%_18%/0.1)] text-[hsl(164_30%_20%)]",
     ctaStyle: "text-[hsl(164_30%_20%)] bg-[hsl(164_30%_18%/0.08)] hover:bg-[hsl(164_30%_18%/0.14)]",
@@ -521,7 +521,7 @@ export function HomeHub() {
               Crear cuenta
             </Link>
             <Link href="/explore" className="rounded-full border border-[hsl(var(--border))] bg-white px-7 py-3 text-sm font-bold transition hover:bg-[hsl(var(--muted))] active:scale-95">
-              Explorar antes
+              Ver lugares
             </Link>
           </div>
         </section>

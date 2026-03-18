@@ -1,0 +1,61 @@
+Haz una nueva iteración del header y de la entrada a la sección de exploración para que se vea más premium, más clara y más propia de una app real de consumo.
+
+PROBLEMAS ACTUALES
+- El header no se ve lo suficientemente fuerte ni refinado.
+- El logo está muy pequeño y pierde presencia.
+- El buscador superior compite demasiado con la navegación.
+- “Explorar” se siente genérico y poco especial como funcionalidad principal.
+- La barra superior no transmite una identidad visual sólida.
+- La composición general del topbar aún se siente algo improvisada.
+
+OBJETIVO
+Quiero que el header se vea mucho más fino, más balanceado, más moderno y más propio de un producto serio. Además, la entrada a la sección actualmente llamada “Explorar” debe sentirse más potente, más clara y más alineada con el valor principal de la app.
+
+CAMBIOS PEDIDOS
+
+1. Mejorar el header completo.
+- Dar más presencia al logo.
+- Hacer que la marca se vea más memorable.
+- Ajustar mejor spacing horizontal entre logo, navegación, buscador y acciones.
+- Hacer que la barra superior se vea más limpia y menos saturada.
+- Crear mejor balance visual entre izquierda, centro y derecha.
+- El header debe sentirse premium, ligero y ordenado.
+
+2. Revisar el buscador superior.
+- Evaluar si debe seguir en el header o integrarse mejor.
+- Si permanece, debe verse más elegante y menos dominante.
+- No debe competir con el CTA principal ni con la navegación.
+- Debe sentirse útil y bien integrado, no puesto “porque sí”.
+
+3. Mejorar navegación.
+- El item activo debe verse elegante, no pesado.
+- Mejorar tipografía, spacing y estados hover/active.
+- Hacer que la navegación se sienta más refinada.
+- Mantener estilo minimalista premium.
+
+4. Replantear el nombre y tratamiento visual de “Explorar”.
+- Quiero probar una alternativa más fuerte y más clara que “Explorar”.
+- Priorizar alguna de estas opciones:
+  - “Cerca de ti”
+  - “Descubrir”
+  - “Mapa”
+  - “Servicios cerca”
+- Elegir la opción que mejor encaje con la app y con la experiencia visual.
+- El item activo debe comunicar mejor que esta es una funcionalidad principal.
+
+5. Dar más personalidad a la parte superior de la pantalla.
+- Debe verse como una app pensada, no como plantilla.
+- Más identidad de marca.
+- Mejor jerarquía.
+- Mejor composición.
+- Más look de startup premium / producto bien diseñado.
+
+6. No romper funcionalidad.
+- Mantener login, registro, navegación y búsqueda.
+- Priorizar refactor visual, naming y layout.
+
+ENTREGABLE
+- Header rediseñado y más premium.
+- Mejor integración del buscador superior.
+- Mejor nombre o tratamiento visual para la sección de exploración.
+- Resultado más elegante, más memorable y más profesional.

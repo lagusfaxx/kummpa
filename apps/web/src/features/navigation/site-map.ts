@@ -32,8 +32,8 @@ export const PRIMARY_NAV_ITEMS: readonly SiteNavItem[] = [
   },
   {
     href: "/explore",
-    label: "Explorar",
-    shortLabel: "Explorar",
+    label: "Cerca de ti",
+    shortLabel: "Cerca",
     description: "El centro del producto: servicios, productos y mapa",
     matchers: ["/explore", "/map"]
   },
@@ -129,7 +129,7 @@ const GUEST_QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     href: "/explore",
-    label: "Explorar",
+    label: "Cerca de ti",
     description: "Busca servicios, comida y lugares"
   }
 ];

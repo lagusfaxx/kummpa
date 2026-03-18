@@ -52,7 +52,7 @@ function IcoBell() {
 
 const TABS = [
   { href: "/",           label: "Inicio",    Icon: IcoHome      },
-  { href: "/explore",    label: "Explorar",  Icon: IcoMap       },
+  { href: "/explore",    label: "Cerca",     Icon: IcoMap       },
   { href: "/pets",       label: "Mascotas",  Icon: IcoPaw       },
   { href: "/community",  label: "Comunidad", Icon: IcoCommunity },
   { href: "/lost-pets",  label: "Alertas",   Icon: IcoBell      },
