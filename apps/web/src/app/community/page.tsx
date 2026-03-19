@@ -89,6 +89,235 @@ function IcoPencil() {
     </svg>
   );
 }
+function IcoNewspaper() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+      <path d="M18 14h-8" /><path d="M15 18h-5" /><path d="M10 6h8v4h-8V6Z" />
+    </svg>
+  );
+}
+function IcoArrow() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+/* ─── Category label ─────────────────────────────────────────── */
+const CAT_COLORS: Record<string, string> = {
+  FOOD: "bg-amber-100 text-amber-800",
+  GADGETS: "bg-blue-100 text-blue-800",
+  VET_NEWS: "bg-red-100 text-red-800",
+  HEALTH_TIPS: "bg-emerald-100 text-emerald-800",
+  PET_EVENTS: "bg-violet-100 text-violet-800",
+  HEALTH_ALERTS: "bg-rose-100 text-rose-800",
+  ADOPTION: "bg-orange-100 text-orange-800",
+  OTHER: "bg-slate-100 text-slate-600",
+};
+
+function CategoryPill({ label, id, size = "sm" }: { label: string; id: string; size?: "sm" | "xs" }) {
+  const color = CAT_COLORS[id] ?? CAT_COLORS.OTHER;
+  const sizeClass = size === "xs" ? "px-2 py-0.5 text-[9px]" : "px-2.5 py-1 text-[10px]";
+  return (
+    <span className={cls("rounded-full font-bold uppercase tracking-wide", color, sizeClass)}>{label}</span>
+  );
+}
+
+/* ─── Featured News Block (in feed column) ──────────────────── */
+function FeaturedNewsBlock({ news }: { news: NewsArticleListItem[] }) {
+  if (news.length === 0) return null;
+  const [hero, ...rest] = news;
+  if (!hero) return null;
+
+  return (
+    <div className="overflow-hidden rounded-none border border-[hsl(22_92%_60%/0.3)] bg-white/90 shadow-sm">
+      {/* header strip */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[hsl(22_92%_60%/0.07)] border-b border-[hsl(22_92%_60%/0.15)]">
+        <div className="flex items-center gap-2 text-[hsl(22_80%_45%)]">
+          <IcoNewspaper />
+          <span className="text-[11px] font-black uppercase tracking-widest">Noticias destacadas</span>
+        </div>
+        <Link href="/news" className="flex items-center gap-1 text-[11px] font-bold text-[hsl(22_80%_45%)] hover:underline">
+          Ver todas <IcoArrow />
+        </Link>
+      </div>
+
+      {/* hero card */}
+      <Link href={`/news/${hero.slug}`} className="group block relative overflow-hidden">
+        {hero.coverImageUrl ? (
+          <div className="relative h-52 w-full overflow-hidden">
+            <img
+              src={hero.coverImageUrl}
+              alt={hero.title}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <CategoryPill label={hero.category.label} id={hero.category.id} />
+              <h3 className="mt-2 text-base font-black leading-snug text-white line-clamp-2 group-hover:text-[hsl(22_92%_80%)] transition">
+                {hero.title}
+              </h3>
+              {hero.excerpt && (
+                <p className="mt-1 text-xs text-white/75 leading-relaxed line-clamp-2">{hero.excerpt}</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-[hsl(22_92%_60%/0.05)]">
+            <CategoryPill label={hero.category.label} id={hero.category.id} />
+            <h3 className="mt-2 text-base font-black leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(22_80%_40%)] transition">
+              {hero.title}
+            </h3>
+            {hero.excerpt && (
+              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))] leading-relaxed line-clamp-3">{hero.excerpt}</p>
+            )}
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[hsl(22_92%_60%)] px-4 py-1.5 text-xs font-bold text-white">
+              Leer <IcoArrow />
+            </span>
+          </div>
+        )}
+      </Link>
+
+      {/* secondary articles */}
+      {rest.length > 0 && (
+        <div className="divide-y divide-[hsl(var(--border)/0.5)]">
+          {rest.slice(0, 2).map((article) => (
+            <Link
+              key={article.id}
+              href={`/news/${article.slug}`}
+              className="group flex items-center gap-3 px-4 py-3 hover:bg-[hsl(22_92%_60%/0.04)] transition"
+            >
+              {article.coverImageUrl && (
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl">
+                  <img src={article.coverImageUrl} alt={article.title} className="h-full w-full object-cover group-hover:scale-105 transition duration-300" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <CategoryPill label={article.category.label} id={article.category.id} size="xs" />
+                <p className="mt-1 text-xs font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(22_80%_40%)] transition">
+                  {article.title}
+                </p>
+              </div>
+              <div className="shrink-0 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(22_80%_45%)] transition">
+                <IcoArrow />
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* bottom CTA */}
+      <div className="px-4 py-3 border-t border-[hsl(var(--border)/0.5)] bg-[hsl(22_92%_60%/0.03)]">
+        <Link
+          href="/news"
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-[hsl(22_92%_60%/0.4)] py-2 text-xs font-bold text-[hsl(22_80%_45%)] hover:bg-[hsl(22_92%_60%/0.08)] transition"
+        >
+          <IcoNewspaper /> Explorar todas las noticias
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/* ─── News Sidebar Panel ─────────────────────────────────────── */
+function NewsSidebarPanel({ news, isLoading }: { news: NewsArticleListItem[]; isLoading: boolean }) {
+  return (
+    <div className="overflow-hidden rounded-none border border-[hsl(22_92%_60%/0.35)] bg-white/90 shadow-sm">
+      {/* header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-[hsl(22_92%_60%/0.08)] border-b border-[hsl(22_92%_60%/0.15)]">
+        <div className="flex items-center gap-2 text-[hsl(22_80%_45%)]">
+          <IcoNewspaper />
+          <span className="text-[11px] font-black uppercase tracking-widest">Noticias</span>
+        </div>
+        <Link href="/news" className="text-[10px] font-bold text-[hsl(22_80%_45%)] hover:underline">
+          Ver todas →
+        </Link>
+      </div>
+
+      {isLoading ? (
+        <div className="p-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex gap-3">
+              <div className="h-12 w-12 animate-pulse rounded-xl bg-[hsl(var(--muted))] shrink-0" />
+              <div className="flex-1 space-y-1.5 pt-1">
+                <div className="h-2 w-1/3 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+                <div className="h-2.5 w-full animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+                <div className="h-2.5 w-4/5 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : news.length === 0 ? (
+        <p className="p-4 text-xs text-[hsl(var(--muted-foreground))]">Sin novedades por ahora.</p>
+      ) : (
+        <div className="divide-y divide-[hsl(var(--border)/0.5)]">
+          {news.slice(0, 4).map((article) => (
+            <Link
+              key={article.id}
+              href={`/news/${article.slug}`}
+              className="group flex items-start gap-3 px-4 py-3 hover:bg-[hsl(22_92%_60%/0.05)] transition"
+            >
+              {article.coverImageUrl ? (
+                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl">
+                  <img src={article.coverImageUrl} alt={article.title} className="h-full w-full object-cover group-hover:scale-105 transition duration-300" />
+                </div>
+              ) : (
+                <div className="h-12 w-12 shrink-0 rounded-xl bg-[hsl(22_92%_60%/0.12)] flex items-center justify-center text-[hsl(22_80%_50%)]">
+                  <IcoNewspaper />
+                </div>
+              )}
+              <div className="min-w-0">
+                <CategoryPill label={article.category.label} id={article.category.id} size="xs" />
+                <p className="mt-1 text-xs font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(22_80%_40%)] transition">
+                  {article.title}
+                </p>
+                {article.publishedAt && (
+                  <p className="mt-0.5 text-[10px] text-[hsl(var(--muted-foreground))]">{relativeTime(article.publishedAt)}</p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Inline News Teaser (injected into feed) ─────────────────── */
+function InlineNewsTeaser({ article }: { article: NewsArticleListItem }) {
+  return (
+    <Link
+      href={`/news/${article.slug}`}
+      className="group block overflow-hidden rounded-none border border-[hsl(22_92%_60%/0.25)] bg-[hsl(22_92%_60%/0.04)] hover:bg-[hsl(22_92%_60%/0.08)] transition shadow-sm"
+    >
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-[hsl(22_92%_60%/0.15)]">
+        <IcoNewspaper />
+        <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(22_80%_50%)]">Noticia destacada</span>
+      </div>
+      <div className="flex gap-3 px-4 py-3">
+        {article.coverImageUrl && (
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl">
+            <img src={article.coverImageUrl} alt={article.title} className="h-full w-full object-cover group-hover:scale-105 transition duration-300" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <CategoryPill label={article.category.label} id={article.category.id} size="xs" />
+          <p className="mt-1 text-sm font-bold leading-snug text-[hsl(var(--foreground))] line-clamp-2 group-hover:text-[hsl(22_80%_40%)] transition">
+            {article.title}
+          </p>
+          {article.excerpt && (
+            <p className="mt-0.5 text-[11px] text-[hsl(var(--muted-foreground))] line-clamp-1">{article.excerpt}</p>
+          )}
+        </div>
+        <div className="shrink-0 self-center text-[hsl(22_80%_50%)] group-hover:translate-x-0.5 transition">
+          <IcoArrow />
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 /* ─── PostCard ──────────────────────────────────────────────── */
 function PostCard({
@@ -385,7 +614,7 @@ export default function CommunityPage() {
         listCommunityFeed(accessToken, { mode: feedMode, limit: 20 }),
         listMyPetSocialProfiles(accessToken),
         listGroupEvents(accessToken, { limit: 4, includePast: false }),
-        listNewsArticles(accessToken, { featuredOnly: true, publishedOnly: true, limit: 3 }),
+        listNewsArticles(accessToken, { featuredOnly: true, publishedOnly: true, limit: 5 }),
       ]);
       setPosts(feedRows);
       setPets(petRows);
@@ -452,10 +681,12 @@ export default function CommunityPage() {
     } catch { setError("No se pudo comentar."); }
   };
 
-  /* client-side type filter (no extra API call) */
   const visiblePosts = typeFilter
     ? posts.filter((p) => (p as unknown as Record<string, unknown>).type === typeFilter)
     : posts;
+
+  /* news article to inject mid-feed (use 2nd article to avoid duplication with block) */
+  const inlineTeaserArticle = news[1] ?? news[0] ?? null;
 
   return (
     <AuthGate>
@@ -468,6 +699,11 @@ export default function CommunityPage() {
             <h1 className="mt-0.5 text-2xl font-black tracking-tight text-[hsl(var(--foreground))]">Feed</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/news"
+              className="flex items-center gap-1.5 rounded-full border border-[hsl(22_92%_60%/0.4)] bg-[hsl(22_92%_60%/0.08)] px-3 py-2 text-xs font-bold text-[hsl(22_80%_45%)] transition hover:bg-[hsl(22_92%_60%/0.15)]">
+              <IcoNewspaper />
+              <span className="hidden sm:inline">Noticias</span>
+            </Link>
             <Link href="/community/meet"
               className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]">
               Paseos
@@ -534,6 +770,31 @@ export default function CommunityPage() {
             {/* composer */}
             <Composer pets={pets} onPublish={handlePublish} isPublishing={isPublishing} />
 
+            {/* ── featured news block — right below composer ── */}
+            {!isLoading && news.length > 0 && (
+              <FeaturedNewsBlock news={news} />
+            )}
+            {isLoading && (
+              <div className="overflow-hidden rounded-none border border-[hsl(22_92%_60%/0.2)] bg-white/80 shadow-sm">
+                <div className="px-4 py-2.5 border-b border-[hsl(22_92%_60%/0.15)] bg-[hsl(22_92%_60%/0.07)]">
+                  <div className="h-3 w-36 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+                </div>
+                <div className="h-52 animate-pulse bg-[hsl(var(--muted))]" />
+                <div className="divide-y divide-[hsl(var(--border)/0.5)]">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex gap-3 px-4 py-3">
+                      <div className="h-14 w-14 shrink-0 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
+                      <div className="flex-1 space-y-1.5 pt-1">
+                        <div className="h-2 w-1/4 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+                        <div className="h-3 w-full animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+                        <div className="h-3 w-3/4 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* feed */}
             {isLoading ? (
               <FeedSkeleton />
@@ -555,8 +816,16 @@ export default function CommunityPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {visiblePosts.map((post) => (
-                  <PostCard key={post.id} post={post} onLike={handleLike} onSave={handleSave} onComment={handleComment} />
+                {visiblePosts.map((post, idx) => (
+                  <>
+                    <PostCard key={post.id} post={post} onLike={handleLike} onSave={handleSave} onComment={handleComment} />
+                    {/* inject news teaser after 3rd post on mobile, only in discover mode */}
+                    {idx === 2 && mode === "discover" && inlineTeaserArticle && (
+                      <div key="news-teaser" className="xl:hidden">
+                        <InlineNewsTeaser article={inlineTeaserArticle} />
+                      </div>
+                    )}
+                  </>
                 ))}
               </div>
             )}
@@ -564,6 +833,9 @@ export default function CommunityPage() {
 
           {/* ── sidebar ── */}
           <aside className="space-y-4">
+
+            {/* noticias — first in sidebar, max prominence */}
+            <NewsSidebarPanel news={news} isLoading={isLoading} />
 
             {/* paseos */}
             <div className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
@@ -591,24 +863,6 @@ export default function CommunityPage() {
                 className="mt-3 block w-full rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.4)]">
                 Ver todos los paseos
               </Link>
-            </div>
-
-            {/* noticias y foro */}
-            <div className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">Novedades</p>
-              <div className="mt-3 space-y-1">
-                {news.length === 0
-                  ? <p className="text-xs text-[hsl(var(--muted-foreground))]">Sin novedades por ahora.</p>
-                  : news.map((n) => (
-                    <div key={n.id} className="rounded-2xl px-3 py-2.5 transition hover:bg-[hsl(var(--muted)/0.4)]">
-                      <p className="text-xs font-semibold leading-snug text-[hsl(var(--foreground))]">{n.title}</p>
-                    </div>
-                  ))}
-              </div>
-              <div className="mt-3 flex gap-2">
-                <Link href="/news" className="flex-1 rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold transition hover:bg-[hsl(var(--muted)/0.4)]">Noticias</Link>
-                <Link href="/forum" className="flex-1 rounded-full border border-[hsl(var(--border))] py-2 text-center text-xs font-bold transition hover:bg-[hsl(var(--muted)/0.4)]">Foro</Link>
-              </div>
             </div>
 
           </aside>
