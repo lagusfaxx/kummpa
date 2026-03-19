@@ -32,6 +32,12 @@ export interface MapServicesQuery {
   limit?: number;
 }
 
+export interface MatchedProduct {
+  title: string;
+  priceCents: number;
+  imageUrl: string | null;
+}
+
 export interface MapServicePoint {
   id: string;
   sourceId: string;
@@ -63,6 +69,7 @@ export interface MapServicePoint {
   bookingUrl: string | null;
   profileUrl: string | null;
   createdAt: string;
+  matchedProduct?: MatchedProduct | null;
 }
 
 export interface MapServicesResponse {

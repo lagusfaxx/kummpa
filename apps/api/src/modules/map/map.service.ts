@@ -240,7 +240,7 @@ function profilePath(type: MapServiceType, sourceId: string): string | null {
   return `/explore?focus=${sourceId}`;
 }
 
-async function loadBaseMapPoints(includeLostPets: boolean): Promise<MapServicePoint[]> {
+async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string): Promise<MapServicePoint[]> {
   const [vets, caregivers, shops, lostAlerts] = await Promise.all([
     prisma.vetProfile.findMany({
       where: {
@@ -350,6 +350,7 @@ async function loadBaseMapPoints(includeLostPets: boolean): Promise<MapServicePo
   ]);
 
   const points: MapServicePoint[] = [];
+  const shopUserIdToPointId = new Map<string, string>();
 
   for (const vet of vets) {
     const latitude = decimalToNumber(vet.businessLocation?.latitude ?? vet.latitude);
@@ -451,8 +452,9 @@ async function loadBaseMapPoints(includeLostPets: boolean): Promise<MapServicePo
     const discounts = toStringArray(shop.discounts);
     const ownerName = fullName(shop.user.firstName, shop.user.lastName);
 
+    const pointId = `shop_${shop.id}`;
     points.push({
-      id: `shop_${shop.id}`,
+      id: pointId,
       sourceId: shop.id,
       type: "SHOP",
       name: toText(shop.businessName) ?? (ownerName ? `Pet shop ${ownerName}` : "Pet shop"),
@@ -482,8 +484,10 @@ async function loadBaseMapPoints(includeLostPets: boolean): Promise<MapServicePo
       distanceKm: null,
       bookingUrl: bookingPath("SHOP", shop.id),
       profileUrl: profilePath("SHOP", shop.id),
-      createdAt: shop.updatedAt.toISOString()
+      createdAt: shop.updatedAt.toISOString(),
+      matchedProduct: null
     });
+    shopUserIdToPointId.set(shop.userId, pointId);
   }
 
   if (includeLostPets) {
@@ -544,6 +548,43 @@ async function loadBaseMapPoints(includeLostPets: boolean): Promise<MapServicePo
       distanceKm: null,
       createdAt: curatedPoint.createdAt ?? new Date("2026-01-01T00:00:00.000Z").toISOString()
     });
+  }
+
+  if (searchQuery && shopUserIdToPointId.size > 0) {
+    const sellerIds = Array.from(shopUserIdToPointId.keys());
+    const matchedListings = await prisma.marketplaceListing.findMany({
+      where: {
+        sellerId: { in: sellerIds },
+        deletedAt: null,
+        isActive: true,
+        OR: [
+          { title: { contains: searchQuery, mode: "insensitive" } },
+          { description: { contains: searchQuery, mode: "insensitive" } }
+        ]
+      },
+      select: { title: true, priceCents: true, photoUrls: true, sellerId: true },
+      take: 50
+    });
+
+    const productBySeller = new Map<string, { title: string; priceCents: number; imageUrl: string | null }>();
+    for (const listing of matchedListings) {
+      if (!productBySeller.has(listing.sellerId)) {
+        productBySeller.set(listing.sellerId, {
+          title: listing.title,
+          priceCents: listing.priceCents,
+          imageUrl: listing.photoUrls[0] ?? null
+        });
+      }
+    }
+
+    for (const [userId, product] of productBySeller) {
+      const pointId = shopUserIdToPointId.get(userId);
+      if (!pointId) continue;
+      const point = points.find((p) => p.id === pointId);
+      if (point) {
+        point.matchedProduct = product;
+      }
+    }
   }
 
   return points;
@@ -693,7 +734,7 @@ function buildCountsByType(points: MapServicePoint[]): Record<MapServiceType, nu
 }
 
 export async function listMapServices(query: MapServicesQueryInput): Promise<MapServicesResponse> {
-  const allPoints = await loadBaseMapPoints(query.includeLostPets);
+  const allPoints = await loadBaseMapPoints(query.includeLostPets, query.q);
   const filtered = applyMapFilters(allPoints, query);
   const limited = filtered.slice(0, query.limit);
   const hasReferenceLocation = query.lat !== undefined && query.lng !== undefined;

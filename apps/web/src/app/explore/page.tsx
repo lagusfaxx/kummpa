@@ -195,6 +195,25 @@ function IcoChev() {
     </svg>
   );
 }
+function IcoDirections() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+      <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+    </svg>
+  );
+}
+function IcoTag() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+  );
+}
+
+function mapsUrl(lat: number, lng: number, name: string): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_name=${encodeURIComponent(name)}`;
+}
 
 /* ─── Skeleton ────────────────────────────────────────────────── */
 function SkeletonRow() {
@@ -333,9 +352,31 @@ function ServiceCard({
         {!selected && <div className="mt-1 shrink-0 text-slate-300"><IcoChev /></div>}
       </div>
 
+      {selected && service.type === "SHOP" && service.matchedProduct && (
+        <div className="flex items-center gap-2 border-b border-slate-100 bg-amber-50/60 px-4 pb-2 pt-2 pl-[68px]">
+          {service.matchedProduct.imageUrl && (
+            <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
+              className="h-7 w-7 shrink-0 rounded-lg object-cover" />
+          )}
+          {!service.matchedProduct.imageUrl && (
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600"><IcoTag /></span>
+          )}
+          <span className="min-w-0 flex-1 truncate text-[11px] font-semibold text-slate-700">{service.matchedProduct.title}</span>
+          <span className="shrink-0 text-[11px] font-bold text-[hsl(22_92%_50%)]">
+            ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+          </span>
+        </div>
+      )}
+
       {selected && (
         <div className="flex flex-wrap gap-2 border-b border-slate-100 px-4 pb-3 pl-[68px]">
-          {service.type === "SHOP" ? (
+          {service.type === "PARK" ? (
+            <a href={mapsUrl(service.latitude, service.longitude, service.name)} target="_blank" rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 rounded-full bg-green-700 px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
+              <IcoDirections /> Cómo llegar
+            </a>
+          ) : service.type === "SHOP" ? (
             <Link href={`/explore/shop/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
               className="rounded-full bg-[hsl(22_92%_60%)] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
               Ver tienda
@@ -351,13 +392,13 @@ function ServiceCard({
               Reservar
             </Link>
           ) : null}
-          {service.phone && (
+          {service.phone && service.type !== "PARK" && (
             <a href={`tel:${service.phone}`} onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               <IcoPhone /> Llamar
             </a>
           )}
-          {service.profileUrl && service.type !== "VET" && service.type !== "SHOP" && (
+          {service.profileUrl && service.type !== "VET" && service.type !== "SHOP" && service.type !== "PARK" && (
             <Link href={service.profileUrl} onClick={(e) => e.stopPropagation()}
               className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               Ver ficha
@@ -752,8 +793,29 @@ export default function ExplorePage() {
                     </span>
                   )}
                 </div>
-                <div className="mt-4 flex gap-2 pb-2">
-                  {selectedService.type === "SHOP" ? (
+                {selectedService.type === "SHOP" && selectedService.matchedProduct && (
+                  <div className="mb-3 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2">
+                    {selectedService.matchedProduct.imageUrl && (
+                      <img src={selectedService.matchedProduct.imageUrl} alt={selectedService.matchedProduct.title}
+                        className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+                    )}
+                    {!selectedService.matchedProduct.imageUrl && (
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600"><IcoTag /></span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-slate-700">{selectedService.matchedProduct.title}</span>
+                    <span className="shrink-0 text-[12px] font-bold text-[hsl(22_92%_50%)]">
+                      ${Math.round(selectedService.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+                    </span>
+                  </div>
+                )}
+                <div className="flex gap-2 pb-2">
+                  {selectedService.type === "PARK" ? (
+                    <a href={mapsUrl(selectedService.latitude, selectedService.longitude, selectedService.name)}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-green-700 py-3 text-[13px] font-bold text-white">
+                      <IcoDirections /> Cómo llegar
+                    </a>
+                  ) : selectedService.type === "SHOP" ? (
                     <Link href={`/explore/shop/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-center text-[13px] font-bold text-white">
                       Ver tienda
                     </Link>
@@ -766,7 +828,7 @@ export default function ExplorePage() {
                       Reservar
                     </Link>
                   ) : null}
-                  {selectedService.phone && (
+                  {selectedService.phone && selectedService.type !== "PARK" && (
                     <a href={`tel:${selectedService.phone}`} className="flex-1 rounded-2xl border border-slate-200 py-3 text-center text-[13px] font-semibold text-slate-700">
                       Llamar
                     </a>

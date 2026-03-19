@@ -100,6 +100,12 @@ export type MapSuggestionsQueryInput = z.infer<typeof mapSuggestionsQuerySchema>
 export const MAP_SERVICE_TYPES_ALL = MAP_SERVICE_TYPES;
 export const MAP_SERVICE_SORT_OPTIONS_ALL = MAP_SERVICE_SORT_OPTIONS;
 
+export const matchedProductSchema = z.object({
+  title: z.string(),
+  priceCents: z.number(),
+  imageUrl: z.string().nullable()
+});
+
 export const mapServicePointSchema = z.object({
   id: z.string(),
   sourceId: z.string(),
@@ -130,7 +136,8 @@ export const mapServicePointSchema = z.object({
   distanceKm: z.number().nullable(),
   bookingUrl: z.string().nullable(),
   profileUrl: z.string().nullable(),
-  createdAt: z.string()
+  createdAt: z.string(),
+  matchedProduct: matchedProductSchema.nullable().optional()
 });
 
 const countsByTypeSchema = z.object({
