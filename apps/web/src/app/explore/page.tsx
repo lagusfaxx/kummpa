@@ -672,11 +672,11 @@ export default function ExplorePage() {
         }
       `}</style>
 
-      <div className="flex h-full w-full overflow-hidden">
+      <div className="flex flex-1 w-full overflow-hidden">
 
         {/* Desktop sidebar */}
         <aside className="hidden w-[360px] shrink-0 flex-col overflow-hidden border-r border-slate-200 shadow-[4px_0_30px_-8px_rgba(0,0,0,0.08)] lg:flex">
-          <div className="flex h-full flex-col bg-white">
+          <div className="flex flex-1 flex-col bg-white overflow-hidden">
             {PanelHeader()}
             {ResultList}
           </div>
@@ -771,7 +771,7 @@ export default function ExplorePage() {
                 borderless
               />
             ) : (
-              <div className="flex-1 overflow-y-auto bg-white">
+              <div className="flex-1 overflow-y-auto bg-white pb-[calc(5rem+env(safe-area-inset-bottom))]">
                 {isLoading
                   ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                   : error ? <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />

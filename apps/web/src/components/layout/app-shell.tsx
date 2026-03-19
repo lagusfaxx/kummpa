@@ -15,7 +15,7 @@ export function AppShell({ children }: PropsWithChildren) {
     return (
       <div className="flex h-screen flex-col overflow-hidden">
         <TopNav />
-        <main className="relative flex-1 overflow-hidden">
+        <main className="relative flex flex-1 flex-col overflow-hidden">
           {children}
         </main>
         <BottomNav />
