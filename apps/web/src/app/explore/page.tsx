@@ -420,7 +420,7 @@ export default function ExplorePage() {
   const [withDiscount, setWithDiscount] = useState(params.get("withDiscount") === "1");
   const [services, setServices]         = useState<MapServicePoint[]>([]);
   const [selectedId, setSelectedId]     = useState<string | null>(null);
-  const [isLoading, setIsLoading]       = useState(false);
+  const [isLoading, setIsLoading]       = useState(true);
   const [error, setError]               = useState<string | null>(null);
   const [mobileTab, setMobileTab]       = useState<"map" | "list">("map");
   const [retryKey, setRetryKey]         = useState(0);
@@ -627,7 +627,7 @@ export default function ExplorePage() {
         <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
 
           {/* Mobile sticky header */}
-          <div className="border-b border-slate-200 bg-white/96 backdrop-blur-sm">
+          <div className="shrink-0 border-b border-slate-200 bg-white/96 backdrop-blur-sm">
             <div className="px-3 pt-3">
               <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 ¿Qué quieres explorar?
@@ -701,18 +701,18 @@ export default function ExplorePage() {
           </div>
 
           {/* Mobile content */}
-          <div className="relative flex-1 overflow-hidden">
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
             {mobileTab === "map" ? (
               <MapCanvas
                 accessToken={MAPBOX_TOKEN}
                 points={services}
                 selectedPointId={selectedId}
                 onSelectPoint={(id) => { setSelectedId(id); setMobileTab("list"); }}
-                className="h-full w-full"
+                className="flex-1"
                 borderless
               />
             ) : (
-              <div className="h-full overflow-y-auto bg-white">
+              <div className="flex-1 overflow-y-auto bg-white">
                 {isLoading
                   ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                   : error ? <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />
