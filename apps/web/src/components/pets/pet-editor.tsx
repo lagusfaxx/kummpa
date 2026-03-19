@@ -161,7 +161,6 @@ export function PetEditor({
   const [emergencyContactPhone, setEmergencyContactPhone] = useState(initialPet?.emergencyContactPhone ?? "");
   const [generalNotes, setGeneralNotes] = useState(initialPet?.generalNotes ?? "");
   const [healthStatus, setHealthStatus] = useState(initialPet?.healthStatus ?? "");
-  const [isPublic, setIsPublic] = useState(initialPet?.isPublic ?? false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const composedError = useMemo(() => localError ?? error ?? null, [error, localError]);
@@ -216,7 +215,7 @@ export function PetEditor({
       emergencyContactPhone: emergencyContactPhone.trim() || undefined,
       generalNotes: generalNotes.trim() || undefined,
       healthStatus: healthStatus.trim() || undefined,
-      isPublic
+      isPublic: true
     });
   };
 
@@ -377,19 +376,10 @@ export function PetEditor({
 
         {/* PRIVACIDAD */}
         <div className={activeTab === "privacidad" ? "space-y-4" : "hidden"}>
-          <Toggle
-            checked={isPublic}
-            onChange={setIsPublic}
-            label="Perfil público"
-            description="Permite que otras personas vean la ficha y el carnet de tu mascota mediante un enlace compartido."
-          />
-
-          {isPublic && (
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <p className="text-[12px] font-semibold text-emerald-700">Perfil activo</p>
-              <p className="mt-0.5 text-[11px] text-emerald-600">Se generará un enlace único compartible visible en la ficha de tu mascota.</p>
-            </div>
-          )}
+          <div className="rounded-2xl border border-blue-50 bg-blue-50 px-4 py-3">
+            <p className="text-[12px] font-semibold text-blue-700">Perfil siempre visible</p>
+            <p className="mt-0.5 text-[11px] text-blue-600">En Kummpa todos los perfiles son visibles por defecto. Comparte el enlace desde la sección DNI.</p>
+          </div>
 
           <Field
             label="Galería de fotos (una URL por línea)"

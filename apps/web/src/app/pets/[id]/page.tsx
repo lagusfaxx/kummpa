@@ -10,9 +10,8 @@ import { SurfaceSkeleton } from "@/components/feedback/skeleton";
 import { useAuth } from "@/features/auth/auth-context";
 import { listLostPetAlerts } from "@/features/lost-pets/lost-pets-api";
 import type { LostPetAlert } from "@/features/lost-pets/types";
-import { getPet, getPetPublicIdentity, updatePetVisibility } from "@/features/pets/pets-api";
+import { getPet, getPetPublicIdentity } from "@/features/pets/pets-api";
 import type { Pet, PetPublicIdentityManaged } from "@/features/pets/types";
-import { useToast } from "@/features/ui/toast-context";
 import { getVaccineCard } from "@/features/vaccines/vaccines-api";
 import type { PetVaccineCard } from "@/features/vaccines/types";
 
@@ -374,7 +373,6 @@ function TabIdentidad({ pet, identity }: { pet: Pet; identity: PetPublicIdentity
 
       <div className="rounded-2xl border border-slate-100 bg-white px-4">
         <DataRow label="Microchip" value={pet.microchipNumber ?? "—"} />
-        <DataRow label="Perfil público" value={pet.isPublic ? "Activo" : "Privado"} />
       </div>
     </div>
   );
@@ -435,36 +433,28 @@ function TabDocumentos({ pet, vaccineCard, certificateLinks }: {
   vaccineCard: PetVaccineCard | null;
   certificateLinks: PetVaccineCard["history"];
 }) {
-  const hasContent = pet.isPublic || vaccineCard || certificateLinks.length > 0;
+  const hasContent = vaccineCard || certificateLinks.length > 0;
 
   return (
     <div className="space-y-4">
-      {/* Public profile */}
-      <div>
-        <SectionLabel>Perfil compartible</SectionLabel>
-        <div className="mt-2 rounded-2xl border border-slate-100 bg-white px-4 py-3.5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[13px] font-semibold text-slate-800">
-                {pet.isPublic ? "Perfil público activo" : "Perfil privado"}
-              </p>
-              <p className="mt-0.5 text-[11px] text-slate-400">
-                {pet.isPublic
-                  ? "Cualquier persona con el enlace puede ver la ficha."
-                  : "Solo tú puedes ver este perfil."}
-              </p>
-            </div>
-            {pet.isPublic && pet.shareUrl ? (
+      {/* Share link */}
+      {pet.shareUrl && (
+        <div>
+          <SectionLabel>Enlace compartible</SectionLabel>
+          <div className="mt-2 rounded-2xl border border-slate-100 bg-white px-4 py-3.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-slate-800">Perfil público</p>
+                <p className="mt-0.5 truncate text-[11px] text-slate-400">{pet.shareUrl}</p>
+              </div>
               <a href={pet.shareUrl} target="_blank" rel="noreferrer"
                 className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-3 py-1.5 text-[11px] font-bold text-white hover:opacity-90 transition-opacity">
                 <IcoShare /> Abrir
               </a>
-            ) : (
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-400">Privado</span>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {vaccineCard && (
         <div>
@@ -514,7 +504,6 @@ export default function PetDetailsPage() {
   const params = useParams<{ id: string }>();
   const petId = typeof params.id === "string" ? params.id : "";
   const { session } = useAuth();
-  const { showToast } = useToast();
   const accessToken = session?.tokens.accessToken;
 
   const [pet, setPet] = useState<Pet | null>(null);
@@ -554,23 +543,6 @@ export default function PetDetailsPage() {
     () => vaccineCard?.history.filter((r) => r.certificateUrl).slice(0, 3) ?? [],
     [vaccineCard]
   );
-
-  const handleVisibility = async () => {
-    if (!accessToken || !pet) return;
-    try {
-      const updated = await updatePetVisibility(accessToken, pet.id, !pet.isPublic);
-      setPet(updated);
-      showToast({
-        tone: "success",
-        title: updated.isPublic ? "Perfil público activado" : "Perfil privado",
-        description: updated.isPublic
-          ? "Ahora puedes compartir la ficha de " + updated.name + "."
-          : updated.name + " es ahora privado.",
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo actualizar visibilidad.");
-    }
-  };
 
   const TABS: { id: Tab; label: string; badge?: number }[] = [
     { id: "resumen",    label: "Resumen"    },
@@ -675,11 +647,6 @@ export default function PetDetailsPage() {
                       className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-[12px] font-bold text-white backdrop-blur-sm hover:bg-white/20 transition-colors">
                       <IcoAlert /> Alerta
                     </Link>
-                    <button type="button" onClick={() => void handleVisibility()}
-                      className="ml-auto flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 p-2 text-white backdrop-blur-sm hover:bg-white/20 transition-colors"
-                      title={pet.isPublic ? "Marcar privado" : "Activar perfil público"}>
-                      <IcoShare />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -687,9 +654,9 @@ export default function PetDetailsPage() {
               {/* Stats strip */}
               <div className="relative mt-5 grid grid-cols-3 divide-x divide-white/10 overflow-hidden rounded-2xl bg-black/15 backdrop-blur-sm">
                 {[
-                  { n: vaccineCard?.summary.totalVaccines ?? 0, label: "Vacunas" },
-                  { n: activeAlerts.length,                      label: "Alertas"  },
-                  { n: pet.isPublic ? "Sí" : "No",              label: "Público"  },
+                  { n: vaccineCard?.summary.totalVaccines ?? 0,                   label: "Vacunas" },
+                  { n: activeAlerts.length,                                        label: "Alertas"  },
+                  { n: pet.ageYears != null ? `${pet.ageYears}a` : "—",           label: "Edad"     },
                 ].map(({ n, label }) => (
                   <div key={label} className="py-3.5 text-center">
                     <p className="text-[18px] font-black text-white leading-none">{n}</p>

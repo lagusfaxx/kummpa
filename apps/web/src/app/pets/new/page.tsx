@@ -279,7 +279,7 @@ export default function NewPetPage() {
       allergies: form.allergies.trim() || undefined,
       microchipNumber: form.microchipNumber.trim() || undefined,
       generalNotes: notesArr.join("\n") || undefined,
-      isPublic: false,
+      isPublic: true,
     };
 
     setSubmitting(true);

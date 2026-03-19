@@ -2,188 +2,200 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/features/auth/auth-context";
-import {
-  getPetPublicIdentity,
-  updatePetPublicIdentity
-} from "@/features/pets/pets-api";
-import type { PetEmergencyStatus, PetPublicIdentityManaged, PetPublicIdentityWritePayload } from "@/features/pets/types";
+import { getPetPublicIdentity } from "@/features/pets/pets-api";
+import type { PetPublicIdentityManaged } from "@/features/pets/types";
 
-/* ─── Emergency status config ────────────────────────────────── */
-const emergencyStatuses: Array<{
-  value: PetEmergencyStatus;
-  label: string;
-  sublabel: string;
-  emoji: string;
-  badge: string;
-  activeBorder: string;
-  activeBg: string;
-}> = [
-  {
-    value: "NORMAL",
-    label: "Todo bien",
-    sublabel: "Sin indicaciones especiales",
-    emoji: "✅",
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    activeBorder: "border-emerald-400",
-    activeBg: "bg-emerald-50",
-  },
-  {
-    value: "LOST",
-    label: "Perdido/a",
-    sublabel: "Reportar si me ven",
-    emoji: "🚨",
-    badge: "bg-red-50 text-red-700 border-red-200",
-    activeBorder: "border-red-400",
-    activeBg: "bg-red-50",
-  },
-  {
-    value: "IN_TREATMENT",
-    label: "En tratamiento",
-    sublabel: "Requiere medicación",
-    emoji: "💊",
-    badge: "bg-amber-50 text-amber-700 border-amber-200",
-    activeBorder: "border-amber-400",
-    activeBg: "bg-amber-50",
-  },
-  {
-    value: "FOUND",
-    label: "Encontrado/a",
-    sublabel: "Buscando a su tutor",
-    emoji: "🏠",
-    badge: "bg-blue-50 text-blue-700 border-blue-200",
-    activeBorder: "border-blue-400",
-    activeBg: "bg-blue-50",
-  },
-];
-
-function getStatusCfg(value: PetEmergencyStatus) {
-  return emergencyStatuses.find((s) => s.value === value) ?? emergencyStatuses[0]!;
+/* ─── Helpers ────────────────────────────────────────────────── */
+function ageLabel(years?: number | null) {
+  if (years == null) return null;
+  if (years < 1) return "Cachorro";
+  if (years === 1) return "1 año";
+  return `${years} años`;
 }
 
-/* ─── Toggle atom ────────────────────────────────────────────── */
-function Toggle({
-  checked,
-  onChange,
-  label,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-}) {
+function speciesEmoji(species: string) {
+  const s = species.toLowerCase();
+  if (s.includes("perro") || s.includes("dog")) return "🐕";
+  if (s.includes("gato") || s.includes("cat")) return "🐈";
+  if (s.includes("conejo")) return "🐇";
+  if (s.includes("pájaro") || s.includes("ave")) return "🦜";
+  return "🐾";
+}
+
+function zeroPad(n: number) {
+  return String(n).padStart(4, "0");
+}
+
+/* ─── DNI card ───────────────────────────────────────────────── */
+function DniCard({ data, cardRef }: { data: PetPublicIdentityManaged; ref?: React.Ref<HTMLDivElement>; cardRef?: React.RefObject<HTMLDivElement> }) {
+  const { pet, owner, identity } = data;
+  const shortId = zeroPad(parseInt(identity.id.replace(/\D/g, "").slice(-4) || "1", 10));
+  const age = ageLabel(pet.ageYears);
+
   return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between py-2.5 text-left"
+    <div
+      ref={cardRef}
+      className="overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5"
+      style={{ fontFamily: "system-ui, sans-serif" }}
     >
-      <span className={`text-[13px] font-medium ${checked ? "text-slate-800" : "text-slate-400"}`}>
-        {label}
-      </span>
-      <div className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? "bg-[hsl(var(--primary))]" : "bg-slate-200"}`}>
-        <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : "translate-x-0.5"}`} />
-      </div>
-    </button>
-  );
-}
-
-/* ─── Input atom ─────────────────────────────────────────────── */
-const inputCls = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:border-[hsl(var(--primary))] focus:bg-white focus:outline-none transition-colors";
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</span>
-      {children}
-      {hint && <span className="mt-1 block text-[10px] text-slate-400">{hint}</span>}
-    </label>
-  );
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-3">{children}</p>;
-}
-
-/* ─── Public preview card ────────────────────────────────────── */
-function PublicPreviewCard({
-  pet,
-  form,
-  status,
-}: {
-  pet: PetPublicIdentityManaged["pet"];
-  form: PetPublicIdentityWritePayload;
-  status: (typeof emergencyStatuses)[0];
-}) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      {/* Preview header */}
-      <div className="border-b border-slate-100 bg-slate-50 px-3 py-2 flex items-center gap-2">
-        <div className="flex gap-1">
-          <div className="h-2 w-2 rounded-full bg-red-300" />
-          <div className="h-2 w-2 rounded-full bg-amber-300" />
-          <div className="h-2 w-2 rounded-full bg-emerald-300" />
+      {/* ── Header strip ─────────────────────────────────────── */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[hsl(164_32%_16%)] via-[hsl(164_28%_22%)] to-[hsl(164_24%_26%)] px-5 py-4">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5 blur-xl" />
+        <div className="relative flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[hsl(22_92%_60%)] text-sm font-black text-white">K</div>
+            <span className="text-[13px] font-black tracking-widest text-white">KUMMPA</span>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">Identificación</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">de Mascota</p>
+          </div>
         </div>
-        <span className="text-[10px] text-slate-300 truncate">kummpa.cl/p/{pet.name.toLowerCase()}</span>
       </div>
 
-      {/* Preview content */}
-      <div className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-100">
+      {/* ── Main body ─────────────────────────────────────────── */}
+      <div className="flex gap-0">
+        {/* Photo column */}
+        <div className="w-[140px] shrink-0 bg-slate-50 p-4">
+          <div className="aspect-square w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-inner">
             {pet.primaryPhotoUrl ? (
               <img src={pet.primaryPhotoUrl} alt={pet.name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-slate-100 text-xl">🐾</div>
+              <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-slate-100">
+                <span className="text-4xl">{speciesEmoji(pet.species)}</span>
+                <span className="text-[11px] font-bold text-slate-300">{pet.name.slice(0, 1)}</span>
+              </div>
             )}
           </div>
-          <div>
-            <p className="font-bold text-[15px] text-slate-900">{pet.name}</p>
-            <p className="text-[11px] text-slate-400">{[pet.species, pet.breed].filter(Boolean).join(" · ")}</p>
+        </div>
+
+        {/* Data column */}
+        <div className="flex-1 px-5 py-4">
+          {/* Name */}
+          <h2 className="text-[22px] font-black leading-none tracking-tight text-slate-900">
+            {pet.name}
+          </h2>
+
+          {/* Species + breed */}
+          <p className="mt-1 text-[12px] font-semibold text-slate-500">
+            {pet.species} · {pet.breed}
+          </p>
+
+          <div className="my-3 h-px bg-slate-100" />
+
+          {/* Data rows */}
+          <div className="space-y-2">
+            {age && (
+              <div className="flex items-center gap-2">
+                <span className="w-16 text-[10px] font-bold uppercase tracking-wider text-slate-300">Edad</span>
+                <span className="text-[12px] font-semibold text-slate-700">{age}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="w-16 text-[10px] font-bold uppercase tracking-wider text-slate-300">Tutor</span>
+              <span className="text-[12px] font-semibold text-slate-700">{owner.fullName}</span>
+            </div>
+            {owner.city && (
+              <div className="flex items-center gap-2">
+                <span className="w-16 text-[10px] font-bold uppercase tracking-wider text-slate-300">Ciudad</span>
+                <span className="text-[12px] font-semibold text-slate-700">{owner.city}</span>
+              </div>
+            )}
+            {pet.microchipNumber && (
+              <div className="flex items-center gap-2">
+                <span className="w-16 text-[10px] font-bold uppercase tracking-wider text-slate-300">Chip</span>
+                <span className="font-mono text-[11px] font-semibold text-slate-600">{pet.microchipNumber}</span>
+              </div>
+            )}
           </div>
-          <span className={`ml-auto shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold ${status.badge}`}>
-            {status.emoji} {status.label}
-          </span>
+        </div>
+      </div>
+
+      {/* ── Footer strip ──────────────────────────────────────── */}
+      <div className="flex items-center gap-4 border-t border-slate-100 bg-slate-50 px-5 py-4">
+        {/* QR */}
+        <div className="shrink-0 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+          <img
+            src={identity.urls.qrImageUrl}
+            alt={`QR ${pet.name}`}
+            className="h-16 w-16 rounded-lg object-cover"
+          />
         </div>
 
-        {/* Visible fields preview */}
-        <div className="space-y-1.5 text-[12px]">
-          {form.showOwnerName && (
-            <div className="flex items-center gap-2 text-slate-600">
-              <span className="text-[10px]">👤</span> Tutor visible
-            </div>
-          )}
-          {form.showOwnerPhone && (
-            <div className="flex items-center gap-2 text-slate-600">
-              <span className="text-[10px]">📞</span> Teléfono visible
-            </div>
-          )}
-          {form.showAllergies && (
-            <div className="flex items-center gap-2 text-amber-700">
-              <span className="text-[10px]">⚠️</span> Alergias visibles
-            </div>
-          )}
-          {form.showMedications && (
-            <div className="flex items-center gap-2 text-blue-600">
-              <span className="text-[10px]">💊</span> Medicación visible
-            </div>
-          )}
-          {form.showEmergencyInstructions && form.emergencyInstructions && (
-            <div className="flex items-start gap-2 text-slate-600">
-              <span className="text-[10px] mt-0.5">📋</span>
-              <p className="line-clamp-2">{form.emergencyInstructions}</p>
-            </div>
-          )}
+        {/* Scan hint + ID */}
+        <div className="min-w-0 flex-1">
+          <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">Escanea para ver perfil</p>
+          <p className="mt-0.5 truncate font-mono text-[10px] text-slate-400">{identity.urls.publicUrl}</p>
+          <div className="mt-2 flex items-center gap-1.5">
+            <div className="h-1 w-4 rounded-full bg-[hsl(22_92%_60%)]" />
+            <span className="font-mono text-[9px] font-bold text-slate-300">KMP-{shortId}</span>
+          </div>
         </div>
 
-        {!form.showOwnerName && !form.showOwnerPhone && !form.showAllergies && !form.showMedications && (
-          <p className="text-[11px] text-slate-300 italic">Sin información adicional visible</p>
-        )}
+        {/* Corner brand watermark */}
+        <div className="shrink-0 text-right">
+          <p className="text-[8px] font-black uppercase tracking-widest text-slate-200">kummpa.cl</p>
+        </div>
       </div>
     </div>
   );
 }
+
+/* ─── Action button ──────────────────────────────────────────── */
+function ActionBtn({
+  icon,
+  label,
+  sublabel,
+  onClick,
+  href,
+  download,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  sublabel?: string;
+  onClick?: () => void;
+  href?: string;
+  download?: string;
+  accent?: boolean;
+}) {
+  const cls = `flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors w-full ${
+    accent
+      ? "border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--primary)/0.05)] hover:bg-[hsl(var(--primary)/0.10)]"
+      : "border-slate-100 bg-white hover:bg-slate-50"
+  }`;
+
+  const content = (
+    <>
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${accent ? "bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))]" : "bg-slate-100 text-slate-500"}`}>
+        {icon}
+      </div>
+      <div>
+        <p className={`text-[13px] font-semibold ${accent ? "text-[hsl(var(--primary))]" : "text-slate-800"}`}>{label}</p>
+        {sublabel && <p className="mt-0.5 text-[11px] text-slate-400">{sublabel}</p>}
+      </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} download={download} target={download ? undefined : "_blank"} rel="noreferrer" className={cls}>
+        {content}
+      </a>
+    );
+  }
+  return <button type="button" onClick={onClick} className={cls}>{content}</button>;
+}
+
+/* ─── Icons ──────────────────────────────────────────────────── */
+const IcoPrint   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
+const IcoDownload= () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+const IcoLink    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
+const IcoEye     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
 /* ─── Page ────────────────────────────────────────────────────── */
 export default function PetIdentityPage() {
@@ -193,88 +205,39 @@ export default function PetIdentityPage() {
   const accessToken = session?.tokens.accessToken;
 
   const [data, setData] = useState<PetPublicIdentityManaged | null>(null);
-  const [form, setForm] = useState<PetPublicIdentityWritePayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const loadIdentity = async () => {
-    if (!accessToken || !petId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const payload = await getPetPublicIdentity(accessToken, petId);
-      setData(payload);
-      setForm({
-        emergencyStatus: payload.identity.emergencyStatus,
-        secondaryContactName: payload.identity.secondaryContactName ?? "",
-        secondaryContactPhone: payload.identity.secondaryContactPhone ?? "",
-        cityZone: payload.identity.cityZone ?? "",
-        emergencyInstructions: payload.identity.emergencyInstructions ?? "",
-        nfcCode: payload.identity.nfcCode ?? "",
-        showOwnerName: payload.identity.visibility.showOwnerName,
-        showOwnerPhone: payload.identity.visibility.showOwnerPhone,
-        showSecondaryContact: payload.identity.visibility.showSecondaryContact,
-        showCityZone: payload.identity.visibility.showCityZone,
-        showAllergies: payload.identity.visibility.showAllergies,
-        showDiseases: payload.identity.visibility.showDiseases,
-        showMedications: payload.identity.visibility.showMedications,
-        showUsualVet: payload.identity.visibility.showUsualVet,
-        showEmergencyInstructions: payload.identity.visibility.showEmergencyInstructions,
-        showGeneralNotes: payload.identity.visibility.showGeneralNotes,
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo cargar el perfil de emergencia.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    void loadIdentity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!accessToken || !petId) return;
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const payload = await getPetPublicIdentity(accessToken, petId);
+        setData(payload);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo cargar el DNI digital.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    void load();
   }, [accessToken, petId]);
-
-  const set = <K extends keyof PetPublicIdentityWritePayload>(k: K, v: PetPublicIdentityWritePayload[K]) => {
-    setForm((cur) => cur ? { ...cur, [k]: v } : cur);
-  };
-
-  const textHandler =
-    (key: "secondaryContactName" | "secondaryContactPhone" | "cityZone" | "emergencyInstructions" | "nfcCode") =>
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      set(key, e.target.value);
-
-  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!accessToken || !petId || !form) return;
-    setIsSaving(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      const updated = await updatePetPublicIdentity(accessToken, petId, form);
-      setData(updated);
-      setSuccess("Perfil de emergencia guardado.");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo guardar.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const copyLink = async () => {
     if (!data?.identity.urls.publicUrl) return;
     await navigator.clipboard.writeText(data.identity.urls.publicUrl);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2200);
   };
 
   return (
     <AuthGate>
-      <div className="mx-auto max-w-xl">
+      <div className="mx-auto max-w-lg">
 
-        {/* ── Back bar ─────────────────────────────────────────── */}
+        {/* ── Top bar ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <Link
             href={`/pets/${petId}`}
@@ -285,252 +248,80 @@ export default function PetIdentityPage() {
             </svg>
             {data?.pet.name ?? "Volver"}
           </Link>
-          <span className="text-[12px] font-bold text-slate-400">QR y emergencia</span>
+          <span className="text-[12px] font-bold text-slate-400">DNI Digital</span>
         </div>
 
-        {isLoading || !data || !form ? (
-          <div className="space-y-3 p-4">
-            <div className="h-52 w-full animate-pulse rounded-3xl bg-slate-100" />
-            <div className="h-32 w-full animate-pulse rounded-2xl bg-slate-100" />
-            <div className="h-48 w-full animate-pulse rounded-2xl bg-slate-100" />
+        {isLoading ? (
+          <div className="space-y-4 p-4">
+            <div className="h-[280px] w-full animate-pulse rounded-3xl bg-slate-100" />
+            <div className="h-14 w-full animate-pulse rounded-2xl bg-slate-100" />
+            <div className="h-14 w-full animate-pulse rounded-2xl bg-slate-100" />
+          </div>
+        ) : error || !data ? (
+          <div className="p-4">
+            <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-slate-200 py-16 text-center">
+              <span className="text-4xl">🪪</span>
+              <div>
+                <p className="font-semibold text-slate-700">DNI no disponible</p>
+                <p className="mt-1 text-[12px] text-slate-400">{error ?? "No se pudo generar la identificación."}</p>
+              </div>
+              <Link href={`/pets/${petId}`} className="rounded-xl border border-slate-200 px-4 py-2 text-[12px] font-semibold text-slate-600">
+                Volver a la ficha
+              </Link>
+            </div>
           </div>
         ) : (
-          <form onSubmit={(e) => void handleSave(e)}>
+          <div className="space-y-5 px-4 py-5">
 
-            {/* ── QR Hero ────────────────────────────────────────── */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[hsl(164_32%_16%)] via-[hsl(164_30%_20%)] to-[hsl(164_26%_24%)] px-5 py-6">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-xl" />
+            {/* ── DNI Card ────────────────────────────────────── */}
+            <DniCard data={data} />
 
-              <div className="relative flex items-start gap-5">
-                {/* QR code */}
-                <div className="shrink-0 rounded-2xl border-2 border-white/20 bg-white p-2 shadow-xl">
-                  <img
-                    src={data.identity.urls.qrImageUrl}
-                    alt={`QR de ${data.pet.name}`}
-                    className="h-28 w-28 rounded-xl object-cover"
-                  />
-                </div>
+            {/* ── Hint ────────────────────────────────────────── */}
+            <p className="px-1 text-center text-[11px] text-slate-400">
+              Comparte, imprime o descarga el DNI y el código QR de {data.pet.name}.
+            </p>
 
-                {/* Actions */}
-                <div className="flex flex-1 flex-col gap-3 min-w-0">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Perfil de emergencia</p>
-                    <h1 className="font-bold text-[20px] text-white leading-tight mt-0.5">{data.pet.name}</h1>
-                    <div className="mt-1">
-                      {(() => {
-                        const cfg = getStatusCfg(form.emergencyStatus);
-                        return (
-                          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${cfg.badge}`}>
-                            {cfg.emoji} {cfg.label}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <a
-                      href={data.identity.urls.qrImageUrl}
-                      download={`qr-${data.pet.name}.png`}
-                      className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-slate-800 shadow-sm hover:bg-white/90 transition-colors"
-                    >
-                      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
-                      </svg>
-                      Descargar QR
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => void copyLink()}
-                      className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-sm hover:bg-white/20 transition-colors"
-                    >
-                      {copied ? "✓ Copiado" : "Copiar enlace"}
-                    </button>
-                    <a
-                      href={data.identity.urls.publicUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-sm hover:bg-white/20 transition-colors"
-                    >
-                      Ver perfil →
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* URL strip */}
-              <div className="relative mt-4 flex items-center gap-2 rounded-xl bg-black/15 px-3 py-2">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">URL</span>
-                <p className="flex-1 truncate font-mono text-[11px] text-white/50">{data.identity.urls.publicUrl}</p>
-              </div>
+            {/* ── Actions ─────────────────────────────────────── */}
+            <div className="space-y-2">
+              <ActionBtn
+                icon={<IcoPrint />}
+                label="Imprimir DNI"
+                sublabel="Abre el diálogo de impresión del navegador"
+                onClick={() => window.print()}
+              />
+              <ActionBtn
+                icon={<IcoDownload />}
+                label="Descargar código QR"
+                sublabel="Imagen PNG lista para usar en collar o placa"
+                href={data.identity.urls.qrImageUrl}
+                download={`qr-${data.pet.name}.png`}
+              />
+              <ActionBtn
+                icon={<IcoLink />}
+                label={copied ? "¡Enlace copiado!" : "Copiar enlace público"}
+                sublabel="Cualquier persona con este enlace puede ver el perfil"
+                onClick={() => void copyLink()}
+                accent
+              />
+              <ActionBtn
+                icon={<IcoEye />}
+                label="Ver perfil público"
+                sublabel="Lo que ve alguien al escanear el QR"
+                href={data.identity.urls.publicUrl}
+              />
             </div>
 
-            <div className="px-4 py-5 space-y-6">
-
-              {/* ── Alerts ──────────────────────────────────────── */}
-              {error && (
-                <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-[12px] text-red-700">
-                  {error}
-                </div>
-              )}
-              {success && (
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[12px] text-emerald-700">
-                  {success}
-                </div>
-              )}
-
-              {/* ── Public preview ───────────────────────────────── */}
-              <div>
-                <SectionTitle>Vista previa pública</SectionTitle>
-                <p className="mb-3 text-[11px] text-slate-400">Así ve el perfil quien escanea tu QR.</p>
-                <PublicPreviewCard pet={data.pet} form={form} status={getStatusCfg(form.emergencyStatus)} />
-              </div>
-
-              {/* ── Emergency status ─────────────────────────────── */}
-              <div>
-                <SectionTitle>Estado actual</SectionTitle>
-                <p className="mb-3 text-[11px] text-slate-400">¿Cómo está {data.pet.name} en este momento?</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {emergencyStatuses.map((s) => {
-                    const active = form.emergencyStatus === s.value;
-                    return (
-                      <button
-                        key={s.value}
-                        type="button"
-                        onClick={() => set("emergencyStatus", s.value)}
-                        className={`rounded-2xl border-2 p-3.5 text-left transition-all ${
-                          active ? `${s.activeBorder} ${s.activeBg}` : "border-slate-100 bg-white hover:border-slate-200"
-                        }`}
-                      >
-                        <p className="text-xl mb-1">{s.emoji}</p>
-                        <p className={`text-[13px] font-bold ${active ? "text-slate-800" : "text-slate-600"}`}>{s.label}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{s.sublabel}</p>
-                        {active && (
-                          <div className="mt-2 flex items-center gap-1">
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            <span className="text-[10px] font-semibold text-slate-400">Activo</span>
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── Contact info ──────────────────────────────────── */}
-              <div>
-                <SectionTitle>Información de contacto</SectionTitle>
-                <div className="rounded-2xl border border-slate-100 bg-white divide-y divide-slate-50">
-                  <div className="px-4">
-                    <Toggle checked={form.showOwnerName} onChange={(v) => set("showOwnerName", v)} label="Mostrar nombre del tutor" />
-                  </div>
-                  <div className="px-4">
-                    <Toggle checked={form.showOwnerPhone} onChange={(v) => set("showOwnerPhone", v)} label="Mostrar teléfono del tutor" />
-                  </div>
-                  <div className="px-4">
-                    <Toggle checked={form.showSecondaryContact} onChange={(v) => set("showSecondaryContact", v)} label="Mostrar contacto secundario" />
-                  </div>
-                </div>
-
-                {form.showSecondaryContact && (
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                    <Field label="Nombre del contacto">
-                      <input value={form.secondaryContactName ?? ""} onChange={textHandler("secondaryContactName")} className={inputCls} placeholder="Nombre completo" />
-                    </Field>
-                    <Field label="Teléfono del contacto">
-                      <input value={form.secondaryContactPhone ?? ""} onChange={textHandler("secondaryContactPhone")} className={inputCls} placeholder="+56 9 …" />
-                    </Field>
-                  </div>
-                )}
-
-                <div className="mt-3">
-                  <Field label="Ciudad o zona visible" hint="Aparece en el perfil para contextualizar la búsqueda si se pierde.">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <input value={form.cityZone ?? ""} onChange={textHandler("cityZone")} className={inputCls} placeholder="p. ej. Providencia, Santiago" />
-                      </div>
-                      <div className={`shrink-0 rounded-xl border px-2 py-1.5 transition-colors cursor-pointer ${form.showCityZone ? "border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.06)] text-[hsl(var(--primary))]" : "border-slate-200 text-slate-400"}`}
-                        onClick={() => set("showCityZone", !form.showCityZone)}>
-                        <span className="text-[10px] font-bold">{form.showCityZone ? "Visible" : "Oculta"}</span>
-                      </div>
-                    </div>
-                  </Field>
-                </div>
-              </div>
-
-              {/* ── Medical info ──────────────────────────────────── */}
-              <div>
-                <SectionTitle>Información médica visible</SectionTitle>
-                <p className="mb-3 text-[11px] text-slate-400">Activa solo lo que quieras que vea quien encuentre a tu mascota.</p>
-                <div className="rounded-2xl border border-slate-100 bg-white divide-y divide-slate-50">
-                  <div className="px-4">
-                    <Toggle checked={form.showAllergies} onChange={(v) => set("showAllergies", v)} label="Mostrar alergias" />
-                  </div>
-                  <div className="px-4">
-                    <Toggle checked={form.showDiseases} onChange={(v) => set("showDiseases", v)} label="Mostrar condiciones / enfermedades" />
-                  </div>
-                  <div className="px-4">
-                    <Toggle checked={form.showMedications} onChange={(v) => set("showMedications", v)} label="Mostrar medicación" />
-                  </div>
-                  <div className="px-4">
-                    <Toggle checked={form.showUsualVet} onChange={(v) => set("showUsualVet", v)} label="Mostrar veterinaria habitual" />
-                  </div>
-                  <div className="px-4">
-                    <Toggle checked={form.showGeneralNotes} onChange={(v) => set("showGeneralNotes", v)} label="Mostrar notas generales" />
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Emergency message ─────────────────────────────── */}
-              <div>
-                <SectionTitle>Mensaje de emergencia</SectionTitle>
-                <div className="rounded-2xl border border-slate-100 bg-white px-4 pb-4 pt-2">
-                  <div className="mb-3">
-                    <Toggle checked={form.showEmergencyInstructions} onChange={(v) => set("showEmergencyInstructions", v)} label="Mostrar instrucciones al encontrador" />
-                  </div>
-                  <textarea
-                    rows={3}
-                    value={form.emergencyInstructions ?? ""}
-                    onChange={textHandler("emergencyInstructions")}
-                    className={inputCls + " resize-none"}
-                    placeholder="p. ej. Soy tranquilo, tengo mis vacunas al día. Por favor llama al tutor o llévame a la veterinaria más cercana."
-                  />
-                </div>
-              </div>
-
-              {/* ── NFC (secondary) ───────────────────────────────── */}
-              <div>
-                <SectionTitle>Placa NFC</SectionTitle>
-                <div className="rounded-2xl border border-dashed border-slate-100 bg-slate-50 px-4 py-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-base">📡</div>
-                    <div className="flex-1">
-                      <p className="text-[13px] font-semibold text-slate-600">Código NFC</p>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-slate-400">
-                        Si tienes una placa NFC física, puedes vincularla con este código. El QR es suficiente para identificación inmediata.
-                      </p>
-                      <input
-                        value={form.nfcCode ?? ""}
-                        onChange={textHandler("nfcCode")}
-                        className={inputCls + " mt-2"}
-                        placeholder="NFC-PET-001 (opcional)"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Save ──────────────────────────────────────────── */}
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="w-full rounded-2xl bg-[hsl(var(--primary))] py-3.5 text-[14px] font-bold text-white shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60"
-              >
-                {isSaving ? "Guardando…" : "Guardar perfil de emergencia"}
-              </button>
-
+            {/* ── Configure link ──────────────────────────────── */}
+            <div className="rounded-2xl border border-dashed border-slate-100 px-4 py-3 text-center">
+              <p className="text-[11px] text-slate-400">
+                ¿Quieres ajustar la información de emergencia que aparece al escanear el QR?{" "}
+                <Link href={`/pets/${petId}/edit`} className="font-semibold text-[hsl(var(--primary))]">
+                  Editar ficha
+                </Link>
+              </p>
             </div>
-          </form>
+
+          </div>
         )}
       </div>
     </AuthGate>
