@@ -726,25 +726,34 @@ function SectionPerfilGroomer({ groomer, accessToken, onSaved }: {
   );
 }
 
-/* ─── Groomer: Servicios (grooming-specific types) ─────────────── */
-const GROOMER_SERVICE_TYPES = [
-  { value: "GROOMING", label: "Baño y estética" },
-  { value: "OTHER",    label: "Otro" },
-];
-
+/* ─── Groomer: Servicios (always serviceType=GROOMING) ─────────── */
 function SectionServiciosGroomer({ services, accessToken, onSaved }: {
   services: ProviderAppointmentService[];
   accessToken: string;
   onSaved: (s: ProviderAppointmentService[]) => void;
 }) {
   const [items, setItems] = useState<ProviderAppointmentServiceWriteItem[]>(
-    services.map((s, i) => ({ title: s.title, description: s.description ?? "", serviceType: s.serviceType, durationMinutes: s.durationMinutes, priceCents: s.priceCents ?? 0, currencyCode: s.currencyCode, isActive: s.isActive, sortOrder: i }))
+    services.map((s, i) => ({
+      title: s.title,
+      description: s.description ?? "",
+      serviceType: "GROOMING" as const,
+      durationMinutes: s.durationMinutes,
+      priceCents: s.priceCents ?? 0,
+      currencyCode: s.currencyCode,
+      isActive: s.isActive,
+      sortOrder: i,
+    }))
   );
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
 
   function addItem() {
-    setItems(cur => [...cur, { title: "", description: "", serviceType: "GROOMING", durationMinutes: 60, priceCents: 0, currencyCode: "CLP", isActive: true, sortOrder: cur.length }]);
+    setItems(cur => [...cur, {
+      title: "", description: "",
+      serviceType: "GROOMING" as const,
+      durationMinutes: 60, priceCents: 0,
+      currencyCode: "CLP", isActive: true, sortOrder: cur.length,
+    }]);
   }
   function removeItem(idx: number) { setItems(cur => cur.filter((_, i) => i !== idx)); }
   function updateItem<K extends keyof ProviderAppointmentServiceWriteItem>(idx: number, key: K, val: ProviderAppointmentServiceWriteItem[K]) {
@@ -754,7 +763,8 @@ function SectionServiciosGroomer({ services, accessToken, onSaved }: {
   async function save() {
     setSaving(true);
     try {
-      const result = await replaceProviderAppointmentServices(accessToken, items);
+      const payload = items.map(it => ({ ...it, serviceType: "GROOMING" as const }));
+      const result = await replaceProviderAppointmentServices(accessToken, payload);
       onSaved(result); setOk(true);
       setTimeout(() => setOk(false), 2500);
     } finally { setSaving(false); }
@@ -779,11 +789,9 @@ function SectionServiciosGroomer({ services, accessToken, onSaved }: {
                   <FormRow label="Nombre del servicio">
                     <Inp value={item.title} onChange={(e) => updateItem(idx, "title", e.target.value)} placeholder="Ej: Baño completo, Corte de pelo" />
                   </FormRow>
-                  <FormRow label="Tipo">
-                    <Sel value={item.serviceType} onChange={(e) => updateItem(idx, "serviceType", e.target.value as ProviderAppointmentServiceWriteItem["serviceType"])}>
-                      {GROOMER_SERVICE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                    </Sel>
-                  </FormRow>
+                  <div className="flex items-end rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-teal-700 h-[42px]">
+                    ✂ Baño y estética (tipo fijo)
+                  </div>
                   <FormRow label="Duración (min)">
                     <Inp type="number" min={5} step={5} value={item.durationMinutes} onChange={(e) => updateItem(idx, "durationMinutes", Number(e.target.value))} />
                   </FormRow>

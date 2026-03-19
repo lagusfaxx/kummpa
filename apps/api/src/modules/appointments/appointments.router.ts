@@ -111,6 +111,19 @@ appointmentsRouter.put(
   validateRequest(upsertProviderAppointmentServicesSchema),
   asyncHandler(async (req, res) => {
     const payload = req.body as UpsertProviderAppointmentServicesInput;
+
+    // Groomers may only save services with serviceType GROOMING
+    if (req.authUser!.role === "GROOMING") {
+      const invalid = payload.items.filter(it => it.serviceType !== "GROOMING");
+      if (invalid.length > 0) {
+        res.status(400).json({
+          ok: false,
+          error: "Groomers can only save services with serviceType GROOMING.",
+        });
+        return;
+      }
+    }
+
     const data = await replaceProviderAppointmentServices(
       {
         id: req.authUser!.id,
