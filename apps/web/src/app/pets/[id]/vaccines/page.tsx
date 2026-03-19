@@ -84,131 +84,279 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:border-[hsl(var(--primary))] focus:bg-white focus:outline-none transition-colors";
 
-/* ─── Carnet tab ──────────────────────────────────────────────── */
-function TabCarnet({
-  card,
-  onCopyLink,
-}: {
-  card: PetVaccineCard;
-  onCopyLink: () => void;
-}) {
-  const tone = card.summary.overallStatus;
-  const overallCfg = {
-    UP_TO_DATE: { from: "from-emerald-500", to: "to-emerald-700", label: "Vacunas al día",       icon: "✓" },
-    DUE_SOON:   { from: "from-amber-400",   to: "to-amber-600",   label: "Próxima dosis pronto", icon: "!" },
-    OVERDUE:    { from: "from-red-500",     to: "to-red-700",     label: "Vacuna vencida",       icon: "⚠" },
-  }[tone] ?? { from: "from-slate-500", to: "to-slate-700", label: "Sin estado", icon: "?" };
+/* ─── Shared carnet card visual (used in both mobile and desktop) ── */
+type CarnetCfg = { from: string; to: string; label: string; dotCls: string };
 
-  const nextVaccine = card.upcoming[0];
-
+function CarnetCardVisual({ card, cfg, large = false }: { card: PetVaccineCard; cfg: CarnetCfg; large?: boolean }) {
   return (
-    <div className="space-y-4">
-      {/* ── Premium card ────────────────────────────────────── */}
-      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${overallCfg.from} ${overallCfg.to} p-5 text-white shadow-lg`}>
-        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/10" />
-        <div className="pointer-events-none absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-white/10" />
+    <div
+      className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${cfg.from} ${cfg.to} text-white shadow-xl`}
+      style={{ padding: large ? "28px" : "20px" }}
+    >
+      <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10" />
+      <div className="pointer-events-none absolute -bottom-8 left-1/3 h-32 w-32 rounded-full bg-white/5" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-20 w-20 rounded-full bg-white/10" />
 
-        <div className="relative flex items-start gap-4">
-          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border-2 border-white/25 shadow">
-            {card.pet.primaryPhotoUrl ? (
-              <img src={card.pet.primaryPhotoUrl} alt={card.pet.name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-white/20 text-xl font-bold">
-                {card.pet.name.slice(0, 1)}
-              </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Carnet de Vacunación</p>
-            <h2 className="mt-0.5 font-display text-2xl font-bold leading-tight">{card.pet.name}</h2>
-            <p className="mt-0.5 text-[12px] text-white/70">
-              {[card.pet.species, card.pet.breed].filter(Boolean).join(" · ")}
-            </p>
-          </div>
-          <div className="shrink-0 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold backdrop-blur-sm">
-            {overallCfg.label}
-          </div>
-        </div>
-
-        <div className="relative my-4 border-t border-white/15" />
-
-        <div className="relative grid grid-cols-3 gap-2">
-          {[
-            { n: card.summary.upToDateCount, label: "Al día"     },
-            { n: card.summary.dueSoonCount,  label: "Por vencer" },
-            { n: card.summary.overdueCount,  label: "Vencidas"   },
-          ].map(({ n, label }) => (
-            <div key={label} className="rounded-2xl bg-white/15 py-3 text-center backdrop-blur-sm">
-              <p className="text-xl font-black">{n}</p>
-              <p className="text-[9px] font-bold uppercase tracking-wider text-white/60">{label}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="relative mt-4 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-white/50">Tutor</p>
-            <p className="text-[13px] font-semibold">{card.pet.ownerName}</p>
-          </div>
-          {card.pet.microchipNumber && (
-            <div className="text-right">
-              <p className="text-[10px] text-white/50">Microchip</p>
-              <p className="text-[11px] font-mono font-semibold">{card.pet.microchipNumber}</p>
+      <div className="relative flex items-start gap-4">
+        <div className={`shrink-0 overflow-hidden rounded-2xl border-2 border-white/25 shadow-lg ${large ? "h-[110px] w-[110px]" : "h-16 w-16"}`}>
+          {card.pet.primaryPhotoUrl ? (
+            <img src={card.pet.primaryPhotoUrl} alt={card.pet.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-white/20 text-2xl font-bold">
+              {card.pet.name.slice(0, 1)}
             </div>
           )}
         </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Carnet de Vacunación · Kummpa</p>
+          <h2 className={`font-display font-extrabold leading-tight tracking-tight ${large ? "mt-1 text-4xl" : "mt-0.5 text-2xl"}`}>
+            {card.pet.name}
+          </h2>
+          <p className={`text-white/70 ${large ? "mt-1 text-[14px]" : "mt-0.5 text-[12px]"}`}>
+            {[card.pet.species, card.pet.breed].filter(Boolean).join(" · ")}
+          </p>
+          {large && (
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
+              <div className={`h-2 w-2 rounded-full ${cfg.dotCls} ring-1 ring-white/40`} />
+              <span className="text-[11px] font-bold">{cfg.label}</span>
+            </div>
+          )}
+        </div>
+        {!large && (
+          <div className="shrink-0 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold backdrop-blur-sm">
+            {cfg.label}
+          </div>
+        )}
       </div>
 
-      {/* ── Next dose ──────────────────────────────────────── */}
-      {nextVaccine ? (
-        <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Próxima dosis</p>
-          <p className="mt-1 text-[15px] font-bold text-amber-900">{nextVaccine.vaccineName}</p>
-          <p className="mt-0.5 text-[12px] text-amber-700">
-            {formatDate(nextVaccine.nextDoseAt)}
-            {nextVaccine.daysUntilDue != null && ` · ${daysLabel(nextVaccine.daysUntilDue)}`}
-          </p>
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3.5">
-          <p className="text-[13px] font-semibold text-emerald-700">Sin dosis próximas pendientes</p>
-          <p className="mt-0.5 text-[11px] text-emerald-600">Todas las vacunas están al día o sin próxima dosis registrada.</p>
-        </div>
-      )}
+      <div className="relative my-4 border-t border-white/15" />
 
-      {/* ── Primary actions ────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-2">
-        <a href={card.share.printableSheetUrl} target="_blank" rel="noreferrer"
-          className="flex items-center justify-center gap-2 rounded-2xl bg-[hsl(var(--primary))] py-3 text-[13px] font-bold text-white shadow-sm hover:opacity-90 transition-opacity">
-          <IcoPrint /> Imprimir / PDF
-        </a>
-        <a href={card.share.printableCardUrl} target="_blank" rel="noreferrer"
-          className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-colors">
-          <IcoShare /> Tarjeta
-        </a>
+      <div className={`relative grid grid-cols-3 ${large ? "gap-3" : "gap-2"}`}>
+        {[
+          { n: card.summary.upToDateCount, label: "Al día"     },
+          { n: card.summary.dueSoonCount,  label: "Por vencer" },
+          { n: card.summary.overdueCount,  label: "Vencidas"   },
+        ].map(({ n, label }) => (
+          <div key={label} className={`rounded-2xl bg-white/15 text-center backdrop-blur-sm ${large ? "py-4" : "py-3"}`}>
+            <p className={`font-black ${large ? "text-3xl" : "text-xl"}`}>{n}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-white/60">{label}</p>
+          </div>
+        ))}
       </div>
 
-      {/* ── Share URL ──────────────────────────────────────── */}
-      {card.share.publicUrl ? (
-        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Enlace público del carnet</p>
-          <p className="mt-1.5 truncate rounded-xl border border-slate-100 bg-white px-3 py-2 text-[12px] font-mono text-slate-600">
-            {card.share.publicUrl}
-          </p>
-          <button type="button" onClick={onCopyLink}
-            className="mt-2 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
-            <IcoCopy /> Copiar enlace
-          </button>
+      <div className="relative mt-4 flex items-end justify-between">
+        <div>
+          <p className="text-[10px] text-white/50">Tutor</p>
+          <p className={`font-semibold ${large ? "text-[15px]" : "text-[13px]"}`}>{card.pet.ownerName}</p>
         </div>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-center">
-          <p className="text-[12px] text-slate-400">Para compartir por enlace, activa el perfil público en la ficha de la mascota.</p>
-          <Link href={`/pets/${card.pet.id}`} className="mt-2 inline-block text-[12px] font-semibold text-[hsl(var(--primary))]">
-            Ir a la ficha →
-          </Link>
-        </div>
-      )}
+        {card.pet.microchipNumber && (
+          <div className="text-right">
+            <p className="text-[10px] text-white/50">Microchip</p>
+            <p className={`font-mono font-semibold ${large ? "text-[13px]" : "text-[11px]"}`}>{card.pet.microchipNumber}</p>
+          </div>
+        )}
+      </div>
     </div>
+  );
+}
+
+function NextDoseVisual({ nextVaccine }: { nextVaccine: PetVaccineCard["upcoming"][0] | undefined }) {
+  if (nextVaccine) {
+    return (
+      <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3.5">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Próxima dosis</p>
+        <p className="mt-1 text-[15px] font-bold text-amber-900">{nextVaccine.vaccineName}</p>
+        <p className="mt-0.5 text-[12px] text-amber-700">
+          {formatDate(nextVaccine.nextDoseAt)}
+          {nextVaccine.daysUntilDue != null && ` · ${daysLabel(nextVaccine.daysUntilDue)}`}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3.5">
+      <p className="text-[13px] font-semibold text-emerald-700">Sin dosis próximas pendientes</p>
+      <p className="mt-0.5 text-[11px] text-emerald-600">Todas las vacunas están al día o sin próxima dosis registrada.</p>
+    </div>
+  );
+}
+
+/* ─── Carnet tab ──────────────────────────────────────────────── */
+function TabCarnet({
+  card,
+  vaccines,
+  onCopyLink,
+  onGoToAdmin,
+}: {
+  card: PetVaccineCard;
+  vaccines: VaccineRecord[];
+  onCopyLink: () => void;
+  onGoToAdmin: () => void;
+}) {
+  const tone = card.summary.overallStatus;
+  const cfg: CarnetCfg = {
+    UP_TO_DATE: { from: "from-emerald-500", to: "to-emerald-700", label: "Vacunas al día",       dotCls: "bg-emerald-500" },
+    DUE_SOON:   { from: "from-amber-400",   to: "to-amber-600",   label: "Próxima dosis pronto", dotCls: "bg-amber-400"   },
+    OVERDUE:    { from: "from-red-500",     to: "to-red-700",     label: "Vacuna vencida",       dotCls: "bg-red-500"     },
+  }[tone] ?? { from: "from-slate-500", to: "to-slate-700", label: "Sin estado", dotCls: "bg-slate-400" };
+
+  const nextVaccine = card.upcoming[0];
+  const recentVaccines = vaccines.slice(0, 5);
+
+  /* ── Mobile layout ──────────────────────────────────────────── */
+  return (
+    <>
+      <div className="space-y-4 lg:hidden">
+        <CarnetCardVisual card={card} cfg={cfg} />
+        <NextDoseVisual nextVaccine={nextVaccine} />
+        <div className="grid grid-cols-2 gap-2">
+          <a href={card.share.printableSheetUrl} target="_blank" rel="noreferrer"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-[hsl(var(--primary))] py-3 text-[13px] font-bold text-white shadow-sm hover:opacity-90 transition-opacity">
+            <IcoPrint /> Imprimir / PDF
+          </a>
+          <a href={card.share.printableCardUrl} target="_blank" rel="noreferrer"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+            <IcoShare /> Tarjeta
+          </a>
+        </div>
+        {card.share.publicUrl ? (
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Enlace público del carnet</p>
+            <p className="mt-1.5 truncate rounded-xl border border-slate-100 bg-white px-3 py-2 text-[12px] font-mono text-slate-600">
+              {card.share.publicUrl}
+            </p>
+            <button type="button" onClick={onCopyLink}
+              className="mt-2 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+              <IcoCopy /> Copiar enlace
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-center">
+            <p className="text-[12px] text-slate-400">Para compartir por enlace, activa el perfil público en la ficha de la mascota.</p>
+            <Link href={`/pets/${card.pet.id}`} className="mt-2 inline-block text-[12px] font-semibold text-[hsl(var(--primary))]">Ir a la ficha →</Link>
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop 2-col layout ──────────────────────────────── */}
+      <div className="hidden lg:grid lg:grid-cols-[1fr_296px] lg:gap-7 lg:items-start">
+
+        {/* Left: big carnet + mini historial ─────────────────── */}
+        <div className="space-y-6">
+          <CarnetCardVisual card={card} cfg={cfg} large />
+
+          {/* Mini historial */}
+          {recentVaccines.length > 0 && (
+            <div className="rounded-3xl border border-slate-100 bg-white overflow-hidden">
+              <div className="flex items-center justify-between border-b border-slate-50 px-5 py-3.5">
+                <p className="text-[12px] font-bold uppercase tracking-wider text-slate-400">Historial reciente</p>
+                <span className="text-[11px] font-semibold text-slate-300">{vaccines.length} registros</span>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {recentVaccines.map((v) => {
+                  const vcfg = statusCfg[v.status];
+                  return (
+                    <div key={v.id} className="flex items-center gap-4 px-5 py-3">
+                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${vcfg.dot}`} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] font-semibold text-slate-800">{v.vaccineName}</p>
+                        <p className="text-[11px] text-slate-400">
+                          {formatDate(v.appliedAt)}
+                          {v.providerName ? ` · ${v.providerName}` : ""}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${vcfg.badge}`}>
+                        {vcfg.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {vaccines.length > 5 && (
+                <div className="border-t border-slate-50 px-5 py-3 text-center">
+                  <span className="text-[11px] font-semibold text-slate-400">+{vaccines.length - 5} más en el historial completo</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right: sidebar ─────────────────────────────────────── */}
+        <div className="space-y-3 lg:sticky lg:top-14">
+
+          {/* Status card */}
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+            <div className="border-b border-slate-50 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Estado general</p>
+            </div>
+            <div className="grid grid-cols-3 divide-x divide-slate-50 py-2">
+              {[
+                { n: card.summary.upToDateCount,  label: "Al día",      cls: "text-emerald-600" },
+                { n: card.summary.dueSoonCount,   label: "Por vencer",  cls: "text-amber-500"   },
+                { n: card.summary.overdueCount,   label: "Vencidas",    cls: "text-red-500"     },
+              ].map(({ n, label, cls }) => (
+                <div key={label} className="py-2.5 text-center">
+                  <p className={`text-[22px] font-black leading-none ${cls}`}>{n}</p>
+                  <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Next dose */}
+          <NextDoseVisual nextVaccine={nextVaccine} />
+
+          {/* Actions */}
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white divide-y divide-slate-50">
+            <button type="button" onClick={onGoToAdmin}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-left hover:bg-[hsl(var(--primary)/0.04)] transition-colors group">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">
+                <IcoPlus />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[hsl(var(--primary))]">Registrar vacuna</p>
+                <p className="text-[11px] text-slate-400">Agregar nuevo registro</p>
+              </div>
+            </button>
+            <a href={card.share.printableSheetUrl} target="_blank" rel="noreferrer"
+              className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><IcoPrint /></div>
+              <div>
+                <p className="text-[13px] font-semibold text-slate-800">Imprimir / PDF</p>
+                <p className="text-[11px] text-slate-400">Hoja A4 para el veterinario</p>
+              </div>
+            </a>
+            <a href={card.share.printableCardUrl} target="_blank" rel="noreferrer"
+              className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><IcoShare /></div>
+              <div>
+                <p className="text-[13px] font-semibold text-slate-800">Tarjeta de bolsillo</p>
+                <p className="text-[11px] text-slate-400">Tamaño carné para collar</p>
+              </div>
+            </a>
+            {card.share.publicUrl && (
+              <button type="button" onClick={onCopyLink}
+                className="flex w-full items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><IcoCopy /></div>
+                <div>
+                  <p className="text-[13px] font-semibold text-slate-800">Copiar enlace</p>
+                  <p className="text-[11px] text-slate-400">Compartir el carnet</p>
+                </div>
+              </button>
+            )}
+          </div>
+
+          {/* Public URL chip */}
+          {card.share.publicUrl && (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Enlace público</p>
+              <p className="mt-1 truncate font-mono text-[11px] text-slate-500">{card.share.publicUrl}</p>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -552,7 +700,7 @@ export default function PetVaccinesPage() {
 
   return (
     <AuthGate>
-      <div className="mx-auto max-w-xl">
+      <div className="mx-auto max-w-5xl">
         {isLoading ? (
           <div className="space-y-4 p-4">
             <div className="h-52 w-full animate-pulse rounded-3xl bg-slate-100" />
@@ -617,9 +765,14 @@ export default function PetVaccinesPage() {
             )}
 
             {/* Tab content */}
-            <div className="px-4 py-5">
+            <div className="px-4 py-5 lg:px-8 lg:py-7">
               {activeTab === "carnet" && (
-                <TabCarnet card={card} onCopyLink={() => void copyPublicLink()} />
+                <TabCarnet
+                  card={card}
+                  vaccines={vaccines}
+                  onCopyLink={() => void copyPublicLink()}
+                  onGoToAdmin={() => setActiveTab("administrar")}
+                />
               )}
               {activeTab === "historial" && (
                 <TabHistorial
