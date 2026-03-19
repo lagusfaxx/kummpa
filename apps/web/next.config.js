@@ -9,6 +9,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   transpilePackages: ["@kumpa/ui", "@kumpa/types", "@kumpa/config"],
+  images: {
+    unoptimized: true,
+  },
   async rewrites() {
     return [
       {
