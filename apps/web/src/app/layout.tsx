@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { AppProviders } from "@/components/providers/app-providers";
 import type { ReactNode } from "react";
 import "./globals.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const manrope = Manrope({
   subsets: ["latin"],

@@ -17,15 +17,6 @@ function ensureMapAssets() {
   if (mapLibraryPromise) return mapLibraryPromise;
 
   mapLibraryPromise = new Promise<any>((resolve, reject) => {
-    const cssId = "mapbox-gl-css";
-    if (!document.getElementById(cssId)) {
-      const link = document.createElement("link");
-      link.id = cssId;
-      link.rel = "stylesheet";
-      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css";
-      document.head.appendChild(link);
-    }
-
     void import("mapbox-gl")
       .then((mod) => resolve((mod as any).default ?? mod))
       .catch(() => reject(new Error("No se pudo cargar Mapbox GL")));
@@ -169,6 +160,10 @@ export function MapCanvas({
         map.addControl(new maplibre.NavigationControl(), "top-right");
         mapRef.current = map;
         popupRef.current = new maplibre.Popup({ closeButton: true, closeOnClick: false });
+
+        map.on("error", (e: any) => {
+          console.error("[MapCanvas] Mapbox error:", e?.error?.message ?? e);
+        });
 
         map.on("load", () => {
           if (!map.getSource(SOURCE_ID)) {
