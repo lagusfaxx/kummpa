@@ -85,11 +85,11 @@ export const listListingsQuerySchema = z
 export const createListingSchema = z
   .object({
     title: z.string().trim().min(4).max(140),
-    description: z.string().trim().min(10).max(5000),
+    description: z.string().trim().min(3).max(5000),
     priceCents: z.coerce.number().int().min(100).max(500_000_000),
     condition: z.nativeEnum(ListingCondition),
     category: z.nativeEnum(MarketplaceCategory).default(MarketplaceCategory.ACCESSORY),
-    photoUrls: z.array(z.string().trim().url().max(2000)).min(1).max(8),
+    photoUrls: z.array(z.string().trim().url().max(2000)).max(8).default([]),
     city: optionalTrimmedString(120),
     district: optionalTrimmedString(120),
     latitude: z.coerce.number().min(-90).max(90).optional(),
@@ -109,7 +109,7 @@ export const createListingSchema = z
 export const updateListingSchema = z
   .object({
     title: z.string().trim().min(4).max(140).optional(),
-    description: z.string().trim().min(10).max(5000).optional(),
+    description: z.string().trim().min(3).max(5000).optional(),
     priceCents: z.coerce.number().int().min(100).max(500_000_000).optional(),
     condition: z.nativeEnum(ListingCondition).optional(),
     category: z.nativeEnum(MarketplaceCategory).optional(),

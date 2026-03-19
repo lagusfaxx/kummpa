@@ -354,7 +354,7 @@ function SectionProductos({ listings, accessToken, onRefresh }: { listings: Mark
                   <option value="USED">Usado</option>
                 </Sel>
               </FormRow>
-              <FormRow label="URL foto">
+              <FormRow label="URL foto (opcional)">
                 <Inp value={form.photoUrl} onChange={set("photoUrl")} placeholder="https://..." />
               </FormRow>
               <FormRow label="Comuna">
