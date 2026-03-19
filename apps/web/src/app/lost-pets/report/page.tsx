@@ -15,7 +15,7 @@ import { listPets } from "@/features/pets/pets-api";
 import type { Pet } from "@/features/pets/types";
 import { useToast } from "@/features/ui/toast-context";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
 function defaultDateTime() {
   const now = new Date();

@@ -10,7 +10,7 @@ import type { LostPetAlert, LostPetAlertStatus } from "@/features/lost-pets/type
 import { useToast } from "@/features/ui/toast-context";
 import type { MapServicePoint } from "@/features/map/types";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
 /* ─── helpers ────────────────────────────────────────────────── */
 function timeAgo(value: string) {
