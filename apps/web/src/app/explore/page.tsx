@@ -535,7 +535,7 @@ function MobileCardStrip({
       <style>{`#strip-scroll::-webkit-scrollbar{display:none}`}</style>
 
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-        <div className="pointer-events-auto rounded-t-3xl bg-white shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.18)]">
+        <div className="pointer-events-auto bg-white shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.18)]">
 
           {/* drag handle */}
           <div className="flex justify-center pt-2.5 pb-1.5">
@@ -570,7 +570,7 @@ function MobileCardStrip({
                     scrollSnapAlign: "center",
                     flexShrink: 0,
                     width: "min(76vw, 280px)",
-                    borderRadius: "0px",
+                    borderRadius: "16px",
                     border: active ? `2px solid ${cat.color}` : "2px solid transparent",
                     boxShadow: active
                       ? `0 4px 16px -4px ${cat.color}55`
