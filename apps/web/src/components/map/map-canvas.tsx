@@ -152,6 +152,7 @@ interface MapCanvasProps {
 }
 
 export function MapCanvas({
+  accessToken,
   points,
   selectedPointId = null,
   onSelectPoint,
