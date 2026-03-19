@@ -1,0 +1,94 @@
+Necesitamos reorganizar completamente la experiencia del detalle de una alerta de mascota perdida.
+
+PROBLEMA ACTUAL
+La vista está demasiado desordenada porque mezcla:
+- detalle del caso
+- mapa
+- gestión del dueño
+- formulario “Yo la vi”
+- ayuda
+- historial
+
+Todo compite al mismo tiempo y la pantalla se siente pesada y poco clara.
+
+OBJETIVO
+Separar claramente:
+1. vista pública del caso
+2. flujo de reportar avistamiento
+3. gestión del caso para el dueño
+
+NUEVA DIRECCIÓN
+
+1. VISTA PÚBLICA DEL CASO
+La parte principal del detalle debe mostrar de forma clara:
+- foto de la mascota
+- nombre
+- estado del caso
+- última ubicación conocida
+- fecha/hora
+- descripción breve
+- mapa
+- botón principal “Yo la vi”
+- botón secundario “Compartir alerta”
+- botón opcional “Ver perfil público”
+
+2. FLUJO “YO LA VI”
+No quiero que el formulario completo de avistamiento esté incrustado dentro del detalle principal.
+Debe abrirse como:
+- modal
+- drawer
+- o página separada
+
+El flujo debe ser corto:
+
+Paso 1:
+- usar mi ubicación
+- buscar dirección
+- mover pin
+
+Paso 2:
+- fecha/hora aproximada
+- referencia breve
+- qué viste
+- subir foto opcional
+- publicar avistamiento
+
+3. FOTO OPCIONAL REAL
+No quiero campo “URL de foto”.
+Quiero subida real de imagen:
+- botón subir foto
+- tomar foto o elegir desde galería
+- preview antes de publicar
+- guardar en storage/backend correctamente
+
+4. HISTORIAL DE AVISTAMIENTOS
+Mostrar avistamientos reportados en una sección clara y ordenada:
+- fecha/hora
+- referencia
+- observación
+- foto si existe
+- ubicación
+
+5. GESTIÓN DEL DUEÑO
+Las acciones del dueño deben ir aparte o más abajo, no mezcladas con la vista pública.
+Ejemplo:
+- marcar encontrada
+- cerrar caso
+- editar caso
+
+6. LIMPIEZA DE LAYOUT
+Reducir paneles compitiendo.
+La jerarquía debe ser:
+- caso
+- mapa
+- CTA Yo la vi
+- historial
+- gestión del dueño aparte
+
+RESULTADO ESPERADO
+Quiero una experiencia mucho más clara y ordenada para alertas:
+- vista pública simple
+- reportar avistamiento en flujo aparte
+- foto real opcional
+- historial bien estructurado
+- gestión del dueño sin desordenar la pantalla principal

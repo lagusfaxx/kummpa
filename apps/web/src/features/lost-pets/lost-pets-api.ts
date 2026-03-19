@@ -82,6 +82,29 @@ async function requestWithAuth<T>(
   return parseResponse<T>(response);
 }
 
+export async function uploadSightingPhoto(
+  accessToken: string,
+  alertId: string,
+  file: File
+): Promise<string> {
+  const form = new FormData();
+  form.append("photo", file);
+  const response = await fetch(`${LOST_PETS_BASE_URL}/${alertId}/sightings/upload-photo`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: form
+  });
+  const payload = (await response.json().catch(() => null)) as
+    | { ok: true; data: { url: string } }
+    | { ok: false; error: { message: string } }
+    | null;
+  if (!response.ok || !payload || !payload.ok) {
+    const message = payload && !payload.ok ? payload.error.message : "No se pudo subir la foto";
+    throw new AuthApiError(message);
+  }
+  return payload.data.url;
+}
+
 export async function listLostPetAlerts(
   accessToken: string,
   query: LostPetAlertsQuery = {}

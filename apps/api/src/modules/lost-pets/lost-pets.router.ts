@@ -1,4 +1,9 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import multer from "multer";
+import path from "node:path";
+import { UPLOADS_DIR } from "../../config/uploads";
 import { asyncHandler } from "../../lib/async-handler";
 import { requireAuth } from "../../middleware/auth";
 import { validateRequest } from "../../middleware/validate-request";
@@ -26,6 +31,31 @@ import {
   listLostPetSightings,
   updateLostPetAlert
 } from "./lost-pets.service";
+
+const sightingsUploadDir = path.join(UPLOADS_DIR, "sightings");
+if (!fs.existsSync(sightingsUploadDir)) {
+  fs.mkdirSync(sightingsUploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, sightingsUploadDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
+    cb(null, `${randomUUID()}${ext}`);
+  }
+});
+
+const photoUpload = multer({
+  storage,
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Solo se permiten imagenes"));
+    }
+  }
+});
 
 export const lostPetsRouter = Router();
 
@@ -186,5 +216,21 @@ lostPetsRouter.post(
       ok: true,
       data
     });
+  })
+);
+
+lostPetsRouter.post(
+  "/:alertId/sightings/upload-photo",
+  asyncHandler(requireAuth),
+  validateRequest(lostPetAlertParamsSchema, "params"),
+  photoUpload.single("photo"),
+  asyncHandler(async (req, res) => {
+    const file = req.file;
+    if (!file) {
+      res.status(400).json({ ok: false, error: { message: "No se recibio ningun archivo." } });
+      return;
+    }
+    const url = `/api/v1/files/sightings/${file.filename}`;
+    res.status(201).json({ ok: true, data: { url } });
   })
 );
