@@ -161,54 +161,73 @@ export default function MarketplacePage() {
     <div className="space-y-4">
       <CommercialNav />
 
-      {/* Search bar */}
+      {/* Search + condition row */}
       <form onSubmit={(e) => void handleSearch(e)} className="flex gap-2">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar productos..."
-          className="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm focus:border-[hsl(var(--primary))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))]"
+          className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-[hsl(var(--primary))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))]"
         />
-        <select
-          value={condition}
-          onChange={(e) => { setCondition(e.target.value as "NEW" | "USED" | ""); void load({ cond: e.target.value }); }}
-          className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">Nuevo o usado</option>
-          <option value="NEW">Nuevo</option>
-          <option value="USED">Usado</option>
-        </select>
-        <button type="submit" className="btn btn-primary shrink-0">Buscar</button>
+        <button type="submit" className="rounded-xl bg-[hsl(var(--primary))] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 shrink-0">
+          Buscar
+        </button>
       </form>
 
-      {/* Category filter pills */}
+      {/* Condition + category pills in one scrollable row */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6">
-        {CATEGORIES.map((c) => (
+        {/* Condition toggles */}
+        {(["", "NEW", "USED"] as const).map((c) => (
+          <button
+            key={c || "all-cond"}
+            type="button"
+            onClick={() => { setCondition(c); void load({ cond: c }); }}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+              condition === c
+                ? "border-transparent bg-slate-800 text-white"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {c === "" ? "Todo" : c === "NEW" ? "✦ Nuevo" : "↺ Usado"}
+          </button>
+        ))}
+
+        {/* Separator */}
+        <span className="shrink-0 self-center w-px h-4 bg-slate-200" />
+
+        {/* Category pills — skip "Todo" (already covered by condition "Todo") */}
+        {CATEGORIES.slice(1).map((c) => (
           <button
             key={c.value}
             type="button"
             onClick={() => selectCategory(c.value)}
-            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
               category === c.value
-                ? "bg-[hsl(var(--primary))] text-white"
-                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                ? "border-transparent bg-[hsl(var(--primary))] text-white"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
             {c.label}
           </button>
         ))}
+
+        {/* Clear filters — only visible when a filter is active */}
+        {(category || condition) && (
+          <button
+            type="button"
+            onClick={() => { setCategory(""); setCondition(""); void load({ cat: "", cond: "" }); }}
+            className="shrink-0 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100"
+          >
+            Limpiar
+          </button>
+        )}
       </div>
 
-      {/* Header row */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">
-          {loading ? "Cargando..." : `${listings.length} publicaciones`}
-        </p>
-        <Link href="/marketplace/publicar" className="btn btn-primary text-sm">
-          + Publicar
-        </Link>
-      </div>
+      {/* Results count */}
+      <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">
+        {loading ? "Buscando..." : `${listings.length} publicaciones`}
+      </p>
 
       {/* Grid */}
       {loading ? (
@@ -218,10 +237,34 @@ export default function MarketplacePage() {
           ))}
         </div>
       ) : listings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-center">
-          <p className="text-3xl mb-3">📭</p>
-          <p className="font-bold text-slate-700">Sin resultados</p>
-          <p className="text-sm text-slate-500 mt-1">Prueba con otra búsqueda o categoría</p>
+        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7 text-slate-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-bold text-slate-800">Sin resultados</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {query || category || condition
+                ? "No encontramos publicaciones con estos filtros."
+                : "Aún no hay publicaciones. ¡Sé el primero!"}
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {(query || category || condition) && (
+              <button
+                type="button"
+                onClick={() => { setQuery(""); setCategory(""); setCondition(""); void load({ q: "", cat: "", cond: "" }); }}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Ver todo
+              </button>
+            )}
+            <Link href="/marketplace/publicar" className="rounded-xl bg-[hsl(22_92%_60%)] px-4 py-2 text-sm font-bold text-white hover:opacity-90">
+              Publicar producto
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
