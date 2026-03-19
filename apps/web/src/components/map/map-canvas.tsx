@@ -27,7 +27,7 @@ function ensureMapAssets() {
     }
 
     void import("mapbox-gl")
-      .then((mapboxgl) => resolve(mapboxgl))
+      .then((mod) => resolve((mod as any).default ?? mod))
       .catch(() => reject(new Error("No se pudo cargar Mapbox GL")));
   });
 
