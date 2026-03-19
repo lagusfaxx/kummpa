@@ -28,20 +28,20 @@ function IcoUser() {
 
 function BrandLogo() {
   return (
-    <span className="flex items-center gap-2 select-none">
-      {/* Shield icon — overflow-hidden + scale crops the padding */}
-      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden">
+    <span className="flex items-center gap-1.5 select-none">
+      {/* Shield icon */}
+      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden">
         <Image
           src="/brand/logo-sin-titulo.png"
           alt=""
           fill
-          sizes="36px"
+          sizes="32px"
           priority
-          className="object-contain scale-[1.55]"
+          className="object-contain scale-[1.45]"
         />
       </span>
-      {/* Wordmark — real HTML text, always readable */}
-      <span className="font-display text-[21px] font-black leading-none tracking-tight">
+      {/* Wordmark */}
+      <span className="font-display text-[20px] font-black leading-[1] tracking-tight translate-y-px">
         <span className="text-[hsl(164_42%_30%)]">Ku</span>
         <span className="text-[hsl(var(--accent))]">MM</span>
         <span className="text-[hsl(164_42%_30%)]">pa</span>
@@ -82,7 +82,7 @@ export function TopNav() {
             Desktop: static left in flex flow                        */}
         <Link
           href="/"
-          className="absolute left-1/2 -translate-x-1/2 md:static md:shrink-0 md:translate-x-0"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:top-auto md:translate-x-0 md:translate-y-0"
         >
           <BrandLogo />
         </Link>
