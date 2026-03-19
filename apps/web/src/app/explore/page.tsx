@@ -625,8 +625,8 @@ function MobileCardStrip({
           {/* ── CTA row — always visible, reacts to active card ── */}
           {activeService && (
             <div
-              className="flex gap-2 border-t border-slate-100 px-4 py-3"
-              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+              className="flex gap-2 border-t border-slate-100 px-4 pt-3"
+              style={{ paddingBottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
             >
               {activeService.type === "PARK" ? (
                 <a
