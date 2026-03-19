@@ -49,11 +49,28 @@ export function TopNav() {
 
   return (
     <header className="safe-area-top sticky top-0 z-40 border-b border-slate-200/60 bg-[hsl(var(--background)/0.97)] backdrop-blur-xl">
-      <div className="safe-area-x mx-auto flex h-[64px] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+      <div className="safe-area-x relative mx-auto flex h-[62px] max-w-7xl items-center px-4 sm:px-6 md:h-[64px] md:gap-6 lg:px-8">
 
-        {/* ── Logo ─────────────────────────────────────────────── */}
-        <Link href="/" className="flex shrink-0 items-center">
-          <div className="relative h-11 w-[150px]">
+        {/* ── Logo ─────────────────────────────────────────────────────
+            Mobile:  absolute-centered, larger
+            Desktop: static in flex flow, left-aligned               */}
+        <Link
+          href="/"
+          className="absolute left-1/2 flex -translate-x-1/2 items-center md:static md:shrink-0 md:translate-x-0"
+        >
+          {/* Mobile logo (bigger, centered) */}
+          <div className="relative h-12 w-[164px] md:hidden">
+            <Image
+              src="/brand/logo-con-titulo.png"
+              alt="Kummpa"
+              fill
+              sizes="164px"
+              priority
+              className="select-none object-contain"
+            />
+          </div>
+          {/* Desktop logo (normal left-anchored) */}
+          <div className="relative hidden h-11 w-[150px] md:block">
             <Image
               src="/brand/logo-con-titulo.png"
               alt="Kummpa"
@@ -65,7 +82,7 @@ export function TopNav() {
           </div>
         </Link>
 
-        {/* ── Center nav (desktop) ──────────────────────────────── */}
+        {/* ── Center nav (desktop only) ─────────────────────────────── */}
         {!isCompact && (
           <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
             {PRIMARY_NAV_ITEMS.map((item) => {
@@ -87,10 +104,10 @@ export function TopNav() {
           </nav>
         )}
 
-        {/* ── Right: Auth ───────────────────────────────────────── */}
-        <div className="flex shrink-0 items-center gap-2">
+        {/* ── Right: Auth ───────────────────────────────────────────── */}
+        <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0">
 
-          {/* Desktop authenticated */}
+          {/* Desktop — authenticated */}
           {isAuthenticated && (
             <div className="hidden items-center gap-1.5 md:flex">
               {utilityItems.map((item) => {
@@ -121,7 +138,7 @@ export function TopNav() {
             </div>
           )}
 
-          {/* Desktop unauthenticated */}
+          {/* Desktop — unauthenticated */}
           {!isAuthenticated && (
             <div className="hidden items-center gap-2 md:flex">
               {!isAuthRoute(pathname) && (
@@ -143,12 +160,9 @@ export function TopNav() {
             </div>
           )}
 
-          {/* Mobile unauthenticated only */}
+          {/* Mobile — unauthenticated only (logo is centered, CTA at right) */}
           {!isAuthenticated && !isAuthRoute(pathname) && (
-            <div className="flex items-center gap-2 md:hidden">
-              <Link href="/login" className="text-[13px] font-medium text-slate-600">
-                Ingresar
-              </Link>
+            <div className="flex items-center md:hidden">
               <Link
                 href="/register"
                 className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[12px] font-bold text-white shadow-sm"
