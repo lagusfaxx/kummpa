@@ -90,7 +90,7 @@ function MiniPostCard({
   onSave: (p: CommunityPost) => void;
 }) {
   return (
-    <article className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
+    <article className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
       {post.imageUrl && (
         <div className="mb-3 overflow-hidden rounded-xl">
           <img src={post.imageUrl} alt="" className="w-full h-36 object-cover" />
@@ -124,7 +124,7 @@ function MiniPostCard({
 function ProfileSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-36 animate-pulse rounded-3xl bg-[hsl(var(--muted))]" />
+      <div className="h-36 animate-pulse rounded-none bg-[hsl(var(--muted))]" />
       <div className="px-4 space-y-3">
         <div className="h-4 w-1/3 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
         <div className="h-3 w-2/3 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
@@ -213,7 +213,7 @@ export default function CommunityProfilePage() {
             {/* ── cover + avatar ── */}
             <div className="relative">
               <div
-                className="h-36 w-full rounded-3xl"
+                className="h-36 w-full rounded-none"
                 style={{
                   background: coverUrl
                     ? `url(${coverUrl}) center/cover no-repeat`
@@ -292,7 +292,7 @@ export default function CommunityProfilePage() {
               {/* Publicaciones tab */}
               {tab === "posts" && (
                 myPosts.length === 0 ? (
-                  <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
+                  <div className="rounded-none border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
                     <p className="text-4xl">📝</p>
                     <p className="mt-3 font-bold text-[hsl(var(--foreground))]">Aún no has publicado nada</p>
                     <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Comparte un momento, tip o recomendación desde el feed.</p>
@@ -317,7 +317,7 @@ export default function CommunityProfilePage() {
               {/* Mascotas tab */}
               {tab === "pets" && (
                 pets.length === 0 ? (
-                  <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
+                  <div className="rounded-none border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
                     <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(155_48%_42%/0.1)]">
                       <svg viewBox="0 0 24 24" className="h-6 w-6 text-[hsl(155_48%_38%)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><circle cx="4" cy="8" r="2"/>
@@ -336,7 +336,7 @@ export default function CommunityProfilePage() {
                       <Link
                         key={item.pet.id}
                         href={`/pets/${item.pet.id}`}
-                        className="group overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm p-5 transition hover:shadow-md hover:border-[hsl(var(--secondary)/0.4)]"
+                        className="group overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm p-5 transition hover:shadow-md hover:border-[hsl(var(--secondary)/0.4)]"
                       >
                         {/* avatar / emoji */}
                         <div className={cls(
@@ -375,7 +375,7 @@ export default function CommunityProfilePage() {
                     {/* add pet card */}
                     <Link
                       href="/pets/new"
-                      className="flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-[hsl(var(--border))] bg-transparent p-5 text-[hsl(var(--muted-foreground))] transition hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))]"
+                      className="flex flex-col items-center justify-center gap-3 rounded-none border-2 border-dashed border-[hsl(var(--border))] bg-transparent p-5 text-[hsl(var(--muted-foreground))] transition hover:border-[hsl(var(--secondary))] hover:text-[hsl(var(--secondary))]"
                     >
                       <span className="text-3xl">+</span>
                       <span className="text-xs font-semibold">Agregar mascota</span>
@@ -387,7 +387,7 @@ export default function CommunityProfilePage() {
               {/* Guardados tab */}
               {tab === "saved" && (
                 savedPosts.length === 0 ? (
-                  <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
+                  <div className="rounded-none border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
                     <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50">
                       <IcoBookmark />
                     </div>

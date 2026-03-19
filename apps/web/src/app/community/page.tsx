@@ -103,7 +103,7 @@ function PostCard({
   const [commentText, setCommentText] = useState("");
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm">
+    <article className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm">
       {/* header */}
       <div className="flex items-start gap-3 px-4 pt-4">
         <Avatar src={post.author.avatarUrl} name={post.author.fullName} />
@@ -207,7 +207,7 @@ function Composer({ pets, onPublish, isPublishing }: {
 
   if (!expanded) {
     return (
-      <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm">
+      <div className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm">
         <button type="button" onClick={() => setExpanded(true)}
           className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary)/0.12)] text-[hsl(var(--secondary))]"><IcoPencil /></div>
@@ -229,7 +229,7 @@ function Composer({ pets, onPublish, isPublishing }: {
 
   return (
     <form onSubmit={(e) => void submit(e)}
-      className="overflow-hidden rounded-3xl border border-[hsl(var(--secondary)/0.3)] bg-white/90 shadow-sm space-y-3 p-4">
+      className="overflow-hidden rounded-none border border-[hsl(var(--secondary)/0.3)] bg-white/90 shadow-sm space-y-3 p-4">
       <div className="flex flex-wrap gap-2">
         {POST_TYPES.map((t, i) => (
           <button key={t.label} type="button" onClick={() => setTypeIdx(i)}
@@ -275,7 +275,7 @@ function FeedSkeleton() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-4 space-y-3">
+        <div key={i} className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/70 p-4 space-y-3">
           <div className="flex gap-3">
             <div className="h-10 w-10 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
             <div className="flex-1 space-y-1.5 pt-1">
@@ -493,7 +493,7 @@ export default function CommunityPage() {
             {isLoading ? (
               <FeedSkeleton />
             ) : visiblePosts.length === 0 ? (
-              <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
+              <div className="rounded-none border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
                 <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(155_48%_42%/0.1)]">
                   <svg viewBox="0 0 24 24" className="h-6 w-6 text-[hsl(155_48%_38%)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><circle cx="4" cy="8" r="2"/>
@@ -521,7 +521,7 @@ export default function CommunityPage() {
           <aside className="space-y-4">
 
             {/* paseos */}
-            <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
+            <div className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
               <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">Paseos y encuentros</p>
               {isLoading ? (
                 <div className="mt-3 space-y-2">{[1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded-2xl bg-[hsl(var(--muted))]" />)}</div>
@@ -549,7 +549,7 @@ export default function CommunityPage() {
             </div>
 
             {/* noticias y foro */}
-            <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
+            <div className="overflow-hidden rounded-none border border-[hsl(var(--border))] bg-white/85 shadow-sm p-4">
               <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">Novedades</p>
               <div className="mt-3 space-y-1">
                 {news.length === 0
