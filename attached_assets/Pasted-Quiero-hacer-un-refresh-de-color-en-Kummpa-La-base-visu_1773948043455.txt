@@ -1,0 +1,111 @@
+Quiero hacer un refresh de color en Kummpa. La base visual actual va bien, pero la app se siente demasiado apagada, muy beige y con poca energía visual. No quiero un rebrand completo; quiero mantener la identidad actual, pero darle más vida, más contraste emocional y más carácter por módulo.
+
+OBJETIVO
+Mantener:
+- verde oscuro como color principal de marca
+- naranja como acento principal
+- base clara cálida
+
+Pero mejorar:
+- la energía visual general
+- el contraste entre módulos
+- la sensación de app pet más viva, memorable y moderna
+- la diferenciación visual entre secciones
+
+DIRECCIÓN GENERAL
+No quiero una app arcoíris ni saturada. Quiero un refresh elegante:
+- premium
+- cálido
+- vivo
+- amigable
+- con más personalidad visual
+
+CAMBIOS PEDIDOS
+
+1. Mantener el hero principal oscuro y premium
+- conservar la base verde profunda
+- conservar el naranja del titular / CTA
+- mejorar si hace falta los degradados para que se vea más vivo pero sin perder elegancia
+
+2. Dar más identidad de color por módulo
+Quiero que cada gran sección tenga un color de apoyo reconocible, sin romper la coherencia general.
+
+Ejemplo de dirección:
+- Salud → verde menta / verde clínico suave
+- Alertas → coral / rojo suave
+- Comunidad → lavanda o azul violeta suave
+- Marketplace → naranja / durazno
+- Cerca de ti → teal / verde azulado
+- Mis mascotas → verde profundo + menta
+
+No quiero bloques chillones, solo acentos coherentes y mejor diferenciación.
+
+3. Reducir la sensación de beige plano
+La base clara actual puede mantenerse, pero debe sentirse más rica.
+Usar mejor combinación de:
+- crema claro
+- off-white cálido
+- grises cálidos suaves
+- fondos muy sutilmente diferenciados según bloque
+
+4. Mejorar cards y chips
+Las cards no deben sentirse todas del mismo tono apagado.
+Quiero:
+- fondos pastel suaves con más personalidad
+- iconos con mejor contraste
+- badges más claros
+- estados y botones secundarios con colores mejor definidos
+
+5. Mejorar CTAs y acentos
+El naranja debe usarse mejor para:
+- botones principales
+- badges importantes
+- highlights
+- acentos visuales estratégicos
+
+No usarlo por todas partes, pero sí con más intención.
+
+6. Mejorar la sensación general en móvil
+En móvil la app se siente especialmente apagada. Ajustar colores para que en pantallas pequeñas se vea:
+- más viva
+- más clara
+- más moderna
+- más fuerte visualmente
+
+PALETA DE REFERENCIA
+Usar esta dirección como referencia, no como restricción rígida:
+
+Base:
+- crema: #F7F2E9
+- off-white: #FCFAF6
+
+Marca:
+- verde profundo: #173F35
+- verde medio: #2E6B57
+- menta: #BFE8D4
+
+Acento:
+- naranja: #F58A3A
+- durazno: #F6C7A4
+
+Apoyo:
+- lavanda: #D9D2F3
+- azul suave: #CFE5F7
+- coral alerta: #F29A8A
+
+IMPORTANTE
+- no rehacer toda la identidad
+- no volver la app demasiado colorida
+- no usar saturación alta
+- mantener una sensación premium y ordenada
+- hacer un refresh, no un cambio de marca completo
+
+RESULTADO ESPERADO
+Quiero que Kummpa se vea:
+- más viva
+- más memorable
+- más cálida
+- más moderna
+- más clara visualmente
+- con mejor identidad por módulo
+- sin perder la elegancia actual

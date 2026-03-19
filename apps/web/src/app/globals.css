@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --background: 34 55% 96%;
+  --background: 36 44% 96.5%;
   --foreground: 164 27% 13%;
   --card: 0 0% 100%;
   --card-foreground: 164 27% 13%;
-  --muted: 36 28% 91%;
-  --muted-foreground: 160 11% 38%;
-  --border: 32 24% 84%;
+  --muted: 38 30% 91%;
+  --muted-foreground: 160 12% 40%;
+  --border: 34 20% 83%;
   --primary: 164 30% 18%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 155 48% 42%;
+  --secondary: 155 52% 40%;
   --secondary-foreground: 0 0% 100%;
   --accent: 22 92% 60%;
   --accent-foreground: 22 52% 18%;
@@ -20,6 +20,47 @@
   --destructive-foreground: 0 0% 100%;
   --ring: 22 92% 60%;
   --radius: 1.15rem;
+
+  /* ── Module accent tokens ───────────────────────── */
+  --mod-health-bg:      152 50% 93%;
+  --mod-health-border:  152 38% 81%;
+  --mod-health-icon:    152 54% 82%;
+  --mod-health-text:    152 50% 24%;
+
+  --mod-alert-bg:       6 70% 94%;
+  --mod-alert-border:   6 56% 84%;
+  --mod-alert-icon:     6 66% 86%;
+  --mod-alert-text:     6 60% 40%;
+
+  --mod-community-bg:   268 46% 94%;
+  --mod-community-border: 268 36% 83%;
+  --mod-community-icon: 268 48% 86%;
+  --mod-community-text: 268 38% 36%;
+
+  --mod-market-bg:      22 86% 95%;
+  --mod-market-border:  22 64% 86%;
+  --mod-market-icon:    22 84% 86%;
+  --mod-market-text:    22 66% 32%;
+
+  --mod-nearby-bg:      174 50% 93%;
+  --mod-nearby-border:  174 38% 81%;
+  --mod-nearby-icon:    174 52% 83%;
+  --mod-nearby-text:    174 46% 24%;
+
+  --mod-pets-bg:        163 40% 93%;
+  --mod-pets-border:    163 30% 81%;
+  --mod-pets-icon:      163 42% 84%;
+  --mod-pets-text:      163 38% 24%;
+
+  --mod-benefits-bg:    38 78% 93%;
+  --mod-benefits-border: 38 62% 82%;
+  --mod-benefits-icon:  38 76% 84%;
+  --mod-benefits-text:  38 68% 30%;
+
+  --mod-nfc-bg:         248 50% 94%;
+  --mod-nfc-border:     248 38% 83%;
+  --mod-nfc-icon:       248 52% 86%;
+  --mod-nfc-text:       248 44% 38%;
 }
 
 *,
@@ -42,10 +83,12 @@ html {
 body {
   font-family: var(--font-body), "Segoe UI", system-ui, sans-serif;
   background:
-    radial-gradient(circle at top left, hsl(var(--accent) / 0.16), transparent 28%),
-    radial-gradient(circle at top right, hsl(var(--secondary) / 0.14), transparent 24%),
-    radial-gradient(circle at bottom left, hsl(var(--primary) / 0.08), transparent 26%),
-    linear-gradient(180deg, hsl(34 56% 97%) 0%, hsl(34 44% 93%) 100%);
+    radial-gradient(circle at 6% 10%, hsl(var(--accent) / 0.20), transparent 30%),
+    radial-gradient(circle at 94% 7%, hsl(174 50% 66% / 0.15), transparent 28%),
+    radial-gradient(circle at 12% 74%, hsl(var(--primary) / 0.10), transparent 28%),
+    radial-gradient(circle at 88% 84%, hsl(248 48% 70% / 0.10), transparent 26%),
+    radial-gradient(circle at 50% 50%, hsl(38 60% 90% / 0.18), transparent 50%),
+    linear-gradient(160deg, hsl(36 52% 97%) 0%, hsl(35 42% 94%) 55%, hsl(164 18% 95%) 100%);
   color: hsl(var(--foreground));
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -58,8 +101,8 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, hsl(0 0% 100% / 0.12), transparent 18%),
-    radial-gradient(circle at 20% 0%, hsl(var(--accent) / 0.08), transparent 24%);
+    linear-gradient(180deg, hsl(0 0% 100% / 0.14), transparent 18%),
+    radial-gradient(circle at 22% 0%, hsl(var(--accent) / 0.09), transparent 24%);
   opacity: 0.9;
 }
 
@@ -155,12 +198,12 @@ button {
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(164 33% 24%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(164 34% 24%) 100%);
     color: hsl(var(--primary-foreground));
   }
 
   .btn-primary:hover {
-    box-shadow: 0 14px 30px hsl(var(--primary) / 0.22);
+    box-shadow: 0 14px 30px hsl(var(--primary) / 0.26);
     transform: translateY(-1px);
   }
 
@@ -170,7 +213,7 @@ button {
   }
 
   .btn-secondary:hover {
-    box-shadow: 0 14px 30px hsl(var(--accent) / 0.22);
+    box-shadow: 0 14px 30px hsl(var(--accent) / 0.26);
     transform: translateY(-1px);
   }
 
@@ -198,12 +241,12 @@ button {
 
   .card {
     background:
-      linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.9));
+      linear-gradient(180deg, hsl(var(--card) / 0.97), hsl(var(--card) / 0.91));
     border: 1px solid hsl(var(--border));
     border-radius: calc(var(--radius) * 1.5);
     box-shadow:
       0 18px 46px hsl(var(--foreground) / 0.08),
-      inset 0 1px 0 hsl(0 0% 100% / 0.7);
+      inset 0 1px 0 hsl(0 0% 100% / 0.72);
     backdrop-filter: blur(10px);
     transition:
       transform 180ms ease,
@@ -234,12 +277,12 @@ button {
     justify-content: center;
     border: none;
     border-radius: 999px;
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(164 33% 24%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(164 34% 24%) 100%);
     color: hsl(var(--primary-foreground));
     padding: 0 1.2rem;
     font-size: 0.875rem;
     font-weight: 700;
-    box-shadow: 0 12px 28px hsl(var(--primary) / 0.18);
+    box-shadow: 0 12px 28px hsl(var(--primary) / 0.20);
     transition: transform 100ms ease, box-shadow 150ms ease;
   }
 
@@ -302,7 +345,7 @@ button {
     border-radius: calc(var(--radius) * 1.55);
     border: 1px solid hsl(var(--border));
     background:
-      linear-gradient(180deg, hsl(var(--card) / 0.82), hsl(var(--card) / 0.7));
+      linear-gradient(180deg, hsl(var(--card) / 0.82), hsl(var(--card) / 0.70));
     box-shadow:
       0 14px 34px hsl(var(--foreground) / 0.07),
       inset 0 1px 0 hsl(0 0% 100% / 0.62);
@@ -323,8 +366,8 @@ button {
     align-items: center;
     gap: 0.4rem;
     border-radius: 999px;
-    border: 1px solid hsl(var(--accent) / 0.18);
-    background: hsl(var(--accent) / 0.12);
+    border: 1px solid hsl(var(--accent) / 0.22);
+    background: hsl(var(--accent) / 0.14);
     padding: 0.3rem 0.7rem;
     font-size: 0.72rem;
     font-weight: 700;
@@ -345,7 +388,7 @@ button {
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    box-shadow: 0 10px 24px hsl(var(--accent) / 0.24);
+    box-shadow: 0 10px 24px hsl(var(--accent) / 0.26);
     animation: kumpa-glow 2.2s ease-in-out infinite;
   }
 
@@ -363,8 +406,8 @@ button {
   }
 
   .kumpa-status-success {
-    background: hsl(148 50% 92%);
-    color: hsl(148 48% 24%);
+    background: hsl(148 50% 91%);
+    color: hsl(148 50% 22%);
   }
 
   .kumpa-status-warning {
@@ -383,7 +426,7 @@ button {
     border-radius: calc(var(--radius) * 1.45);
     border: 1px solid hsl(var(--border));
     background:
-      radial-gradient(circle at top right, hsl(var(--accent) / 0.14), transparent 36%),
+      radial-gradient(circle at top right, hsl(var(--accent) / 0.16), transparent 36%),
       linear-gradient(180deg, hsl(var(--card) / 0.98), hsl(var(--card) / 0.92));
     box-shadow:
       0 18px 40px hsl(var(--foreground) / 0.09),
@@ -407,15 +450,49 @@ button {
       0 0 0 1px hsl(var(--accent) / 0.14),
       0 18px 40px hsl(var(--accent) / 0.16);
   }
+
+  /* ── Module surface classes ─────────────────────── */
+  .kumpa-module-health {
+    background: linear-gradient(135deg, hsl(var(--mod-health-bg)), hsl(152 42% 89%));
+    border-color: hsl(var(--mod-health-border));
+  }
+  .kumpa-module-alert {
+    background: linear-gradient(135deg, hsl(var(--mod-alert-bg)), hsl(6 58% 90%));
+    border-color: hsl(var(--mod-alert-border));
+  }
+  .kumpa-module-community {
+    background: linear-gradient(135deg, hsl(var(--mod-community-bg)), hsl(268 38% 90%));
+    border-color: hsl(var(--mod-community-border));
+  }
+  .kumpa-module-marketplace {
+    background: linear-gradient(135deg, hsl(var(--mod-market-bg)), hsl(22 72% 91%));
+    border-color: hsl(var(--mod-market-border));
+  }
+  .kumpa-module-nearby {
+    background: linear-gradient(135deg, hsl(var(--mod-nearby-bg)), hsl(174 42% 89%));
+    border-color: hsl(var(--mod-nearby-border));
+  }
+  .kumpa-module-pets {
+    background: linear-gradient(135deg, hsl(var(--mod-pets-bg)), hsl(163 34% 89%));
+    border-color: hsl(var(--mod-pets-border));
+  }
+  .kumpa-module-benefits {
+    background: linear-gradient(135deg, hsl(var(--mod-benefits-bg)), hsl(38 66% 89%));
+    border-color: hsl(var(--mod-benefits-border));
+  }
+  .kumpa-module-nfc {
+    background: linear-gradient(135deg, hsl(var(--mod-nfc-bg)), hsl(248 42% 90%));
+    border-color: hsl(var(--mod-nfc-border));
+  }
 }
 
 @keyframes kumpa-glow {
   0%,
   100% {
-    box-shadow: 0 10px 24px hsl(var(--accent) / 0.24);
+    box-shadow: 0 10px 24px hsl(var(--accent) / 0.26);
   }
   50% {
-    box-shadow: 0 14px 30px hsl(var(--accent) / 0.34);
+    box-shadow: 0 14px 30px hsl(var(--accent) / 0.38);
   }
 }
 

@@ -94,12 +94,51 @@ function IcoChevronLeft() {
 }
 
 /* ─── Data ───────────────────────────────────────────────────── */
-const QUICK_NAV = [
-  { label: "Mapa",        href: "/explore",    Icon: IcoMap      },
-  { label: "Mis mascotas",href: "/pets",        Icon: IcoPaw      },
-  { label: "Alertas",     href: "/lost-pets",  Icon: IcoBell     },
-  { label: "Beneficios",  href: "/benefits",   Icon: IcoTag      },
-  { label: "Marketplace", href: "/marketplace",Icon: IcoBag      },
+
+interface QuickNavItem {
+  label: string;
+  href: string;
+  Icon: React.FC;
+  iconColor: string;
+  pillBg: string;
+}
+
+const QUICK_NAV: QuickNavItem[] = [
+  {
+    label: "Mapa",
+    href: "/explore",
+    Icon: IcoMap,
+    iconColor: "text-[hsl(174_46%_26%)]",
+    pillBg: "bg-[hsl(174_50%_93%)] border-[hsl(174_36%_82%)]",
+  },
+  {
+    label: "Mis mascotas",
+    href: "/pets",
+    Icon: IcoPaw,
+    iconColor: "text-[hsl(163_40%_26%)]",
+    pillBg: "bg-[hsl(163_40%_93%)] border-[hsl(163_28%_82%)]",
+  },
+  {
+    label: "Alertas",
+    href: "/lost-pets",
+    Icon: IcoBell,
+    iconColor: "text-[hsl(6_64%_40%)]",
+    pillBg: "bg-[hsl(6_68%_95%)] border-[hsl(6_52%_84%)]",
+  },
+  {
+    label: "Beneficios",
+    href: "/benefits",
+    Icon: IcoTag,
+    iconColor: "text-[hsl(38_72%_30%)]",
+    pillBg: "bg-[hsl(38_78%_93%)] border-[hsl(38_60%_82%)]",
+  },
+  {
+    label: "Marketplace",
+    href: "/marketplace",
+    Icon: IcoBag,
+    iconColor: "text-[hsl(22_66%_32%)]",
+    pillBg: "bg-[hsl(22_84%_94%)] border-[hsl(22_62%_84%)]",
+  },
 ];
 
 interface FeatureDef {
@@ -118,13 +157,13 @@ const FEATURES: FeatureDef[] = [
   {
     id: "map",
     Icon: IcoMap,
-    label: "Mapa",
+    label: "Cerca de ti",
     title: "Vets, tiendas y parques cerca",
     href: "/explore",
     cta: "Abrir mapa",
-    accent: "bg-[hsl(155_48%_42%/0.08)]",
-    iconBg: "bg-[hsl(155_48%_42%/0.15)] text-[hsl(155_48%_30%)]",
-    ctaStyle: "text-[hsl(155_48%_32%)] bg-[hsl(155_48%_42%/0.12)] hover:bg-[hsl(155_48%_42%/0.2)]",
+    accent: "bg-gradient-to-br from-[hsl(174_52%_93%)] to-[hsl(174_44%_89%)] border-[hsl(174_38%_82%)]",
+    iconBg: "bg-[hsl(174_52%_83%)] text-[hsl(174_48%_22%)]",
+    ctaStyle: "text-[hsl(174_48%_22%)] bg-[hsl(174_52%_84%)] hover:bg-[hsl(174_52%_78%)]",
   },
   {
     id: "vaccines",
@@ -133,9 +172,9 @@ const FEATURES: FeatureDef[] = [
     title: "Carnet de vacunas digital",
     href: "/pets",
     cta: "Ver carnet",
-    accent: "bg-[hsl(22_92%_60%/0.07)]",
-    iconBg: "bg-[hsl(22_92%_60%/0.14)] text-[hsl(22_62%_38%)]",
-    ctaStyle: "text-[hsl(22_62%_38%)] bg-[hsl(22_92%_60%/0.12)] hover:bg-[hsl(22_92%_60%/0.2)]",
+    accent: "bg-gradient-to-br from-[hsl(152_52%_93%)] to-[hsl(152_44%_89%)] border-[hsl(152_38%_81%)]",
+    iconBg: "bg-[hsl(152_54%_83%)] text-[hsl(152_50%_22%)]",
+    ctaStyle: "text-[hsl(152_50%_22%)] bg-[hsl(152_54%_84%)] hover:bg-[hsl(152_54%_77%)]",
   },
   {
     id: "nfc",
@@ -144,9 +183,9 @@ const FEATURES: FeatureDef[] = [
     title: "ID con chip NFC para tu mascota",
     href: "/pets",
     cta: "Más info",
-    accent: "bg-[hsl(240_60%_58%/0.07)]",
-    iconBg: "bg-[hsl(240_60%_58%/0.12)] text-[hsl(240_60%_42%)]",
-    ctaStyle: "text-[hsl(240_60%_42%)] bg-[hsl(240_60%_58%/0.1)] hover:bg-[hsl(240_60%_58%/0.18)]",
+    accent: "bg-gradient-to-br from-[hsl(248_52%_94%)] to-[hsl(248_44%_90%)] border-[hsl(248_38%_83%)]",
+    iconBg: "bg-[hsl(248_54%_85%)] text-[hsl(248_46%_36%)]",
+    ctaStyle: "text-[hsl(248_46%_36%)] bg-[hsl(248_54%_86%)] hover:bg-[hsl(248_54%_79%)]",
   },
   {
     id: "community",
@@ -155,9 +194,9 @@ const FEATURES: FeatureDef[] = [
     title: "Perfil para tu mascota y tu barrio",
     href: "/community",
     cta: "Cerca de ti",
-    accent: "bg-[hsl(164_30%_18%/0.05)]",
-    iconBg: "bg-[hsl(164_30%_18%/0.1)] text-[hsl(164_30%_20%)]",
-    ctaStyle: "text-[hsl(164_30%_20%)] bg-[hsl(164_30%_18%/0.08)] hover:bg-[hsl(164_30%_18%/0.14)]",
+    accent: "bg-gradient-to-br from-[hsl(270_44%_94%)] to-[hsl(270_36%_90%)] border-[hsl(270_30%_83%)]",
+    iconBg: "bg-[hsl(270_46%_85%)] text-[hsl(270_38%_34%)]",
+    ctaStyle: "text-[hsl(270_38%_34%)] bg-[hsl(270_46%_86%)] hover:bg-[hsl(270_46%_79%)]",
   },
   {
     id: "marketplace",
@@ -166,16 +205,17 @@ const FEATURES: FeatureDef[] = [
     title: "Compra y vende entre dueños",
     href: "/marketplace",
     cta: "Ver productos",
-    accent: "bg-[hsl(155_48%_42%/0.08)]",
-    iconBg: "bg-[hsl(155_48%_42%/0.15)] text-[hsl(155_48%_30%)]",
-    ctaStyle: "text-[hsl(155_48%_32%)] bg-[hsl(155_48%_42%/0.12)] hover:bg-[hsl(155_48%_42%/0.2)]",
+    accent: "bg-gradient-to-br from-[hsl(22_88%_95%)] to-[hsl(22_76%_91%)] border-[hsl(22_64%_85%)]",
+    iconBg: "bg-[hsl(22_86%_85%)] text-[hsl(22_68%_30%)]",
+    ctaStyle: "text-[hsl(22_68%_30%)] bg-[hsl(22_86%_86%)] hover:bg-[hsl(22_86%_79%)]",
   },
 ];
 
 interface NewsItem {
   id: string;
   category: string;
-  categoryColor: string;
+  categoryBg: string;
+  categoryText: string;
   title: string;
   date: string;
   readMin: number;
@@ -185,7 +225,8 @@ const NEWS: NewsItem[] = [
   {
     id: "1",
     category: "Salud",
-    categoryColor: "bg-teal-100 text-teal-800",
+    categoryBg: "bg-[hsl(152_52%_88%)]",
+    categoryText: "text-[hsl(152_50%_22%)]",
     title: "¿Con qué frecuencia debe ir tu perro al veterinario?",
     date: "14 mar 2026",
     readMin: 4,
@@ -193,7 +234,8 @@ const NEWS: NewsItem[] = [
   {
     id: "2",
     category: "Nutrición",
-    categoryColor: "bg-orange-100 text-orange-800",
+    categoryBg: "bg-[hsl(22_84%_90%)]",
+    categoryText: "text-[hsl(22_66%_30%)]",
     title: "Alimentos prohibidos que todo dueño de gato debe conocer",
     date: "11 mar 2026",
     readMin: 3,
@@ -201,7 +243,8 @@ const NEWS: NewsItem[] = [
   {
     id: "3",
     category: "Tendencias",
-    categoryColor: "bg-violet-100 text-violet-800",
+    categoryBg: "bg-[hsl(270_46%_90%)]",
+    categoryText: "text-[hsl(270_38%_34%)]",
     title: "Los barrios más pet-friendly para vivir con mascotas",
     date: "8 mar 2026",
     readMin: 5,
@@ -253,7 +296,6 @@ export function HomeHub() {
   const [isPaused, setIsPaused] = useState(false);
   const typingPlaceholder = useTypingPlaceholder(SEARCH_PHRASES);
 
-  /* Auto-rotate carousel */
   const advance = useCallback(() => {
     setCarouselIndex((prev) => (prev + 1) % FEATURES.length);
   }, []);
@@ -289,30 +331,34 @@ export function HomeHub() {
   return (
     <div className="pb-16">
 
-      {/* ── Hero — full-width, breaks out of shell container ──── */}
-      <section className="relative -mx-4 -mt-5 overflow-hidden bg-[hsl(var(--primary))] px-4 pb-24 pt-20 text-white sm:-mx-6 sm:-mt-7 sm:px-6 sm:pb-28 sm:pt-24 lg:-mx-8 lg:px-8">
-        {/* Glow blobs — kept away from bottom edge */}
-        <div aria-hidden className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-[hsl(22_92%_60%/0.22)] blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -left-28 top-1/3 h-80 w-80 rounded-full bg-[hsl(155_60%_40%/0.2)] blur-3xl" />
+      {/* ── Hero — richer gradient with vivid glows ────────────── */}
+      <section className="relative -mx-4 -mt-5 overflow-hidden px-4 pb-24 pt-20 text-white sm:-mx-6 sm:-mt-7 sm:px-6 sm:pb-28 sm:pt-24 lg:-mx-8 lg:px-8"
+        style={{ background: "linear-gradient(160deg, hsl(164 34% 16%) 0%, hsl(164 30% 18%) 50%, hsl(164 28% 14%) 100%)" }}>
 
-        {/* Content centered inside the full-width hero */}
+        {/* Vivid orange glow — top right */}
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-16 h-[32rem] w-[32rem] rounded-full bg-[hsl(22_92%_60%/0.30)] blur-3xl" />
+        {/* Teal glow — left */}
+        <div aria-hidden className="pointer-events-none absolute -left-24 top-1/4 h-96 w-96 rounded-full bg-[hsl(155_62%_42%/0.26)] blur-3xl" />
+        {/* Lavender glow — bottom center */}
+        <div aria-hidden className="pointer-events-none absolute bottom-4 left-1/2 h-48 w-[500px] -translate-x-1/2 rounded-full bg-[hsl(248_52%_62%/0.14)] blur-3xl" />
+
         <div className="relative mx-auto flex max-w-2xl flex-col items-center text-center">
-          <span className="mb-6 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/75 backdrop-blur-sm">
+          <span className="mb-6 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-sm">
             Todo para tu mascota en un solo lugar
           </span>
 
           <h1 className="text-[2.5rem] font-bold leading-[1.07] tracking-tight sm:text-[3.4rem]">
             Tu mascota,{" "}
-            <span className="text-[hsl(var(--accent))]">más protegida.</span>
+            <span className="text-[hsl(22_92%_64%)]">más protegida.</span>
           </h1>
 
-          <p className="mt-5 max-w-sm text-[1rem] leading-relaxed text-white/55">
+          <p className="mt-5 max-w-sm text-[1rem] leading-relaxed text-white/60">
             Salud, comunidad, alertas y beneficios — desde una sola app.
           </p>
 
           {/* Search bar */}
           <form onSubmit={handleSearch} className="relative mt-9 w-full max-w-md">
-            <div className="flex overflow-hidden rounded-2xl bg-white shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+            <div className="flex overflow-hidden rounded-2xl bg-white shadow-[0_8px_40px_rgba(0,0,0,0.28)]">
               <div className="relative flex-1">
                 <input
                   value={searchQuery}
@@ -343,19 +389,19 @@ export function HomeHub() {
         </div>
       </section>
 
-      {/* ── Rest of content in centered container ─────────────── */}
+      {/* ── Rest in centered container ─────────────────────────── */}
       <div className="mx-auto max-w-5xl space-y-8 pt-4">
 
-      {/* ── Quick nav pills ───────────────────────────────────── */}
+      {/* ── Quick nav pills (each with module color) ───────────── */}
       <nav>
         <div className="flex justify-center gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {QUICK_NAV.map(({ label, href, Icon }) => (
+          {QUICK_NAV.map(({ label, href, Icon, iconColor, pillBg }) => (
             <Link
               key={label}
               href={href}
-              className="flex shrink-0 items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-white/70 px-4 py-2 text-sm font-medium text-[hsl(var(--foreground))] backdrop-blur transition hover:border-[hsl(var(--secondary)/0.4)] hover:bg-white active:scale-95"
+              className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-[hsl(var(--foreground))] transition hover:shadow-sm active:scale-95 ${pillBg}`}
             >
-              <span className="text-[hsl(var(--secondary))]"><Icon /></span>
+              <span className={iconColor}><Icon /></span>
               {label}
             </Link>
           ))}
@@ -418,7 +464,7 @@ export function HomeHub() {
             <Link
               key={f.id}
               href={f.href}
-              className={`group flex w-[264px] shrink-0 flex-col rounded-[1.5rem] border border-[hsl(var(--border))] p-5 transition hover:shadow-lg active:scale-[0.97] ${f.accent}`}
+              className={`group flex w-[264px] shrink-0 flex-col rounded-[1.5rem] border p-5 shadow-sm transition hover:shadow-md active:scale-[0.97] ${f.accent}`}
               style={{ scrollSnapAlign: "start" }}
             >
               <div className={`mb-4 inline-flex rounded-xl p-2.5 ${f.iconBg}`}>
@@ -441,39 +487,41 @@ export function HomeHub() {
 
       {/* ── Two highlight blocks ──────────────────────────────── */}
       <section className="grid gap-4 sm:grid-cols-2">
+        {/* Alert block — coral */}
         <Link
           href="/lost-pets"
-          className="group relative overflow-hidden rounded-[1.75rem] border border-[hsl(4_74%_58%/0.2)] bg-[hsl(4_74%_58%/0.08)] p-6 transition hover:shadow-lg active:scale-[0.98]"
+          className="group relative overflow-hidden rounded-[1.75rem] border border-[hsl(6_56%_82%)] bg-gradient-to-br from-[hsl(6_70%_94%)] to-[hsl(6_58%_90%)] p-6 transition hover:shadow-lg active:scale-[0.98]"
         >
-          <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[hsl(4_74%_58%/0.12)] blur-2xl" />
+          <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[hsl(6_70%_62%/0.18)] blur-2xl" />
           <div className="relative">
-            <div className="mb-4 inline-flex rounded-xl bg-[hsl(4_74%_58%/0.15)] p-3 text-[hsl(4_70%_42%)]">
+            <div className="mb-4 inline-flex rounded-xl bg-[hsl(6_68%_85%)] p-3 text-[hsl(6_62%_36%)]">
               <IcoBell />
             </div>
-            <h3 className="text-lg font-bold">¿Perdiste a tu mascota?</h3>
+            <h3 className="text-lg font-bold text-[hsl(164_27%_13%)]">¿Perdiste a tu mascota?</h3>
             <p className="mt-1.5 text-sm text-[hsl(var(--muted-foreground))]">
               Publica una alerta y la comunidad cercana recibe aviso al instante.
             </p>
-            <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(4_70%_42%)] transition group-hover:gap-2.5">
+            <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(6_60%_36%)] transition group-hover:gap-2.5">
               Ver alertas <IcoArrow />
             </span>
           </div>
         </Link>
 
+        {/* Benefits block — amber/golden */}
         <Link
           href="/benefits"
-          className="group relative overflow-hidden rounded-[1.75rem] border border-[hsl(45_90%_55%/0.22)] bg-[hsl(45_90%_55%/0.08)] p-6 transition hover:shadow-lg active:scale-[0.98]"
+          className="group relative overflow-hidden rounded-[1.75rem] border border-[hsl(38_62%_80%)] bg-gradient-to-br from-[hsl(38_80%_93%)] to-[hsl(38_68%_89%)] p-6 transition hover:shadow-lg active:scale-[0.98]"
         >
-          <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[hsl(45_90%_55%/0.15)] blur-2xl" />
+          <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[hsl(38_80%_58%/0.20)] blur-2xl" />
           <div className="relative">
-            <div className="mb-4 inline-flex rounded-xl bg-[hsl(45_90%_55%/0.18)] p-3 text-[hsl(45_70%_32%)]">
+            <div className="mb-4 inline-flex rounded-xl bg-[hsl(38_76%_83%)] p-3 text-[hsl(38_68%_28%)]">
               <IcoTag />
             </div>
-            <h3 className="text-lg font-bold">Descuentos en tu zona</h3>
+            <h3 className="text-lg font-bold text-[hsl(164_27%_13%)]">Descuentos en tu zona</h3>
             <p className="mt-1.5 text-sm text-[hsl(var(--muted-foreground))]">
               Convenios con vets, tiendas y servicios. Siempre actualizados.
             </p>
-            <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(45_70%_32%)] transition group-hover:gap-2.5">
+            <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[hsl(38_66%_28%)] transition group-hover:gap-2.5">
               Ver beneficios <IcoArrow />
             </span>
           </div>
@@ -497,9 +545,9 @@ export function HomeHub() {
             <Link
               key={item.id}
               href={`/news/${item.id}`}
-              className="group flex items-center gap-4 rounded-2xl border border-[hsl(var(--border))] bg-white/70 px-5 py-4 transition hover:bg-white hover:shadow-sm active:scale-[0.99]"
+              className="group flex items-center gap-4 rounded-2xl border border-[hsl(var(--border))] bg-white/75 px-5 py-4 transition hover:bg-white hover:shadow-sm active:scale-[0.99]"
             >
-              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${item.categoryColor}`}>
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${item.categoryBg} ${item.categoryText}`}>
                 {item.category}
               </span>
               <p className="flex-1 text-sm font-semibold leading-snug">{item.title}</p>
@@ -511,19 +559,24 @@ export function HomeHub() {
 
       {/* ── Bottom CTA (guests) ───────────────────────────────── */}
       {!isAuthenticated && (
-        <section className="relative overflow-hidden rounded-[1.75rem] border border-[hsl(var(--border))] bg-white/65 px-8 py-10 text-center backdrop-blur-sm">
+        <section className="relative overflow-hidden rounded-[1.75rem] border border-[hsl(164_24%_82%)] px-8 py-10 text-center"
+          style={{ background: "linear-gradient(135deg, hsl(164 30% 96%) 0%, hsl(164 24% 93%) 100%)" }}>
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-full bg-gradient-to-r from-[hsl(var(--secondary))] via-[hsl(var(--accent))] to-[hsl(var(--secondary))]" />
-          <p className="text-2xl font-bold">Únete gratis</p>
-          <p className="mx-auto mt-2 max-w-xs text-sm text-[hsl(var(--muted-foreground))]">
-            Crea el perfil de tu mascota y comienza en menos de 2 minutos.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="rounded-full bg-[hsl(var(--primary))] px-7 py-3 text-sm font-bold text-white shadow transition hover:opacity-90 active:scale-95">
-              Crear cuenta
-            </Link>
-            <Link href="/explore" className="rounded-full border border-[hsl(var(--border))] bg-white px-7 py-3 text-sm font-bold transition hover:bg-[hsl(var(--muted))] active:scale-95">
-              Ver lugares
-            </Link>
+          <div aria-hidden className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-[hsl(22_90%_60%/0.12)] blur-2xl" />
+          <div aria-hidden className="pointer-events-none absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-[hsl(155_50%_42%/0.14)] blur-2xl" />
+          <div className="relative">
+            <p className="text-2xl font-bold">Únete gratis</p>
+            <p className="mx-auto mt-2 max-w-xs text-sm text-[hsl(var(--muted-foreground))]">
+              Crea el perfil de tu mascota y comienza en menos de 2 minutos.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link href="/register" className="rounded-full bg-[hsl(var(--primary))] px-7 py-3 text-sm font-bold text-white shadow transition hover:opacity-90 active:scale-95">
+                Crear cuenta
+              </Link>
+              <Link href="/explore" className="rounded-full border border-[hsl(var(--border))] bg-white px-7 py-3 text-sm font-bold transition hover:bg-[hsl(var(--muted))] active:scale-95">
+                Ver lugares
+              </Link>
+            </div>
           </div>
         </section>
       )}
