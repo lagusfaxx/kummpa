@@ -86,7 +86,7 @@ const groomerProfileBodySchema = z.object({
 export const updateGroomerProfileSchema = groomerProfileBodySchema;
 
 export const createGroomerSchema = groomerProfileBodySchema.extend({
-  userId: z.string().cuid()
+  userId: z.string().cuid().optional()
 });
 
 export const patchGroomerSchema = groomerProfileBodySchema.partial();

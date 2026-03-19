@@ -301,9 +301,15 @@ export async function updateMyGroomerProfile(userId: string, input: UpdateGroome
   return getMyGroomerProfile(userId);
 }
 
-export async function createGroomerProfile(input: CreateGroomerInput) {
+export async function createGroomerProfile(
+  input: CreateGroomerInput,
+  actorUserId: string,
+  actorRole: string
+) {
+  const targetUserId = actorRole === "ADMIN" && input.userId ? input.userId : actorUserId;
+
   const user = await prisma.user.findUnique({
-    where: { id: input.userId },
+    where: { id: targetUserId },
     select: { id: true, role: true }
   });
 
@@ -311,7 +317,11 @@ export async function createGroomerProfile(input: CreateGroomerInput) {
     throw new HttpError(404, "User not found");
   }
 
-  const existing = await prisma.groomerProfile.findUnique({ where: { userId: input.userId } });
+  if (user.role !== "GROOMING") {
+    throw new HttpError(400, "Target user must have the GROOMING role to create a groomer profile");
+  }
+
+  const existing = await prisma.groomerProfile.findUnique({ where: { userId: targetUserId } });
   if (existing) {
     throw new HttpError(409, "Groomer profile already exists for this user");
   }
@@ -339,7 +349,7 @@ export async function createGroomerProfile(input: CreateGroomerInput) {
 
   await prisma.$transaction(async (tx) => {
     const profile = await tx.groomerProfile.create({
-      data: { userId: input.userId, ...profileData }
+      data: { userId: targetUserId, ...profileData }
     });
     groomerId = profile.id;
     await syncGroomerBusinessLocation(tx, profile.id, input);
@@ -348,10 +358,19 @@ export async function createGroomerProfile(input: CreateGroomerInput) {
   return getGroomerById(groomerId!);
 }
 
-export async function patchGroomerById(groomerId: string, input: PatchGroomerInput) {
+export async function patchGroomerById(
+  groomerId: string,
+  input: PatchGroomerInput,
+  actorUserId: string,
+  actorRole: string
+) {
   const groomer = await prisma.groomerProfile.findUnique({ where: { id: groomerId } });
   if (!groomer) {
     throw new HttpError(404, "Groomer not found");
+  }
+
+  if (actorRole !== "ADMIN" && groomer.userId !== actorUserId) {
+    throw new HttpError(403, "You can only update your own groomer profile");
   }
 
   const profileData: Prisma.GroomerProfileUpdateInput = {};

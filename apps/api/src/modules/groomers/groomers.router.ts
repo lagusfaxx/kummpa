@@ -39,11 +39,11 @@ groomersRouter.get(
 groomersRouter.post(
   "/",
   asyncHandler(requireAuth),
-  requireRoles("ADMIN"),
+  requireRoles("GROOMING", "ADMIN"),
   validateRequest(createGroomerSchema),
   asyncHandler(async (req, res) => {
     const payload = req.body as CreateGroomerInput;
-    const data = await createGroomerProfile(payload);
+    const data = await createGroomerProfile(payload, req.authUser!.id, req.authUser!.role);
 
     res.status(201).json({ ok: true, data });
   })
@@ -87,13 +87,13 @@ groomersRouter.get(
 groomersRouter.patch(
   "/:groomerId",
   asyncHandler(requireAuth),
-  requireRoles("ADMIN"),
+  requireRoles("GROOMING", "ADMIN"),
   validateRequest(groomerParamsSchema, "params"),
   validateRequest(patchGroomerSchema),
   asyncHandler(async (req, res) => {
     const { groomerId } = req.params as unknown as GroomerParamsInput;
     const payload = req.body as PatchGroomerInput;
-    const data = await patchGroomerById(groomerId, payload);
+    const data = await patchGroomerById(groomerId, payload, req.authUser!.id, req.authUser!.role);
 
     res.status(200).json({ ok: true, data });
   })
