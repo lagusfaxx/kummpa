@@ -570,7 +570,7 @@ function MobileCardStrip({
                     scrollSnapAlign: "center",
                     flexShrink: 0,
                     width: "min(76vw, 280px)",
-                    borderRadius: "16px",
+                    borderRadius: "0px",
                     border: active ? `2px solid ${cat.color}` : "2px solid transparent",
                     boxShadow: active
                       ? `0 4px 16px -4px ${cat.color}55`
