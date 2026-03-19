@@ -1,0 +1,57 @@
+La sección actual “Identidad digital QR/NFC” se siente extraña y poco clara. Quiero replantearla para que su propósito sea mucho más evidente y útil.
+
+PROBLEMA ACTUAL
+- La sección mezcla demasiadas ideas.
+- El QR sí tiene sentido, pero el concepto completo de “identidad digital QR/NFC” se siente inflado y confuso.
+- “Estado de emergencia” no se entiende bien como protagonista.
+- El campo NFC genera ruido si todavía no existe un flujo físico claro.
+- Hay demasiados checkboxes y configuración visible al mismo tiempo.
+- La experiencia se siente más formulario que herramienta útil.
+
+OBJETIVO
+Quiero convertir esta sección en algo más claro, útil y directo, enfocado principalmente en:
+- QR descargable
+- perfil público de emergencia
+- información visible al escanear
+- compartir / imprimir
+
+NUEVA DIRECCIÓN
+
+1. Renombrar la sección con algo más claro, por ejemplo:
+- QR y perfil de emergencia
+- Perfil público y QR
+- QR de identificación
+Elegir el naming más claro y útil.
+
+2. Priorizar acciones principales:
+- Descargar QR
+- Copiar enlace
+- Ver perfil público
+- Imprimir ficha
+
+3. Mostrar una vista previa del perfil público.
+Quiero que el usuario entienda qué verá otra persona al escanear el QR.
+
+4. Reorganizar la configuración de visibilidad por grupos más claros:
+- información básica
+- información médica
+- ayuda rápida
+
+5. Reducir la sensación de formulario largo.
+Menos configuración plana, más bloques útiles y mejor jerarquía.
+
+6. Revisar el campo “Estado de emergencia”.
+Si no tiene una utilidad clara, reducir su protagonismo o replantearlo para que tenga sentido real.
+Ejemplo:
+- Normal
+- Requiere medicación
+- Alergias importantes
+- Contactar urgente
+
+7. El campo NFC no debe sentirse protagonista si aún no hay flujo físico real.
+Puede quedar como secundario, opcional o incluso como “próximamente”.
+
+8. Mantener la funcionalidad actual, pero hacer que la experiencia se entienda mejor y se vea más útil, simple y premium.
+
+ENTREGABLE
+Quiero una versión más clara de esta sección, centrada en QR + perfil público de emergencia, con mejor jerarquía, menos ruido y más utilidad real.
