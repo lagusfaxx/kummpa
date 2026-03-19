@@ -25,6 +25,30 @@ function IcoUser() {
   );
 }
 
+function BrandLogo() {
+  return (
+    <span className="flex items-center gap-2 select-none">
+      {/* Shield icon — overflow-hidden + scale crops the padding */}
+      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden">
+        <Image
+          src="/brand/logo-sin-titulo.png"
+          alt=""
+          fill
+          sizes="36px"
+          priority
+          className="object-contain scale-[1.55]"
+        />
+      </span>
+      {/* Wordmark — real HTML text, always readable */}
+      <span className="font-display text-[21px] font-black leading-none tracking-tight">
+        <span className="text-[hsl(164_42%_30%)]">Ku</span>
+        <span className="text-[hsl(var(--accent))]">MM</span>
+        <span className="text-[hsl(164_42%_30%)]">pa</span>
+      </span>
+    </span>
+  );
+}
+
 export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -52,34 +76,13 @@ export function TopNav() {
       <div className="safe-area-x relative mx-auto flex h-[62px] max-w-7xl items-center px-4 sm:px-6 md:h-[64px] md:gap-6 lg:px-8">
 
         {/* ── Logo ─────────────────────────────────────────────────────
-            Mobile:  absolute-centered, larger
-            Desktop: static in flex flow, left-aligned               */}
+            Mobile:  absolutely centered in the bar
+            Desktop: static left in flex flow                        */}
         <Link
           href="/"
-          className="absolute left-1/2 flex -translate-x-1/2 items-center md:static md:shrink-0 md:translate-x-0"
+          className="absolute left-1/2 -translate-x-1/2 md:static md:shrink-0 md:translate-x-0"
         >
-          {/* Mobile logo (bigger, centered) */}
-          <div className="relative h-12 w-[164px] md:hidden">
-            <Image
-              src="/brand/logo-con-titulo.png"
-              alt="Kummpa"
-              fill
-              sizes="164px"
-              priority
-              className="select-none object-contain"
-            />
-          </div>
-          {/* Desktop logo (normal left-anchored) */}
-          <div className="relative hidden h-11 w-[150px] md:block">
-            <Image
-              src="/brand/logo-con-titulo.png"
-              alt="Kummpa"
-              fill
-              sizes="150px"
-              priority
-              className="select-none object-contain object-left"
-            />
-          </div>
+          <BrandLogo />
         </Link>
 
         {/* ── Center nav (desktop only) ─────────────────────────────── */}
@@ -160,7 +163,7 @@ export function TopNav() {
             </div>
           )}
 
-          {/* Mobile — unauthenticated only (logo is centered, CTA at right) */}
+          {/* Mobile — unauthenticated CTA at right edge */}
           {!isAuthenticated && !isAuthRoute(pathname) && (
             <div className="flex items-center md:hidden">
               <Link
