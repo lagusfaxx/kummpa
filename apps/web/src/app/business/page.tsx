@@ -21,8 +21,8 @@ import type {
   ScheduleAvailability,
   ScheduleAvailabilityWriteItem,
 } from "@/features/appointments/types";
-import { getMyProfile, updateVetProfile } from "@/features/profiles/profiles-api";
-import type { MyProfile, VetProfile } from "@/features/profiles/types";
+import { getMyProfile, updateGroomerProfile, updateVetProfile } from "@/features/profiles/profiles-api";
+import type { GroomerProfile, MyProfile, VetProfile } from "@/features/profiles/types";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 function fmtClp(cents: number) {
@@ -571,6 +571,330 @@ function VetDashboard({ profile, token }: { profile: MyProfile; token: string })
   );
 }
 
+/* ─── Groomer: Resumen ─────────────────────────────────────────── */
+function SectionResumenGroomer({ appointments, groomer }: { appointments: AppointmentRecord[]; groomer?: GroomerProfile | null }) {
+  const pending   = appointments.filter(a => a.status === "PENDING").length;
+  const confirmed = appointments.filter(a => a.status === "CONFIRMED").length;
+  const completed = appointments.filter(a => a.status === "COMPLETED").length;
+  const today = new Date().toDateString();
+  const todayAppts = appointments.filter(a => new Date(a.scheduledAt).toDateString() === today).length;
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Resumen de tu peluquería" subtitle="Vista general del estado de tu negocio en Kummpa" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="Pendientes" value={pending} color="amber" />
+        <StatCard label="Confirmadas" value={confirmed} color="green" />
+        <StatCard label="Hoy" value={todayAppts} color="blue" />
+        <StatCard label="Completadas" value={completed} color="slate" />
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">Estado de la peluquería</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
+            <span className={`h-2.5 w-2.5 rounded-full ${groomer?.businessName ? "bg-teal-500" : "bg-slate-300"}`} />
+            <div>
+              <p className="text-sm font-semibold text-slate-800">{groomer?.businessName ?? "Sin nombre de negocio"}</p>
+              <p className="text-xs text-slate-500">{groomer?.address ?? "Sin dirección configurada"}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
+            <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-bold text-teal-700">✂ Peluquería</span>
+            <p className="text-xs text-slate-500">{(groomer?.services ?? []).length} servicios configurados</p>
+          </div>
+        </div>
+      </div>
+
+      {appointments.length > 0 && (
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Próximas reservas</p>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {appointments.filter(a => a.status !== "CANCELLED" && a.status !== "REJECTED").slice(0, 5).map(a => (
+              <div key={a.id} className="flex items-center gap-3 px-5 py-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{a.owner.fullName} · {a.pet.name}</p>
+                  <p className="text-xs text-slate-500">{fmtDate(a.scheduledAt)} · {a.serviceTypeLabel}</p>
+                </div>
+                <span className={`ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${STATUS_COLORS[a.status] ?? "bg-slate-100 text-slate-600"}`}>
+                  {STATUS_LABELS[a.status] ?? a.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Groomer: Perfil ──────────────────────────────────────────── */
+function SectionPerfilGroomer({ groomer, accessToken, onSaved }: {
+  groomer?: GroomerProfile | null;
+  accessToken: string;
+  onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [form, setForm] = useState({
+    businessName:  groomer?.businessName  ?? "",
+    description:   groomer?.description   ?? "",
+    address:       groomer?.address       ?? "",
+    district:      groomer?.district      ?? "",
+    city:          groomer?.city          ?? "",
+    contactPhone:  groomer?.contactPhone  ?? "",
+    contactEmail:  groomer?.contactEmail  ?? "",
+    websiteUrl:    groomer?.websiteUrl    ?? "",
+    latitude:  groomer?.latitude  ?? null as number | null,
+    longitude: groomer?.longitude ?? null as number | null,
+    photosText: (groomer?.photos ?? []).join("\n"),
+    paymentMethodsText: (groomer?.paymentMethods ?? []).join(", "),
+  });
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const setNum = (k: "latitude" | "longitude") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value.trim();
+    setForm(f => ({ ...f, [k]: v === "" ? null : Number(v) }));
+  };
+
+  async function save() {
+    setSaving(true);
+    try {
+      const photos = form.photosText.split("\n").map(u => u.trim()).filter(u => u.length > 0);
+      const paymentMethods = form.paymentMethodsText.split(",").map(p => p.trim()).filter(p => p.length > 0);
+      await updateGroomerProfile(accessToken, {
+        businessName: form.businessName || undefined,
+        description:  form.description  || undefined,
+        address:      form.address      || undefined,
+        district:     form.district     || undefined,
+        city:         form.city         || undefined,
+        contactPhone: form.contactPhone || undefined,
+        contactEmail: form.contactEmail || undefined,
+        websiteUrl:   form.websiteUrl   || undefined,
+        latitude:     form.latitude     ?? undefined,
+        longitude:    form.longitude    ?? undefined,
+        photos:       photos.length > 0 ? photos : undefined,
+        paymentMethods: paymentMethods.length > 0 ? paymentMethods : undefined,
+      });
+      setOk(true); onSaved();
+      setTimeout(() => setOk(false), 2500);
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Perfil de la peluquería" subtitle="Información pública de tu negocio" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormRow label="Nombre del negocio"><Inp value={form.businessName} onChange={set("businessName")} placeholder="Peluquería Las Mascotas" /></FormRow>
+          <FormRow label="Ciudad"><Inp value={form.city} onChange={set("city")} placeholder="Santiago" /></FormRow>
+          <FormRow label="Comuna"><Inp value={form.district} onChange={set("district")} placeholder="Providencia" /></FormRow>
+          <FormRow label="Dirección"><Inp value={form.address} onChange={set("address")} placeholder="Av. Ejemplo 123" /></FormRow>
+          <FormRow label="Teléfono"><Inp value={form.contactPhone} onChange={set("contactPhone")} placeholder="+56 9 0000 0000" /></FormRow>
+          <FormRow label="Email"><Inp value={form.contactEmail} onChange={set("contactEmail")} type="email" placeholder="hola@peluqueria.cl" /></FormRow>
+          <FormRow label="Sitio web"><Inp value={form.websiteUrl} onChange={set("websiteUrl")} placeholder="https://mipeluqueria.cl" /></FormRow>
+          <FormRow label="Métodos de pago (separados por coma)">
+            <Inp value={form.paymentMethodsText} onChange={set("paymentMethodsText")} placeholder="Efectivo, Tarjeta, Transferencia" />
+          </FormRow>
+        </div>
+        <FormRow label="Descripción del negocio">
+          <Textarea rows={3} value={form.description} onChange={set("description")} placeholder="Contá un poco sobre tu peluquería, especialidades y filosofía..." />
+        </FormRow>
+        <FormRow label="Fotos del negocio (una URL por línea)">
+          <Textarea rows={3} value={form.photosText} onChange={set("photosText")} placeholder={"https://example.com/foto1.jpg\nhttps://example.com/foto2.jpg"} />
+          <p className="text-[11px] text-slate-400">Ingresa las URLs de las fotos de tu peluquería, una por línea</p>
+        </FormRow>
+        <div className="rounded-xl border border-teal-200 bg-teal-50 p-4">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-teal-600 mb-2">📍 Ubicación en el mapa</p>
+          <p className="text-xs text-teal-700 mb-3">Para aparecer en &quot;Cerca de ti&quot; necesitas ingresar tus coordenadas. Puedes obtenerlas desde <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Google Maps</a> haciendo clic derecho sobre tu peluquería → &quot;¿Qué hay aquí?&quot;</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormRow label="Latitud"><Inp type="number" step="any" value={form.latitude ?? ""} onChange={setNum("latitude")} placeholder="-33.4489" /></FormRow>
+            <FormRow label="Longitud"><Inp type="number" step="any" value={form.longitude ?? ""} onChange={setNum("longitude")} placeholder="-70.6693" /></FormRow>
+          </div>
+          {form.latitude && form.longitude && (
+            <p className="mt-2 text-xs text-teal-700">✓ Coordenadas ingresadas: {form.latitude}, {form.longitude}</p>
+          )}
+        </div>
+        {ok && <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">✓ Perfil guardado</div>}
+        <div className="flex justify-end pt-2"><Btn onClick={() => void save()} disabled={saving}>{saving ? "Guardando..." : "Guardar perfil"}</Btn></div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Groomer: Servicios (grooming-specific types) ─────────────── */
+const GROOMER_SERVICE_TYPES = [
+  { value: "GROOMING", label: "Baño y estética" },
+  { value: "OTHER",    label: "Otro" },
+];
+
+function SectionServiciosGroomer({ services, accessToken, onSaved }: {
+  services: ProviderAppointmentService[];
+  accessToken: string;
+  onSaved: (s: ProviderAppointmentService[]) => void;
+}) {
+  const [items, setItems] = useState<ProviderAppointmentServiceWriteItem[]>(
+    services.map((s, i) => ({ title: s.title, description: s.description ?? "", serviceType: s.serviceType, durationMinutes: s.durationMinutes, priceCents: s.priceCents ?? 0, currencyCode: s.currencyCode, isActive: s.isActive, sortOrder: i }))
+  );
+  const [saving, setSaving] = useState(false);
+  const [ok, setOk] = useState(false);
+
+  function addItem() {
+    setItems(cur => [...cur, { title: "", description: "", serviceType: "GROOMING", durationMinutes: 60, priceCents: 0, currencyCode: "CLP", isActive: true, sortOrder: cur.length }]);
+  }
+  function removeItem(idx: number) { setItems(cur => cur.filter((_, i) => i !== idx)); }
+  function updateItem<K extends keyof ProviderAppointmentServiceWriteItem>(idx: number, key: K, val: ProviderAppointmentServiceWriteItem[K]) {
+    setItems(cur => cur.map((item, i) => i === idx ? { ...item, [key]: val } : item));
+  }
+
+  async function save() {
+    setSaving(true);
+    try {
+      const result = await replaceProviderAppointmentServices(accessToken, items);
+      onSaved(result); setOk(true);
+      setTimeout(() => setOk(false), 2500);
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Servicios y precios" subtitle="Define los servicios que ofreces con duración y precio" action={<Btn size="sm" onClick={addItem}>+ Agregar servicio</Btn>} />
+      {items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center">
+          <div className="mx-auto mb-3 text-3xl">✂</div>
+          <p className="font-semibold text-slate-800">Sin servicios configurados</p>
+          <p className="mt-1 text-sm text-slate-500">Agrega los servicios que ofreces para que los clientes puedan reservar.</p>
+          <Btn size="sm" variant="ghost" className="mt-4" onClick={addItem}>Agregar primer servicio</Btn>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {items.map((item, idx) => (
+            <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 grid gap-3 sm:grid-cols-2">
+                  <FormRow label="Nombre del servicio">
+                    <Inp value={item.title} onChange={(e) => updateItem(idx, "title", e.target.value)} placeholder="Ej: Baño completo, Corte de pelo" />
+                  </FormRow>
+                  <FormRow label="Tipo">
+                    <Sel value={item.serviceType} onChange={(e) => updateItem(idx, "serviceType", e.target.value as ProviderAppointmentServiceWriteItem["serviceType"])}>
+                      {GROOMER_SERVICE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </Sel>
+                  </FormRow>
+                  <FormRow label="Duración (min)">
+                    <Inp type="number" min={5} step={5} value={item.durationMinutes} onChange={(e) => updateItem(idx, "durationMinutes", Number(e.target.value))} />
+                  </FormRow>
+                  <FormRow label="Precio (CLP)">
+                    <Inp type="number" min={0} step={500} value={(item.priceCents ?? 0) / 100} onChange={(e) => updateItem(idx, "priceCents", Math.round(Number(e.target.value) * 100))} placeholder="0" />
+                  </FormRow>
+                  <FormRow label="Descripción">
+                    <Inp value={item.description ?? ""} onChange={(e) => updateItem(idx, "description", e.target.value)} placeholder="Ej: Incluye baño, secado y corte de uñas" />
+                  </FormRow>
+                  <div className="flex items-center gap-3 pt-4">
+                    <Toggle checked={item.isActive} onChange={(v) => updateItem(idx, "isActive", v)} label={item.isActive ? "Activo" : "Inactivo"} />
+                  </div>
+                </div>
+                <button onClick={() => removeItem(idx)} className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500">✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {ok && <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">✓ Servicios guardados</div>}
+      {items.length > 0 && <div className="flex justify-end"><Btn onClick={() => void save()} disabled={saving}>{saving ? "Guardando..." : "Guardar servicios"}</Btn></div>}
+    </div>
+  );
+}
+
+/* ─── Groomer nav / Dashboard shell ────────────────────────────── */
+type GroomerSection = "resumen" | "perfil" | "servicios" | "horarios" | "reservas";
+const GROOMER_NAV: { id: GroomerSection; label: string; icon: string }[] = [
+  { id: "resumen",   label: "Resumen",   icon: "◈" },
+  { id: "perfil",    label: "Mi perfil", icon: "✂" },
+  { id: "servicios", label: "Servicios", icon: "🛁" },
+  { id: "horarios",  label: "Horarios",  icon: "🕐" },
+  { id: "reservas",  label: "Reservas",  icon: "📅" },
+];
+
+function GroomerDashboard({ profile, token }: { profile: MyProfile; token: string }) {
+  const groomer = profile.groomerProfile;
+  const [section, setSection] = useState<GroomerSection>("resumen");
+  const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
+  const [services, setServices]         = useState<ProviderAppointmentService[]>([]);
+  const [availability, setAvailability] = useState<ScheduleAvailability[]>([]);
+  const [isLoading, setIsLoading]       = useState(true);
+  const [groomerProfile, setGroomerProfile] = useState<GroomerProfile | null | undefined>(groomer);
+
+  const load = async () => {
+    setIsLoading(true);
+    try {
+      const [apptRows, svcRows, avRows] = await Promise.all([
+        listAppointments(token, { view: "provider", limit: 50 }),
+        listProviderAppointmentServices(token, true),
+        listProviderAvailability(token),
+      ]);
+      setAppointments(apptRows);
+      setServices(svcRows);
+      setAvailability(avRows);
+    } finally { setIsLoading(false); }
+  };
+
+  useEffect(() => { void load(); }, [token]);
+
+  const pending = appointments.filter(a => a.status === "PENDING").length;
+
+  return (
+    <div className="flex min-h-screen gap-0 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      {/* sidebar */}
+      <nav className="w-52 shrink-0 bg-slate-900 py-6">
+        <div className="px-5 mb-6">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Panel peluquería</p>
+          <p className="mt-1 text-sm font-bold text-white truncate">{groomerProfile?.businessName ?? profile.user.firstName}</p>
+        </div>
+        <div className="space-y-0.5 px-3">
+          {GROOMER_NAV.map(item => (
+            <button
+              key={item.id}
+              onClick={() => setSection(item.id)}
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                section === item.id
+                  ? "bg-teal-600 text-white"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <span className="text-base leading-none">{item.icon}</span>
+              {item.label}
+              {item.id === "reservas" && pending > 0 && (
+                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white">{pending}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* main */}
+      <main className="flex-1 overflow-auto p-6">
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1,2,3].map(i => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100" />)}
+          </div>
+        ) : (
+          <>
+            {section === "resumen"   && <SectionResumenGroomer appointments={appointments} groomer={groomerProfile} />}
+            {section === "perfil"    && <SectionPerfilGroomer groomer={groomerProfile} accessToken={token} onSaved={() => void load()} />}
+            {section === "servicios" && <SectionServiciosGroomer services={services} accessToken={token} onSaved={setServices} />}
+            {section === "horarios"  && <SectionHorarios availability={availability} accessToken={token} onSaved={() => void load()} />}
+            {section === "reservas"  && <SectionReservas appointments={appointments} accessToken={token} onRefresh={() => void load()} />}
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
+
 /* ─── Caregiver panel (unchanged) ─────────────────────────────── */
 function WalkerPanel({ profile }: { profile: MyProfile }) {
   return (
@@ -614,6 +938,8 @@ export default function BusinessPage() {
       ) : profile && accessToken ? (
         role === "VET" ? (
           <VetDashboard profile={profile} token={accessToken} />
+        ) : role === "GROOMING" ? (
+          <GroomerDashboard profile={profile} token={accessToken} />
         ) : (
           <WalkerPanel profile={profile} />
         )
