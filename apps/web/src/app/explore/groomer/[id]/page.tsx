@@ -125,6 +125,14 @@ function fmtClp(cents: number) {
   }).format(cents / 100);
 }
 
+function fmtClpDirect(clp: number) {
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  }).format(clp);
+}
+
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 /* ─── Step indicator ─────────────────────────────────────────────── */
@@ -831,7 +839,7 @@ export default function PublicGroomerPage({
                     </p>
                     {svc.price != null && (
                       <span className="text-sm font-black text-teal-700">
-                        {fmtClp(svc.price)}
+                        {fmtClpDirect(svc.price)}
                       </span>
                     )}
                   </div>

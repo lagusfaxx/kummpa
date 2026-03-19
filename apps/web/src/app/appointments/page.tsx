@@ -21,6 +21,10 @@ function AppointmentsRedirect() {
       router.replace(`/explore/shop/${providerId}`);
       return;
     }
+    if (providerId && providerType === "GROOMING") {
+      router.replace(`/explore/groomer/${providerId}`);
+      return;
+    }
     if (providerId) {
       router.replace(`/explore`);
     }
