@@ -49,6 +49,14 @@ function IcoBell() {
     </svg>
   );
 }
+function IcoUser() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
 
 const TABS = [
   { href: "/",           label: "Inicio",    Icon: IcoHome      },
@@ -56,6 +64,7 @@ const TABS = [
   { href: "/pets",       label: "Mascotas",  Icon: IcoPaw       },
   { href: "/community",  label: "Comunidad", Icon: IcoCommunity },
   { href: "/lost-pets",  label: "Alertas",   Icon: IcoBell      },
+  { href: "/account",    label: "Cuenta",    Icon: IcoUser      },
 ];
 
 export function BottomNav() {
@@ -80,7 +89,7 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
-              className={`relative flex flex-1 flex-col items-center justify-center gap-1 py-2.5 transition-colors ${
+              className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
                 active
                   ? "text-[hsl(var(--primary))]"
                   : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
@@ -89,7 +98,7 @@ export function BottomNav() {
               <span className={`transition-transform ${active ? "scale-110" : ""}`}>
                 <Icon />
               </span>
-              <span className={`text-[10px] font-semibold leading-none ${active ? "text-[hsl(var(--primary))]" : ""}`}>
+              <span className={`text-[9px] font-semibold leading-none ${active ? "text-[hsl(var(--primary))]" : ""}`}>
                 {label}
               </span>
               {active && (
