@@ -3,18 +3,38 @@
 import { useEffect, useRef } from "react";
 import type { MapServicePoint, MapServiceType } from "@/features/map/types";
 
-declare global {
-  interface Window {
-    mapboxgl?: any;
-  }
-}
-
 const SOURCE_ID = "kumpa-pet-points-source";
 const CLUSTER_LAYER_ID = "kumpa-pet-clusters-layer";
 const CLUSTER_COUNT_LAYER_ID = "kumpa-pet-cluster-count-layer";
 const POINT_LAYER_ID = "kumpa-pet-point-layer";
 
-let mapboxAssetsPromise: Promise<void> | null = null;
+let mapLibraryPromise: Promise<any> | null = null;
+
+const FALLBACK_MAP_STYLE = {
+  version: 8,
+  sources: {
+    "osm-tiles": {
+      type: "raster",
+      tiles: [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ],
+      tileSize: 256,
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
+    }
+  },
+  layers: [
+    {
+      id: "osm-tiles-layer",
+      type: "raster",
+      source: "osm-tiles",
+      minzoom: 0,
+      maxzoom: 22
+    }
+  ]
+} as const;
 
 const FALLBACK_MAP_STYLE = {
   version: 8,
@@ -44,28 +64,24 @@ const FALLBACK_MAP_STYLE = {
 
 function ensureMapboxAssets() {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.mapboxgl) return Promise.resolve();
-  if (mapboxAssetsPromise) return mapboxAssetsPromise;
+  if (mapLibraryPromise) return mapLibraryPromise;
 
-  mapboxAssetsPromise = new Promise<void>((resolve, reject) => {
-    const cssId = "mapbox-gl-css";
+  mapLibraryPromise = new Promise<any>((resolve, reject) => {
+    const cssId = "maplibre-gl-css";
     if (!document.getElementById(cssId)) {
       const link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
-      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css";
+      link.href = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
       document.head.appendChild(link);
     }
 
-    const script = document.createElement("script");
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("No se pudo cargar Mapbox GL"));
-    document.body.appendChild(script);
+    void import("maplibre-gl")
+      .then((maplibre) => resolve(maplibre))
+      .catch(() => reject(new Error("No se pudo cargar MapLibre GL")));
   });
 
-  return mapboxAssetsPromise;
+  return mapLibraryPromise;
 }
 
 function markerColor(type: MapServiceType): string {
@@ -145,7 +161,6 @@ interface MapCanvasProps {
 }
 
 export function MapCanvas({
-  accessToken,
   points,
   selectedPointId = null,
   onSelectPoint,
@@ -159,6 +174,7 @@ export function MapCanvas({
   const mapRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
   const pickedMarkerRef = useRef<any>(null);
+  const mapLibraryRef = useRef<any>(null);
   const pointsRef = useRef<MapServicePoint[]>(points);
   const onSelectRef = useRef<typeof onSelectPoint>(onSelectPoint);
   const onPickLocationRef = useRef<typeof onPickLocation>(onPickLocation);
@@ -182,9 +198,9 @@ export function MapCanvas({
 
     let cancelled = false;
 
-    void ensureMapboxAssets()
-      .then(() => {
-        if (cancelled || !containerRef.current || !window.mapboxgl) return;
+    void ensureMapAssets()
+      .then((maplibre) => {
+        if (cancelled || !containerRef.current) return;
 
         if (accessToken) {
           window.mapboxgl.accessToken = accessToken;
@@ -196,9 +212,9 @@ export function MapCanvas({
           zoom: 9.2
         });
 
-        map.addControl(new window.mapboxgl.NavigationControl(), "top-right");
+        map.addControl(new maplibre.NavigationControl(), "top-right");
         mapRef.current = map;
-        popupRef.current = new window.mapboxgl.Popup({ closeButton: true, closeOnClick: false });
+        popupRef.current = new maplibre.Popup({ closeButton: true, closeOnClick: false });
 
         map.on("load", () => {
           if (!map.getSource(SOURCE_ID)) {
@@ -376,7 +392,10 @@ export function MapCanvas({
     const map = mapRef.current;
     if (!map || points.length === 0 || selectedPointId) return;
 
-    const bounds = new window.mapboxgl.LngLatBounds();
+    const maplibre = mapLibraryRef.current;
+    if (!maplibre) return;
+
+    const bounds = new maplibre.LngLatBounds();
     for (const point of points) {
       bounds.extend([point.longitude, point.latitude]);
     }
@@ -409,12 +428,13 @@ export function MapCanvas({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !pickedLocation || !window.mapboxgl) return;
+    const maplibre = mapLibraryRef.current;
+    if (!map || !pickedLocation || !maplibre) return;
 
     if (!pickedMarkerRef.current) {
       const markerElement = document.createElement("div");
       markerElement.className = "h-4 w-4 rounded-full border-4 border-white bg-[hsl(var(--accent))] shadow-[0_8px_20px_rgba(15,23,42,0.24)]";
-      pickedMarkerRef.current = new window.mapboxgl.Marker({
+      pickedMarkerRef.current = new maplibre.Marker({
         element: markerElement
       });
     }
