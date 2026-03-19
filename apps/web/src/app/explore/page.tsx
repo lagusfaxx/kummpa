@@ -471,12 +471,14 @@ function MobileCardStrip({
   services,
   selectedId,
   onSelect,
-  onShowList,
+  sheetState,
+  onToggleSheet,
 }: {
   services: MapServicePoint[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onShowList: () => void;
+  sheetState: "collapsed" | "expanded";
+  onToggleSheet: () => void;
 }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const isProgrammatic = useRef(false);
@@ -529,149 +531,216 @@ function MobileCardStrip({
     setTimeout(() => { isProgrammatic.current = false; }, 700);
   }, [selectedId]);
 
+  const primaryCta = (() => {
+    if (!activeService) return null;
+    if (activeService.type === "PARK") {
+      return (
+        <a
+          href={mapsUrl(activeService.latitude, activeService.longitude, activeService.name)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-700 px-3 py-2 text-[12px] font-semibold text-white"
+        >
+          <IcoDirections /> Cómo llegar
+        </a>
+      );
+    }
+    if (activeService.type === "SHOP") {
+      return (
+        <Link
+          href={`/explore/shop/${activeService.sourceId}`}
+          className="flex-1 rounded-xl bg-[hsl(22_92%_60%)] px-3 py-2 text-center text-[12px] font-semibold text-white"
+        >
+          Ver tienda
+        </Link>
+      );
+    }
+    if (activeService.type === "VET") {
+      return (
+        <Link
+          href={`/explore/vet/${activeService.sourceId}`}
+          className="flex-1 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-center text-[12px] font-semibold text-white"
+        >
+          Reservar
+        </Link>
+      );
+    }
+    if (activeService.type === "GROOMING") {
+      return (
+        <Link
+          href={`/explore/groomer/${activeService.sourceId}`}
+          className="flex-1 rounded-xl bg-pink-700 px-3 py-2 text-center text-[12px] font-semibold text-white"
+        >
+          Reservar
+        </Link>
+      );
+    }
+    if (activeService.bookingUrl ?? activeService.profileUrl) {
+      return (
+        <Link
+          href={activeService.bookingUrl ?? activeService.profileUrl ?? "#"}
+          className="flex-1 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-center text-[12px] font-semibold text-white"
+        >
+          Reservar
+        </Link>
+      );
+    }
+    return null;
+  })();
+
   return (
     <>
       {/* hide webkit scrollbar globally for this strip */}
       <style>{`#strip-scroll::-webkit-scrollbar{display:none}`}</style>
 
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-        <div className="pointer-events-auto bg-white shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.18)]">
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0">
+        <div
+          className="pointer-events-auto rounded-t-[28px] border-t border-slate-200/80 bg-white/96 shadow-[0_-10px_32px_-10px_rgba(0,0,0,0.28)] backdrop-blur-xl transition-all duration-300"
+          style={{
+            paddingBottom: `calc(${sheetState === "expanded" ? "1rem" : "0.7rem"} + env(safe-area-inset-bottom))`,
+          }}
+        >
 
           {/* drag handle */}
-          <div className="flex justify-center pt-2.5 pb-1.5">
-            <div className="h-1 w-10 rounded-full bg-slate-200" />
-          </div>
-
-          {/* ── Swipeable card strip ── */}
-          <div
-            id="strip-scroll"
-            ref={stripRef}
-            className="flex overflow-x-auto"
-            style={{
-              scrollSnapType: "x mandatory",
-              scrollbarWidth: "none",
-              gap: "12px",
-              paddingBottom: "12px",
-              /* centre-align first/last card: padding = (100vw - cardWidth) / 2 */
-              paddingLeft: "max(16px, calc(50vw - 140px))",
-              paddingRight: "max(16px, calc(50vw - 140px))",
-            }}
-          >
-            {services.map((s) => {
-              const cat = categoryFor(s.type);
-              const active = s.id === (selectedId ?? services[0]?.id);
-              return (
-                <button
-                  key={s.id}
-                  data-strip-id={s.id}
-                  type="button"
-                  onClick={() => onSelect(s.id)}
-                  style={{
-                    scrollSnapAlign: "center",
-                    flexShrink: 0,
-                    width: "min(76vw, 280px)",
-                    borderRadius: "16px",
-                    border: active ? `2px solid ${cat.color}` : "2px solid transparent",
-                    boxShadow: active
-                      ? `0 4px 16px -4px ${cat.color}55`
-                      : "0 2px 10px -3px rgba(0,0,0,0.12)",
-                    transition: "border-color 0.15s, box-shadow 0.15s",
-                  }}
-                  className="bg-white text-left overflow-hidden"
-                >
-                  <div className="flex items-center gap-2.5 px-3 py-2.5">
-                    <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
-                      style={{ backgroundColor: s.imageUrl ? undefined : cat.color }}
-                    >
-                      {s.imageUrl
-                        ? <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
-                        : s.name.slice(0, 1)
-                      }
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="truncate text-[13px] font-bold text-slate-800 leading-snug">
-                          {s.name}
-                        </p>
-                        {s.isOpenNow !== null && (
-                          <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold leading-none ${
-                            s.isOpenNow
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-slate-100 text-slate-400"
-                          }`}>
-                            {s.isOpenNow ? "Abierto" : "Cerrado"}
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-0.5 truncate text-[11px] text-slate-400 flex items-center gap-1">
-                        <span
-                          className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: cat.color }}
-                        />
-                        {typeLabel(s.type)}
-                        {s.district && <> · {s.district}</>}
-                        {s.rating !== null && (
-                          <> · <span className="text-amber-500 font-semibold">★{s.rating.toFixed(1)}</span></>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ── CTA row — always visible, reacts to active card ── */}
-          {activeService && (
-            <div
-              className="flex gap-2 border-t border-slate-100 px-4 pt-3"
-              style={{ paddingBottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
+          <div className="flex justify-center pt-2.5 pb-1">
+            <button
+              type="button"
+              onClick={onToggleSheet}
+              className="flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400"
+              aria-expanded={sheetState === "expanded"}
+              aria-label={sheetState === "expanded" ? "Colapsar panel" : "Expandir panel"}
             >
-              {activeService.type === "PARK" ? (
-                <a
-                  href={mapsUrl(activeService.latitude, activeService.longitude, activeService.name)}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-green-700 py-2.5 text-[13px] font-bold text-white"
-                >
-                  <IcoDirections /> Cómo llegar
-                </a>
-              ) : activeService.type === "SHOP" ? (
-                <Link href={`/explore/shop/${activeService.sourceId}`}
-                  className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-2.5 text-center text-[13px] font-bold text-white">
-                  Ver tienda
-                </Link>
-              ) : activeService.type === "VET" ? (
-                <Link href={`/explore/vet/${activeService.sourceId}`}
-                  className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-2.5 text-center text-[13px] font-bold text-white">
-                  Reservar
-                </Link>
-              ) : activeService.type === "GROOMING" ? (
-                <Link href={`/explore/groomer/${activeService.sourceId}`}
-                  className="flex-1 rounded-2xl bg-pink-700 py-2.5 text-center text-[13px] font-bold text-white">
-                  Reservar
-                </Link>
-              ) : (activeService.bookingUrl ?? activeService.profileUrl) ? (
-                <Link href={activeService.bookingUrl ?? activeService.profileUrl ?? "#"}
-                  className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-2.5 text-center text-[13px] font-bold text-white">
-                  Reservar
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-              {activeService.phone && activeService.type !== "PARK" && (
-                <a href={`tel:${activeService.phone}`}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-[13px] font-semibold text-slate-700">
-                  Llamar
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={onShowList}
-                className="rounded-2xl border border-slate-200 px-4 py-2.5 text-[13px] font-semibold text-slate-600"
+              <span className="h-1 w-10 rounded-full bg-slate-200" />
+              <span>{sheetState === "expanded" ? "Menos" : "Más"}</span>
+            </button>
+          </div>
+
+          {sheetState === "expanded" ? (
+            <div
+              id="strip-scroll"
+              ref={stripRef}
+              className="flex overflow-x-auto"
+              style={{
+                scrollSnapType: "x mandatory",
+                scrollbarWidth: "none",
+                gap: "10px",
+                paddingBottom: "8px",
+                paddingLeft: "max(14px, calc(50vw - 132px))",
+                paddingRight: "max(14px, calc(50vw - 132px))",
+              }}
+            >
+              {services.map((s) => {
+                const cat = categoryFor(s.type);
+                const active = s.id === (selectedId ?? services[0]?.id);
+                return (
+                  <button
+                    key={s.id}
+                    data-strip-id={s.id}
+                    type="button"
+                    onClick={() => onSelect(s.id)}
+                    style={{
+                      scrollSnapAlign: "center",
+                      flexShrink: 0,
+                      width: "min(72vw, 264px)",
+                      borderRadius: "16px",
+                      border: active ? `1.5px solid ${cat.color}` : "1.5px solid rgba(226,232,240,0.9)",
+                      boxShadow: active
+                        ? `0 6px 18px -8px ${cat.color}66`
+                        : "0 3px 10px -8px rgba(15,23,42,0.35)",
+                      transition: "border-color 0.15s, box-shadow 0.15s",
+                    }}
+                    className="overflow-hidden bg-white text-left"
+                  >
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
+                        style={{ backgroundColor: s.imageUrl ? undefined : cat.color }}
+                      >
+                        {s.imageUrl
+                          ? <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
+                          : s.name.slice(0, 1)
+                        }
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="truncate text-[13px] font-bold leading-snug text-slate-800">
+                            {s.name}
+                          </p>
+                          {s.isOpenNow !== null && (
+                            <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold leading-none ${
+                              s.isOpenNow
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-slate-100 text-slate-400"
+                            }`}>
+                              {s.isOpenNow ? "Abierto" : "Cerrado"}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                          {typeLabel(s.type)}
+                          {s.district && <> · {s.district}</>}
+                          {s.rating !== null && (
+                            <> · <span className="font-semibold text-amber-500">★{s.rating.toFixed(1)}</span></>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : activeService ? (
+            <button
+              type="button"
+              onClick={onToggleSheet}
+              className="mx-3 mb-1 flex w-[calc(100%-1.5rem)] items-center gap-3 rounded-2xl border border-slate-200/90 bg-white px-3 py-2 text-left shadow-[0_8px_24px_-16px_rgba(15,23,42,0.7)]"
+            >
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
+                style={{ backgroundColor: activeService.imageUrl ? undefined : categoryFor(activeService.type).color }}
               >
-                Lista
-              </button>
+                {activeService.imageUrl
+                  ? <img src={activeService.imageUrl} alt={activeService.name} className="h-full w-full object-cover" />
+                  : activeService.name.slice(0, 1)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="truncate text-[13px] font-bold text-slate-800">{activeService.name}</p>
+                  {activeService.isOpenNow !== null && (
+                    <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                      activeService.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"
+                    }`}>
+                      {activeService.isOpenNow ? "Abierto" : "Cerrado"}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                  {typeLabel(activeService.type)}
+                  {activeService.district && <> · {activeService.district}</>}
+                  {activeService.rating !== null && (
+                    <> · <span className="font-semibold text-amber-500">★{activeService.rating.toFixed(1)}</span></>
+                  )}
+                </p>
+              </div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <IcoChev />
+              </div>
+            </button>
+          ) : null}
+
+          {activeService && (
+            <div className={`flex gap-2 px-3 ${sheetState === "expanded" ? "border-t border-slate-100 pt-2.5" : "pt-1.5"}`}>
+              {primaryCta ?? <div className="flex-1" />}
+              {activeService.phone && activeService.type !== "PARK" && (
+                <a
+                  href={`tel:${activeService.phone}`}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-[12px] font-semibold text-slate-700"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <IcoPhone /> Llamar
+                  </span>
+                </a>
+              )}
             </div>
           )}
         </div>
@@ -696,6 +765,7 @@ export default function ExplorePage() {
   const [isLoading, setIsLoading]       = useState(true);
   const [error, setError]               = useState<string | null>(null);
   const [mobileTab, setMobileTab]       = useState<"map" | "list">("map");
+  const [mobileSheetState, setMobileSheetState] = useState<"collapsed" | "expanded">("collapsed");
   const [retryKey, setRetryKey]         = useState(0);
   const [resultKey, setResultKey]       = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -719,6 +789,7 @@ export default function ExplorePage() {
         if (ctrl.signal.aborted) return;
         setServices(res.items);
         setSelectedId(res.items[0]?.id ?? null);
+        setMobileSheetState("collapsed");
         setResultKey((k) => k + 1);
       })
       .catch((err) => {
@@ -980,7 +1051,10 @@ export default function ExplorePage() {
                 accessToken={MAPBOX_TOKEN}
                 points={services}
                 selectedPointId={selectedId}
-                onSelectPoint={(id) => { setSelectedId(id); setMobileTab("list"); }}
+                onSelectPoint={(id) => {
+                  setSelectedId(id);
+                  setMobileSheetState("expanded");
+                }}
                 className="flex-1"
                 borderless
               />
@@ -1005,7 +1079,8 @@ export default function ExplorePage() {
                 services={services}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
-                onShowList={() => setMobileTab("list")}
+                sheetState={mobileSheetState}
+                onToggleSheet={() => setMobileSheetState((state) => state === "collapsed" ? "expanded" : "collapsed")}
               />
             )}
           </div>
