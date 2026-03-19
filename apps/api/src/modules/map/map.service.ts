@@ -563,6 +563,7 @@ async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string)
         ]
       },
       select: { title: true, priceCents: true, photoUrls: true, sellerId: true },
+      orderBy: { createdAt: "desc" },
       take: 50
     });
 
