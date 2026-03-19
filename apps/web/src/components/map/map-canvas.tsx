@@ -3,43 +3,59 @@
 import { useEffect, useRef } from "react";
 import type { MapServicePoint, MapServiceType } from "@/features/map/types";
 
-declare global {
-  interface Window {
-    mapboxgl?: any;
-  }
-}
-
 const SOURCE_ID = "kumpa-pet-points-source";
 const CLUSTER_LAYER_ID = "kumpa-pet-clusters-layer";
 const CLUSTER_COUNT_LAYER_ID = "kumpa-pet-cluster-count-layer";
 const POINT_LAYER_ID = "kumpa-pet-point-layer";
 
-let mapboxAssetsPromise: Promise<void> | null = null;
+let mapLibraryPromise: Promise<any> | null = null;
 
-function ensureMapboxAssets() {
+const FALLBACK_MAP_STYLE = {
+  version: 8,
+  sources: {
+    "osm-tiles": {
+      type: "raster",
+      tiles: [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ],
+      tileSize: 256,
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
+    }
+  },
+  layers: [
+    {
+      id: "osm-tiles-layer",
+      type: "raster",
+      source: "osm-tiles",
+      minzoom: 0,
+      maxzoom: 22
+    }
+  ]
+} as const;
+
+function ensureMapAssets() {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.mapboxgl) return Promise.resolve();
-  if (mapboxAssetsPromise) return mapboxAssetsPromise;
+  if (mapLibraryPromise) return mapLibraryPromise;
 
-  mapboxAssetsPromise = new Promise<void>((resolve, reject) => {
-    const cssId = "mapbox-gl-css";
+  mapLibraryPromise = new Promise<any>((resolve, reject) => {
+    const cssId = "maplibre-gl-css";
     if (!document.getElementById(cssId)) {
       const link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
-      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css";
+      link.href = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
       document.head.appendChild(link);
     }
 
-    const script = document.createElement("script");
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("No se pudo cargar Mapbox GL"));
-    document.body.appendChild(script);
+    void import("maplibre-gl")
+      .then((maplibre) => resolve(maplibre))
+      .catch(() => reject(new Error("No se pudo cargar MapLibre GL")));
   });
 
-  return mapboxAssetsPromise;
+  return mapLibraryPromise;
 }
 
 function markerColor(type: MapServiceType): string {
@@ -119,7 +135,6 @@ interface MapCanvasProps {
 }
 
 export function MapCanvas({
-  accessToken,
   points,
   selectedPointId = null,
   onSelectPoint,
@@ -133,6 +148,7 @@ export function MapCanvas({
   const mapRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
   const pickedMarkerRef = useRef<any>(null);
+  const mapLibraryRef = useRef<any>(null);
   const pointsRef = useRef<MapServicePoint[]>(points);
   const onSelectRef = useRef<typeof onSelectPoint>(onSelectPoint);
   const onPickLocationRef = useRef<typeof onPickLocation>(onPickLocation);
@@ -150,27 +166,27 @@ export function MapCanvas({
   }, [onPickLocation]);
 
   useEffect(() => {
-    if (!accessToken || !containerRef.current || mapRef.current) {
+    if (!containerRef.current || mapRef.current) {
       return;
     }
 
     let cancelled = false;
 
-    void ensureMapboxAssets()
-      .then(() => {
-        if (cancelled || !containerRef.current || !window.mapboxgl) return;
+    void ensureMapAssets()
+      .then((maplibre) => {
+        if (cancelled || !containerRef.current) return;
 
-        window.mapboxgl.accessToken = accessToken;
-        const map = new window.mapboxgl.Map({
+        mapLibraryRef.current = maplibre;
+        const map = new maplibre.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/streets-v12",
+          style: FALLBACK_MAP_STYLE,
           center: center ? [center.lng, center.lat] : [-70.65, -33.45],
           zoom: 9.2
         });
 
-        map.addControl(new window.mapboxgl.NavigationControl(), "top-right");
+        map.addControl(new maplibre.NavigationControl(), "top-right");
         mapRef.current = map;
-        popupRef.current = new window.mapboxgl.Popup({ closeButton: true, closeOnClick: false });
+        popupRef.current = new maplibre.Popup({ closeButton: true, closeOnClick: false });
 
         map.on("load", () => {
           if (!map.getSource(SOURCE_ID)) {
@@ -330,7 +346,7 @@ export function MapCanvas({
         mapRef.current = null;
       }
     };
-  }, [accessToken]);
+  }, [center]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -348,7 +364,10 @@ export function MapCanvas({
     const map = mapRef.current;
     if (!map || points.length === 0 || selectedPointId) return;
 
-    const bounds = new window.mapboxgl.LngLatBounds();
+    const maplibre = mapLibraryRef.current;
+    if (!maplibre) return;
+
+    const bounds = new maplibre.LngLatBounds();
     for (const point of points) {
       bounds.extend([point.longitude, point.latitude]);
     }
@@ -381,12 +400,13 @@ export function MapCanvas({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !pickedLocation || !window.mapboxgl) return;
+    const maplibre = mapLibraryRef.current;
+    if (!map || !pickedLocation || !maplibre) return;
 
     if (!pickedMarkerRef.current) {
       const markerElement = document.createElement("div");
       markerElement.className = "h-4 w-4 rounded-full border-4 border-white bg-[hsl(var(--accent))] shadow-[0_8px_20px_rgba(15,23,42,0.24)]";
-      pickedMarkerRef.current = new window.mapboxgl.Marker({
+      pickedMarkerRef.current = new maplibre.Marker({
         element: markerElement
       });
     }
@@ -411,59 +431,6 @@ export function MapCanvas({
   }, [center]);
 
   const borderClasses = borderless ? "" : "rounded-2xl border border-slate-200";
-
-  if (!accessToken) {
-    return (
-      <div
-        className={`${className ?? ""} ${borderless ? "" : "rounded-2xl"} relative flex flex-col items-center justify-center overflow-hidden bg-[hsl(215_28%_17%)] p-8 text-center`}
-        style={{
-          backgroundImage: [
-            "radial-gradient(ellipse 80% 60% at 65% 35%, hsl(164_35%_22%/0.7) 0%, transparent 55%)",
-            "radial-gradient(ellipse 60% 50% at 25% 75%, hsl(220_40%_22%/0.6) 0%, transparent 50%)",
-            "radial-gradient(ellipse 40% 35% at 80% 80%, hsl(240_30%_18%/0.4) 0%, transparent 45%)",
-          ].join(", "),
-        }}
-      >
-        {/* Topographic grid lines */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage: [
-              "repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(255,255,255,1) 48px, rgba(255,255,255,1) 49px)",
-              "repeating-linear-gradient(90deg, transparent, transparent 48px, rgba(255,255,255,1) 48px, rgba(255,255,255,1) 49px)",
-            ].join(", "),
-          }}
-        />
-        {/* Diagonal contour lines */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 24px, rgba(255,255,255,1) 24px, rgba(255,255,255,1) 25px)",
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center gap-5">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm"
-            style={{ background: "rgba(255,255,255,0.07)" }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 opacity-60">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-              <circle cx="12" cy="9" r="2.5"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-[14px] font-semibold text-white/80">Mapa interactivo</p>
-            <p className="mt-1.5 max-w-[180px] text-[12px] leading-relaxed text-white/35">
-              Configura tu token de Mapbox para activarlo
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
