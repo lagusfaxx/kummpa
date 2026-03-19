@@ -1,0 +1,135 @@
+Necesitamos transformar “Cerca de ti” en un flujo comercial y de reservas completamente funcional, respetando el tipo de negocio de cada resultado.
+
+OBJETIVO GENERAL
+Que los resultados de búsqueda y mapa no sean solo fichas bonitas, sino puertas de entrada a flujos reales:
+- tienda -> e-commerce completo
+- peluquería -> reserva de servicios
+- veterinaria -> reserva de servicios/consulta
+- parque -> abrir en Google Maps
+
+REGLAS PRINCIPALES POR TIPO DE RESULTADO
+
+1. TIENDA
+- CTA principal: “Ver tienda”
+- Si la búsqueda fue por producto, mostrar debajo de la tienda el producto encontrado en pequeño, con nombre y precio
+- Agregar botón pequeño “+” o acción rápida para entrar a la tienda/producto
+- Al entrar a la tienda debe existir:
+  - catálogo
+  - categorías
+  - productos
+  - precios
+  - descuentos
+  - stock
+  - carrito
+  - checkout
+  - opción retiro o despacho
+  - métodos de pago según lo configurado en dashboard tienda
+
+2. PELUQUERÍA
+- CTA principal: “Reservar”
+- Mostrar servicios relevantes y precios base
+- Al reservar debe existir flujo profesional:
+  - ver ficha peluquería
+  - elegir servicio
+  - ver duración
+  - ver precio
+  - elegir fecha
+  - elegir hora disponible
+  - confirmar reserva
+- Crear dashboard de peluquería con:
+  - perfil
+  - fotos
+  - servicios
+  - precios
+  - horarios
+  - disponibilidad
+  - reservas
+  - descuentos
+  - métodos de pago
+
+3. VETERINARIA
+- CTA principal: “Reservar”
+- Mostrar tipos de servicio, horarios y valores
+- Flujo cliente:
+  - ver ficha veterinaria
+  - elegir servicio/especialidad
+  - ver precio
+  - elegir fecha y hora
+  - confirmar reserva
+- Dashboard veterinaria ya existe, pero hay que habilitar y completar:
+  - servicios
+  - especialidades
+  - valores
+  - fotos
+  - agenda
+  - horarios
+  - disponibilidad
+  - reservas
+  - descuentos
+
+4. PARQUES
+- No deben mostrar CTA de reservar
+- CTA correcto: “Abrir en Maps” o “Cómo llegar”
+- Redireccionar a Google Maps con el punto o nombre del parque
+
+BÚSQUEDA GLOBAL
+La búsqueda debe funcionar por:
+- cercanía
+- coincidencia directa
+- similitud semántica
+- productos
+- servicios
+- categorías
+
+Ejemplos:
+- Si buscan “Bravery”, debe aparecer la tienda que lo vende y debajo el producto pequeño con precio
+- Si buscan “baño y corte”, deben aparecer peluquerías con CTA reservar
+- Si buscan “vacuna”, deben aparecer veterinarias con servicios compatibles
+
+DASHBOARDS
+1. Mantener y completar dashboard tienda
+2. Completar dashboard veterinaria
+3. Crear dashboard peluquería
+4. Reutilizar flujos y componentes comunes cuando corresponda:
+- horarios
+- disponibilidad
+- descuentos
+- reservas
+- pagos
+- imágenes
+- estados
+
+DB / MIGRACIONES
+Revisar si faltan modelos y migraciones para soportar:
+- productos
+- stock
+- carrito
+- pedidos
+- pagos
+- delivery/retiro
+- servicios de peluquería
+- agenda de peluquería
+- agenda veterinaria
+- reservas por servicio
+- descuentos por negocio
+- métodos de pago por negocio
+- métodos de entrega por tienda
+
+UX IMPORTANTE
+- No mezclar comportamientos entre tipos de negocio
+- Cada tipo debe disparar el flujo correcto
+- Reutilizar patrones comunes, pero respetar el objetivo principal:
+  - tienda = comprar
+  - peluquería = reservar
+  - veterinaria = reservar
+  - parque = llegar
+
+ENTREGABLE
+Comenzar a implementar esta lógica completa:
+- resultados inteligentes por tipo
+- producto visible en resultados de tienda
+- flujo e-commerce funcional
+- flujo de reserva funcional para peluquería y veterinaria
+- CTA correctos por tipo de resultado
+- dashboards completos o ampliados según corresponda
+- migraciones DB necesarias si faltan
