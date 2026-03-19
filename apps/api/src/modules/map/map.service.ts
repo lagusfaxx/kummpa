@@ -600,7 +600,8 @@ function serializeSearchText(point: MapServicePoint): string {
     point.district,
     point.services.join(" "),
     point.priceInfo.join(" "),
-    point.discountLabel
+    point.discountLabel,
+    point.matchedProduct?.title ?? null
   ]
     .filter(Boolean)
     .join(" ");

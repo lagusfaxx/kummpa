@@ -347,6 +347,15 @@ function ServiceCard({
               <span className="ml-auto shrink-0 text-[10px] font-medium text-slate-400">{service.distanceKm.toFixed(1)} km</span>
             )}
           </div>
+          {service.type === "SHOP" && service.matchedProduct && (
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <span className="text-amber-500"><IcoTag /></span>
+              <span className="truncate text-[11px] font-medium text-slate-600">{service.matchedProduct.title}</span>
+              <span className="shrink-0 text-[11px] font-bold text-[hsl(22_92%_50%)]">
+                ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+              </span>
+            </div>
+          )}
         </div>
 
         {!selected && <div className="mt-1 shrink-0 text-slate-300"><IcoChev /></div>}
