@@ -58,6 +58,7 @@ export const listListingsQuerySchema = z
     mine: optionalBooleanFromQuery.default(false),
     favoritesOnly: optionalBooleanFromQuery.default(false),
     includeInactive: optionalBooleanFromQuery.default(false),
+    sellerId: z.string().cuid().optional(),
     sortBy: z.enum(["recent", "distance", "price_asc", "price_desc"]).default("recent"),
     limit: z.coerce.number().int().min(1).max(120).default(50)
   })
@@ -92,7 +93,8 @@ export const createListingSchema = z
     city: optionalTrimmedString(120),
     district: optionalTrimmedString(120),
     latitude: z.coerce.number().min(-90).max(90).optional(),
-    longitude: z.coerce.number().min(-180).max(180).optional()
+    longitude: z.coerce.number().min(-180).max(180).optional(),
+    stockQuantity: z.coerce.number().int().min(0).max(999999).optional().nullable()
   })
   .refine(
     (value) =>
@@ -116,7 +118,8 @@ export const updateListingSchema = z
     district: optionalTrimmedString(120),
     latitude: optionalCoordinate,
     longitude: optionalCoordinate,
-    isActive: z.boolean().optional()
+    isActive: z.boolean().optional(),
+    stockQuantity: z.coerce.number().int().min(0).max(999999).optional().nullable()
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field is required"

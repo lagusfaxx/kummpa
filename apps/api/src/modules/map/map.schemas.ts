@@ -109,6 +109,7 @@ export const matchedProductSchema = z.object({
 export const mapServicePointSchema = z.object({
   id: z.string(),
   sourceId: z.string(),
+  ownerId: z.string().nullable().optional(),
   type: mapServiceTypeSchema,
   name: z.string(),
   subtitle: z.string().nullable(),

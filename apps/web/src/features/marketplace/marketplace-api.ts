@@ -91,6 +91,7 @@ export async function listMarketplaceListings(
   appendIfPresent(params, "includeInactive", query.includeInactive);
   appendIfPresent(params, "sortBy", query.sortBy);
   appendIfPresent(params, "limit", query.limit);
+  appendIfPresent(params, "sellerId", query.sellerId);
   const queryString = params.toString();
 
   return requestWithAuth<MarketplaceListing[]>(

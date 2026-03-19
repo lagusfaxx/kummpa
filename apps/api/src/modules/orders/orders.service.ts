@@ -145,10 +145,19 @@ export async function createOrder(buyerId: string, input: CreateOrderInput) {
     for (const item of items) {
       const listing = listingMap.get(item.listingId)!;
       if (listing.stockQuantity !== null) {
-        await tx.marketplaceListing.update({
-          where: { id: item.listingId },
+        const result = await tx.marketplaceListing.updateMany({
+          where: {
+            id: item.listingId,
+            stockQuantity: { gte: item.quantity },
+          },
           data: { stockQuantity: { decrement: item.quantity } },
         });
+        if (result.count === 0) {
+          throw new HttpError(
+            400,
+            `Stock insuficiente para "${listing.title}". Por favor actualiza tu carrito.`
+          );
+        }
       }
     }
 

@@ -331,15 +331,19 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
   const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
-    const mapPromise = listMapServices({ limit: 100 });
-    const mktPromise = accessToken
-      ? listMarketplaceListings(accessToken, { limit: 50, sortBy: "recent" })
-      : Promise.resolve([] as MarketplaceListing[]);
-
-    void Promise.all([mapPromise, mktPromise]).then(([mapRes, mktRes]) => {
+    void listMapServices({ limit: 100 }).then(async (mapRes) => {
       const point = mapRes.items.find(p => p.sourceId === id || p.id === id);
       setShop(point ?? null);
-      setListings(mktRes.filter(l => l.isActive));
+      if (point?.ownerId && accessToken) {
+        try {
+          const mktRes = await listMarketplaceListings(accessToken, {
+            sellerId: point.ownerId,
+            limit: 60,
+            sortBy: "recent",
+          });
+          setListings(mktRes.filter(l => l.isActive));
+        } catch { /* ignore */ }
+      }
     }).catch(() => setError("No se pudo cargar la tienda.")).finally(() => setIsLoading(false));
   }, [id, accessToken]);
 

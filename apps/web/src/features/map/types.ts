@@ -41,6 +41,7 @@ export interface MatchedProduct {
 export interface MapServicePoint {
   id: string;
   sourceId: string;
+  ownerId?: string | null;
   type: MapServiceType;
   name: string;
   subtitle: string | null;

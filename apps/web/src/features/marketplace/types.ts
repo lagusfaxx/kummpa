@@ -71,6 +71,7 @@ export interface MarketplaceListingQuery {
   includeInactive?: boolean;
   sortBy?: "recent" | "distance" | "price_asc" | "price_desc";
   limit?: number;
+  sellerId?: string;
 }
 
 export interface MarketplaceCreateListingPayload {

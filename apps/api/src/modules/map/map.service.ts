@@ -505,6 +505,7 @@ async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string)
     points.push({
       id: pointId,
       sourceId: shop.id,
+      ownerId: shop.userId,
       type: "SHOP",
       name: toText(shop.businessName) ?? (ownerName ? `Pet shop ${ownerName}` : "Pet shop"),
       subtitle: ownerName ? `Encargado: ${ownerName}` : "Tienda pet",

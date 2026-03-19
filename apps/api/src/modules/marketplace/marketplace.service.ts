@@ -192,6 +192,7 @@ function serializeListing(
       canFeature: listing.sellerId === actor.id || actor.role === UserRole.ADMIN,
       conversationId: conversationByListingId.get(listing.id) ?? null
     },
+    stockQuantity: listing.stockQuantity,
     distanceKm,
     createdAt: listing.createdAt.toISOString(),
     updatedAt: listing.updatedAt.toISOString()
@@ -226,9 +227,11 @@ export async function listMarketplaceListings(actor: MarketplaceActor, query: Li
 
   if (query.mine) {
     where.sellerId = actor.id;
+  } else if (query.sellerId) {
+    where.sellerId = query.sellerId;
   }
 
-  if (!query.mine && query.favoritesOnly) {
+  if (!query.mine && !query.sellerId && query.favoritesOnly) {
     where.favorites = {
       some: {
         userId: actor.id
@@ -409,7 +412,8 @@ export async function createMarketplaceListing(actor: MarketplaceActor, input: C
       city: input.city,
       district: input.district,
       latitude: input.latitude,
-      longitude: input.longitude
+      longitude: input.longitude,
+      stockQuantity: input.stockQuantity ?? null
     },
     select: {
       id: true
@@ -458,7 +462,8 @@ export async function updateMarketplaceListing(
       district: input.district,
       latitude: input.latitude === undefined ? undefined : input.latitude,
       longitude: input.longitude === undefined ? undefined : input.longitude,
-      isActive: input.isActive
+      isActive: input.isActive,
+      ...(input.stockQuantity !== undefined ? { stockQuantity: input.stockQuantity } : {})
     }
   });
 
