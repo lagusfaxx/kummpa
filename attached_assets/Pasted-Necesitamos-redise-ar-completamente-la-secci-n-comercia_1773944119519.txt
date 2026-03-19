@@ -1,0 +1,130 @@
+Necesitamos rediseñar completamente la sección comercial porque hoy mezcla incorrectamente dos experiencias distintas:
+
+1. Tiendas registradas con e-commerce real
+2. Marketplace entre personas tipo Facebook Marketplace
+
+OBJETIVO
+Separar claramente ambas experiencias y crear páginas específicas para cada flujo.
+
+NUEVA ESTRUCTURA GENERAL
+Crear una subnavegación comercial con estas secciones:
+- Tiendas
+- Marketplace
+- Publicar
+- Chats
+- Guardados
+
+1. TIENDAS
+La sección Tiendas debe mostrar solamente negocios registrados como tipo tienda.
+No mezclar publicaciones de usuarios aquí.
+
+Cada card de tienda debe mostrar:
+- logo/portada
+- nombre
+- categoría
+- comuna
+- estado
+- productos destacados si aplica
+- CTA “Ver tienda”
+
+Al hacer click en una tienda, abrir una página propia de e-commerce con:
+- portada
+- descripción
+- horarios
+- dirección
+- categorías
+- productos
+- precios
+- descuentos
+- métodos de pago
+- retiro/despacho
+- carrito
+
+2. MARKETPLACE
+La sección Marketplace debe funcionar más parecido a Facebook Marketplace.
+Aquí se publican productos entre personas (nuevo o usado).
+
+Debe mostrar:
+- grid/listado de productos
+- imagen
+- título
+- precio
+- estado (nuevo/usado)
+- comuna
+- vendedor
+- tiempo de publicación
+- CTA “Ver producto” y “Enviar mensaje”
+
+Al hacer click, abrir página propia del producto con:
+- galería
+- descripción
+- precio
+- categoría
+- estado
+- ubicación aproximada
+- vendedor
+- botón para chatear
+- productos relacionados
+
+3. PUBLICAR
+La publicación de productos no debe ir incrustada dentro de la página principal.
+Debe existir una página propia para publicar productos.
+
+Ruta sugerida:
+- /marketplace/publicar
+
+Flujo recomendado:
+- tipo de producto (nuevo/usado)
+- categoría
+- título
+- descripción
+- precio
+- fotos
+- ubicación
+- publicar
+
+4. CHATS
+Crear una página específica de chats:
+- lista de conversaciones
+- detalle de conversación
+- mensajes en tiempo real
+
+Implementar SSE para:
+- nuevos mensajes
+- actualización de conversaciones
+- coordinación comprador-vendedor
+
+Regla:
+- si es una publicación de usuario -> chat directo
+- si es una tienda -> dirigir a la tienda y sus productos; chat comercial opcional después
+
+5. CATEGORÍAS
+Revisar y ampliar categorías tanto para marketplace como para tiendas.
+Las categorías deben ser más completas y ordenadas.
+
+6. UX IMPORTANTE
+- no mezclar tiendas con publicaciones entre personas
+- no incrustar formularios largos de publicación en la página principal
+- no mostrar chat activo al final del mismo scroll
+- cada flujo debe tener su propia página
+
+7. DB / MODELOS
+Revisar si faltan modelos y migraciones para:
+- marketplace listings
+- listing images
+- listing condition (nuevo/usado)
+- seller chat threads
+- seller messages con SSE
+- saved listings
+- store pages
+- store products
+- store categories
+- cart / order para tiendas
+
+8. RESULTADO FINAL
+Quiero una experiencia clara y separada:
+- Tiendas = e-commerce real
+- Marketplace = compra/venta entre personas tipo Facebook Marketplace
+- Publicar = página propia
+- Chats = página propia
+- Tiendas registradas visibles solo en Tiendas

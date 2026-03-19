@@ -384,3 +384,32 @@ export async function updateShopProfile(userId: string, input: UpdateShopProfile
 
   return getMyProfile(userId);
 }
+
+/* ─── Public shop directory ───────────────────────────────────── */
+export async function listPublicShops(opts: {
+  city?: string;
+  district?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  return prisma.shopProfile.findMany({
+    where: {
+      businessName: { not: null },
+      ...(opts.city ? { city: { contains: opts.city, mode: "insensitive" } } : {}),
+      ...(opts.district ? { district: { contains: opts.district, mode: "insensitive" } } : {})
+    },
+    include: { user: { select: { id: true, firstName: true, lastName: true } } },
+    take: opts.limit ?? 50,
+    skip: opts.offset ?? 0,
+    orderBy: { createdAt: "desc" }
+  });
+}
+
+export async function getPublicShopByUserId(userId: string) {
+  const shop = await prisma.shopProfile.findUnique({
+    where: { userId },
+    include: { user: { select: { id: true, firstName: true, lastName: true } } }
+  });
+  if (!shop) throw new HttpError(404, "Tienda no encontrada");
+  return shop;
+}

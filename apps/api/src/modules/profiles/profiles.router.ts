@@ -16,6 +16,8 @@ import {
 } from "./profiles.schemas";
 import {
   getMyProfile,
+  getPublicShopByUserId,
+  listPublicShops,
   updateBaseProfile,
   updateCaregiverProfile,
   updateOwnerProfile,
@@ -114,5 +116,28 @@ profilesRouter.put(
       ok: true,
       data
     });
+  })
+);
+
+/* ─── Public shop directory (no auth required) ─────────────────── */
+profilesRouter.get(
+  "/shops",
+  asyncHandler(async (req, res) => {
+    const { city, district, limit, offset } = req.query as Record<string, string | undefined>;
+    const data = await listPublicShops({
+      city: city || undefined,
+      district: district || undefined,
+      limit: limit ? Math.min(parseInt(limit, 10), 100) : 50,
+      offset: offset ? parseInt(offset, 10) : 0
+    });
+    res.json({ ok: true, data });
+  })
+);
+
+profilesRouter.get(
+  "/shops/:userId",
+  asyncHandler(async (req, res) => {
+    const data = await getPublicShopByUserId(req.params.userId!);
+    res.json({ ok: true, data });
   })
 );

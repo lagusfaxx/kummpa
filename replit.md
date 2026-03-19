@@ -40,8 +40,14 @@ Next.js rewrites `/api/v1/*` → `http://localhost:3000/api/v1/*` in `apps/web/n
 |-------|-------------|
 | `/` | Home hub with hero, shortcuts, features |
 | `/account` | 3-tab account hub (Perfil, Reservas, Configuración) |
-| `/marketplace` | Marketplace listings browser |
-| `/marketplace/dashboard` | Professional store dashboard (10 sections) |
+| `/marketplace` | P2P listings grid with CommercialNav, category filters, search |
+| `/marketplace/[id]` | Individual listing detail with photo gallery, seller info, chat CTA |
+| `/marketplace/tiendas` | Shop directory grid with search |
+| `/marketplace/tiendas/[id]` | Individual shop profile + product grid |
+| `/marketplace/publicar` | Listing creation form |
+| `/marketplace/chats` | Two-column chat UI (conversations + messages) |
+| `/marketplace/guardados` | Saved/favorited listings grid |
+| `/marketplace/dashboard` | Professional store dashboard (10 sections, SHOP role only) |
 | `/benefits` | Benefits/discounts page |
 | `/explore` | Service explorer |
 | `/map` | Interactive map |
@@ -103,18 +109,33 @@ DB: `GroomerProfile` model linked to `User` (role=GROOMING). API: `/api/v1/groom
 - `type === "VET"` → "Reservar" button (primary green) → `/explore/vet/[sourceId]`
 - Other types → "Reservar" using existing `bookingUrl` or `profileUrl`
 
+## Commercial Hub Navigation
+`CommercialNav` component (`apps/web/src/components/commercial/commercial-nav.tsx`) renders 5 tabs:
+Marketplace → Tiendas → Publicar → Chats → Guardados
+Active tab resolved by `usePathname()`. Not shown on `/marketplace/dashboard`.
+
 ## Key Files
 - `apps/web/src/app/account/page.tsx` — Account hub
 - `apps/web/src/app/business/page.tsx` — VET/Caregiver dashboard
 - `apps/web/src/app/explore/page.tsx` — Explore/map page with type-aware CTAs
 - `apps/web/src/app/explore/vet/[id]/page.tsx` — Public vet profile + booking
 - `apps/web/src/app/explore/shop/[id]/page.tsx` — Public shop profile + cart
-- `apps/web/src/app/marketplace/page.tsx` — Marketplace browser
-- `apps/web/src/app/marketplace/dashboard/page.tsx` — Store dashboard
+- `apps/web/src/app/marketplace/page.tsx` — Marketplace P2P listings grid
+- `apps/web/src/app/marketplace/[id]/page.tsx` — Listing detail
+- `apps/web/src/app/marketplace/tiendas/page.tsx` — Shop directory
+- `apps/web/src/app/marketplace/tiendas/[id]/page.tsx` — Shop profile + products
+- `apps/web/src/app/marketplace/publicar/page.tsx` — Create listing
+- `apps/web/src/app/marketplace/chats/page.tsx` — Messaging
+- `apps/web/src/app/marketplace/guardados/page.tsx` — Saved listings
+- `apps/web/src/app/marketplace/dashboard/page.tsx` — Store dashboard (SHOP only)
+- `apps/web/src/components/commercial/commercial-nav.tsx` — Marketplace sub-nav
+- `apps/web/src/features/shops/shops-api.ts` — Public shop directory API client
 - `apps/web/src/app/benefits/page.tsx` — Benefits page
 - `apps/web/src/components/home/home-hub.tsx` — Home page
 - `apps/web/next.config.js` — API proxy config
 - `apps/api/src/config/env.ts` — API env config
+- `apps/api/src/modules/profiles/profiles.service.ts` — listPublicShops + getPublicShopByUserId
+- `apps/api/src/modules/profiles/profiles.router.ts` — GET /api/v1/profiles/shops, /shops/:userId
 - `prisma/schema.prisma` — Database schema
 
 ## Optional Env Vars (app works without them)
