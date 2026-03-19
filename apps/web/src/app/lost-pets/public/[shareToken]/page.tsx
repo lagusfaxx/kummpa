@@ -8,7 +8,7 @@ import { getPublicLostPetAlert } from "@/features/lost-pets/lost-pets-api";
 import { lostPetAlertToMapPoints } from "@/features/lost-pets/map-points";
 import type { LostPetAlertDetail, LostPetAlertStatus } from "@/features/lost-pets/types";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("es-CL", {

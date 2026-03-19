@@ -1,4 +1,4 @@
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
 export interface GeocodingSuggestion {
   id: string;
@@ -25,7 +25,7 @@ interface MapboxFeature {
 
 function ensureToken() {
   if (!MAPBOX_TOKEN) {
-    throw new Error("Configura NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN para usar geocodificacion.");
+    throw new Error("Configura NEXT_PUBLIC_MAPBOX_TOKEN para usar geocodificacion.");
   }
 }
 

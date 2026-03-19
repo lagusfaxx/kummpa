@@ -25,7 +25,7 @@ import type {
   LostPetAlertStatus
 } from "@/features/lost-pets/types";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
 type SightingLocationMode = "current" | "search" | "pin";
 
