@@ -36,7 +36,33 @@ const FALLBACK_MAP_STYLE = {
   ]
 } as const;
 
-function ensureMapAssets() {
+const FALLBACK_MAP_STYLE = {
+  version: 8,
+  sources: {
+    "osm-tiles": {
+      type: "raster",
+      tiles: [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ],
+      tileSize: 256,
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
+    }
+  },
+  layers: [
+    {
+      id: "osm-tiles-layer",
+      type: "raster",
+      source: "osm-tiles",
+      minzoom: 0,
+      maxzoom: 22
+    }
+  ]
+} as const;
+
+function ensureMapboxAssets() {
   if (typeof window === "undefined") return Promise.resolve();
   if (mapLibraryPromise) return mapLibraryPromise;
 
@@ -176,8 +202,10 @@ export function MapCanvas({
       .then((maplibre) => {
         if (cancelled || !containerRef.current) return;
 
-        mapLibraryRef.current = maplibre;
-        const map = new maplibre.Map({
+        if (accessToken) {
+          window.mapboxgl.accessToken = accessToken;
+        }
+        const map = new window.mapboxgl.Map({
           container: containerRef.current,
           style: FALLBACK_MAP_STYLE,
           center: center ? [center.lng, center.lat] : [-70.65, -33.45],
@@ -346,7 +374,7 @@ export function MapCanvas({
         mapRef.current = null;
       }
     };
-  }, [center]);
+  }, [accessToken, center]);
 
   useEffect(() => {
     const map = mapRef.current;
