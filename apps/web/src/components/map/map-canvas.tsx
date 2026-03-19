@@ -36,33 +36,24 @@ const FALLBACK_MAP_STYLE = {
   ]
 } as const;
 
-const FALLBACK_MAP_STYLE = {
-  version: 8,
-  sources: {
-    "osm-tiles": {
-      type: "raster",
-      tiles: [
-        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      ],
-      tileSize: 256,
-      attribution:
-        '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
-    }
-  },
-  layers: [
-    {
-      id: "osm-tiles-layer",
-      type: "raster",
-      source: "osm-tiles",
-      minzoom: 0,
-      maxzoom: 22
-    }
-  ]
-} as const;
+function mapStyle(accessToken?: string) {
+  if (!accessToken) {
+    return FALLBACK_MAP_STYLE;
+  }
 
-function ensureMapboxAssets() {
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${accessToken}`;
+}
+
+function withMapboxToken(url: string, accessToken?: string) {
+  if (!accessToken || !url.includes("api.mapbox.com")) {
+    return url;
+  }
+
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}access_token=${accessToken}`;
+}
+
+function ensureMapAssets() {
   if (typeof window === "undefined") return Promise.resolve();
   if (mapLibraryPromise) return mapLibraryPromise;
 
@@ -202,14 +193,15 @@ export function MapCanvas({
       .then((maplibre) => {
         if (cancelled || !containerRef.current) return;
 
-        if (accessToken) {
-          window.mapboxgl.accessToken = accessToken;
-        }
-        const map = new window.mapboxgl.Map({
+        mapLibraryRef.current = maplibre;
+        const map = new maplibre.Map({
           container: containerRef.current,
-          style: FALLBACK_MAP_STYLE,
+          style: mapStyle(accessToken),
           center: center ? [center.lng, center.lat] : [-70.65, -33.45],
-          zoom: 9.2
+          zoom: 9.2,
+          transformRequest: (url: string) => ({
+            url: withMapboxToken(url, accessToken)
+          })
         });
 
         map.addControl(new maplibre.NavigationControl(), "top-right");
