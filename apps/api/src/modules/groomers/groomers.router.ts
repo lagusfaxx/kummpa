@@ -17,6 +17,7 @@ import {
 import {
   createGroomerProfile,
   getGroomerById,
+  getGroomerPublicAvailability,
   getGroomerPublicServices,
   getMyGroomerProfile,
   listGroomers,
@@ -80,6 +81,16 @@ groomersRouter.get(
   asyncHandler(async (req, res) => {
     const { groomerId } = req.params as unknown as GroomerParamsInput;
     const data = await getGroomerPublicServices(groomerId);
+    res.status(200).json({ ok: true, data });
+  })
+);
+
+groomersRouter.get(
+  "/:groomerId/availability",
+  validateRequest(groomerParamsSchema, "params"),
+  asyncHandler(async (req, res) => {
+    const { groomerId } = req.params as unknown as GroomerParamsInput;
+    const data = await getGroomerPublicAvailability(groomerId);
     res.status(200).json({ ok: true, data });
   })
 );
