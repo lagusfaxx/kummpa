@@ -18,6 +18,11 @@ export function AppShell({ children }: PropsWithChildren) {
         <main className="relative flex flex-1 flex-col overflow-hidden">
           {children}
         </main>
+        {/* In-flow spacer so main shrinks by the fixed BottomNav height on mobile */}
+        <div
+          className="shrink-0 md:hidden"
+          style={{ height: "calc(3.5rem + env(safe-area-inset-bottom))" }}
+        />
         <BottomNav />
       </div>
     );
