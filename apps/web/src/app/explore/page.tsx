@@ -399,6 +399,11 @@ function ServiceCard({
               className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
               Reservar
             </Link>
+          ) : service.type === "GROOMING" ? (
+            <Link href={`/explore/groomer/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
+              className="rounded-full bg-pink-700 px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
+              Reservar
+            </Link>
           ) : (service.bookingUrl ?? service.profileUrl) ? (
             <Link href={service.bookingUrl ?? service.profileUrl ?? "#"} onClick={(e) => e.stopPropagation()}
               className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
@@ -411,7 +416,7 @@ function ServiceCard({
               <IcoPhone /> Llamar
             </a>
           )}
-          {service.profileUrl && service.type !== "VET" && service.type !== "SHOP" && service.type !== "PARK" && (
+          {service.profileUrl && service.type !== "VET" && service.type !== "SHOP" && service.type !== "PARK" && service.type !== "GROOMING" && (
             <Link href={service.profileUrl} onClick={(e) => e.stopPropagation()}
               className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
               Ver ficha
@@ -834,6 +839,10 @@ export default function ExplorePage() {
                     </Link>
                   ) : selectedService.type === "VET" ? (
                     <Link href={`/explore/vet/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
+                      Reservar
+                    </Link>
+                  ) : selectedService.type === "GROOMING" ? (
+                    <Link href={`/explore/groomer/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-pink-700 py-3 text-center text-[13px] font-bold text-white">
                       Reservar
                     </Link>
                   ) : (selectedService.bookingUrl ?? selectedService.profileUrl) ? (

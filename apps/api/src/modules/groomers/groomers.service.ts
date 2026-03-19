@@ -358,6 +358,33 @@ export async function createGroomerProfile(
   return getGroomerById(groomerId!);
 }
 
+export async function getGroomerPublicServices(groomerId: string) {
+  const groomer = await prisma.groomerProfile.findUnique({
+    where: { id: groomerId },
+    select: { userId: true }
+  });
+  if (!groomer) {
+    throw new HttpError(404, "Groomer not found");
+  }
+
+  const items = await prisma.appointmentService.findMany({
+    where: { providerUserId: groomer.userId, isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { title: "asc" }, { createdAt: "asc" }]
+  });
+
+  return items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    serviceType: item.serviceType,
+    durationMinutes: item.durationMinutes,
+    priceCents: item.priceCents,
+    currencyCode: item.currencyCode,
+    isActive: item.isActive,
+    sortOrder: item.sortOrder
+  }));
+}
+
 export async function patchGroomerById(
   groomerId: string,
   input: PatchGroomerInput,
