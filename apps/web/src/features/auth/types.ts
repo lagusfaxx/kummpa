@@ -1,4 +1,4 @@
-export type UserRole = "OWNER" | "VET" | "CAREGIVER" | "SHOP" | "ADMIN";
+export type UserRole = "OWNER" | "VET" | "CAREGIVER" | "SHOP" | "GROOMING" | "ADMIN";
 
 export interface AuthUser {
   id: string;

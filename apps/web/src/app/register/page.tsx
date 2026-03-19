@@ -11,10 +11,11 @@ import type { RegisterPayload } from "@/features/auth/types";
 import { useToast } from "@/features/ui/toast-context";
 
 const roleOptions: Array<{ value: RegisterPayload["role"]; label: string }> = [
-  { value: "OWNER", label: "Tutor de mascota" },
-  { value: "VET", label: "Veterinaria" },
+  { value: "OWNER",    label: "Tutor de mascota" },
+  { value: "VET",      label: "Veterinaria" },
   { value: "CAREGIVER", label: "Cuidador" },
-  { value: "SHOP", label: "Tienda" }
+  { value: "SHOP",     label: "Tienda" },
+  { value: "GROOMING", label: "Peluquería / Groomer" }
 ];
 
 export default function RegisterPage() {

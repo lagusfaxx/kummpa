@@ -224,6 +224,9 @@ function bookingPath(type: MapServiceType, sourceId: string): string | null {
   if (type === "SHOP") {
     return `/explore/shop/${sourceId}`;
   }
+  if (type === "GROOMING") {
+    return `/explore/groomer/${sourceId}`;
+  }
   return null;
 }
 
@@ -237,11 +240,14 @@ function profilePath(type: MapServiceType, sourceId: string): string | null {
   if (type === "SHOP") {
     return `/explore/shop/${sourceId}`;
   }
+  if (type === "GROOMING") {
+    return `/explore/groomer/${sourceId}`;
+  }
   return `/explore?focus=${sourceId}`;
 }
 
 async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string): Promise<MapServicePoint[]> {
-  const [vets, caregivers, shops, lostAlerts] = await Promise.all([
+  const [vets, caregivers, shops, groomers, lostAlerts] = await Promise.all([
     prisma.vetProfile.findMany({
       where: {
         OR: [
@@ -296,6 +302,32 @@ async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string)
       }
     }),
     prisma.shopProfile.findMany({
+      where: {
+        OR: [
+          {
+            latitude: { not: null },
+            longitude: { not: null }
+          },
+          {
+            businessLocation: {
+              latitude: { not: null },
+              longitude: { not: null }
+            }
+          }
+        ]
+      },
+      include: {
+        businessLocation: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            phone: true
+          }
+        }
+      }
+    }),
+    prisma.groomerProfile.findMany({
       where: {
         OR: [
           {
@@ -488,6 +520,51 @@ async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string)
       matchedProduct: null
     });
     shopUserIdToPointId.set(shop.userId, pointId);
+  }
+
+  for (const groomer of groomers) {
+    const latitude = decimalToNumber(groomer.businessLocation?.latitude ?? groomer.latitude);
+    const longitude = decimalToNumber(groomer.businessLocation?.longitude ?? groomer.longitude);
+    if (latitude === null || longitude === null) continue;
+
+    const openingHours = toStringArray(groomer.businessLocation?.openingHours ?? groomer.openingHours);
+    const services = toStringArray(groomer.services);
+    const prices = toStringArray(groomer.referencePrices);
+    const ownerName = fullName(groomer.user.firstName, groomer.user.lastName);
+
+    points.push({
+      id: `groomer_${groomer.id}`,
+      sourceId: groomer.id,
+      type: "GROOMING",
+      name: toText(groomer.businessName) ?? (ownerName ? `Peluqueria ${ownerName}` : "Peluqueria canina"),
+      subtitle: ownerName ? `Groomer: ${ownerName}` : "Servicio de peluqueria",
+      description: toText(groomer.description),
+      latitude,
+      longitude,
+      address: toText(groomer.businessLocation?.address) ?? toText(groomer.address),
+      city: toText(groomer.businessLocation?.city) ?? toText(groomer.city),
+      district: toText(groomer.businessLocation?.district) ?? toText(groomer.district),
+      phone:
+        toText(groomer.businessLocation?.contactPhone) ?? toText(groomer.contactPhone) ?? toText(groomer.user.phone),
+      imageUrl: toText(groomer.logoUrl),
+      services,
+      openingHours,
+      priceInfo: prices,
+      priceFrom: parsePriceFromList(prices),
+      hasDiscount: false,
+      discountLabel: null,
+      isEmergency24x7: false,
+      isOpenNow: isOpenNow(openingHours, false),
+      medicalPriority: false,
+      supportsAtHome: hasAtHomeService(services),
+      isFeatured: false,
+      rating: normalizeRating(groomer.ratingAverage),
+      reviewsCount: groomer.reviewsCount,
+      distanceKm: null,
+      bookingUrl: bookingPath("GROOMING", groomer.id),
+      profileUrl: profilePath("GROOMING", groomer.id),
+      createdAt: groomer.updatedAt.toISOString()
+    });
   }
 
   if (includeLostPets) {

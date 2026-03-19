@@ -10,7 +10,7 @@ Monorepo: Next.js 14 frontend (`apps/web`) + Express/TypeScript API (`apps/api`)
 - **DB**: PostgreSQL via Prisma, 12+ migrations applied
 
 ## Key Features
-- Map of pet-related places (vets, caregivers, shops)
+- Map of pet-related places (vets, caregivers, shops, groomers)
 - Digital vaccination cards
 - NFC pet ID
 - Community profiles and forums
@@ -18,6 +18,7 @@ Monorepo: Next.js 14 frontend (`apps/web`) + Express/TypeScript API (`apps/api`)
 - Lost pet alerts
 - Benefits/discounts
 - News
+- Groomer dashboard (peluquería management)
 
 ## Architecture
 
@@ -77,7 +78,17 @@ Professional 5-section panel for VET role users:
 - **Horarios**: Weekly availability schedule (PUT to `/provider/availability`)
 - **Reservas**: Appointment management with confirm/reject actions, status filters
 
-SHOP role → redirects to `/marketplace/dashboard`. CAREGIVER role → WalkerPanel placeholder.
+SHOP role → redirects to `/marketplace/dashboard`. CAREGIVER role → WalkerPanel placeholder. GROOMING role → redirects to `/groomer`.
+
+## Groomer Dashboard (`/groomer`)
+Professional 5-tab panel for GROOMING role users:
+- **Resumen**: Stats overview (pending/confirmed today, upcoming appointments)
+- **Mi perfil**: Business profile editor (name, address, phone, email, bio, coords, avatar)
+- **Servicios**: Grooming-specific services CRUD (BATH, HAIRCUT, NAIL_TRIM, etc.)
+- **Horarios**: Weekly availability schedule
+- **Reservas**: Appointment management with confirm/reject, status filters
+
+DB: `GroomerProfile` model linked to `User` (role=GROOMING). API: `/api/v1/groomers` (GET list, GET /me, PUT /me, GET /:id). Map integration loads groomers as GROOMING-type map points.
 
 ## Public Business Pages
 - `/explore/vet/[id]` — Public vet clinic profile: header, services, opening hours, booking form

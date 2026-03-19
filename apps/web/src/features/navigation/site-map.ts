@@ -76,6 +76,14 @@ export const BUSINESS_NAV_ITEM: SiteNavItem = {
   matchers: ["/business"]
 };
 
+export const GROOMER_NAV_ITEM: SiteNavItem = {
+  href: "/groomer",
+  label: "Dashboard",
+  shortLabel: "Dashboard",
+  description: "Panel para peluquerías",
+  matchers: ["/groomer"]
+};
+
 export const ADMIN_NAV_ITEM: SiteNavItem = {
   href: "/admin",
   label: "Admin",
@@ -153,6 +161,10 @@ const ROLE_QUICK_ACTIONS: Record<UserRole, readonly QuickAction[]> = {
   ],
   SHOP: [
     { href: "/business", label: "Dashboard", description: "Catalogo, stock y promos" },
+    { href: "/account", label: "Cuenta", description: "Historial y configuracion" }
+  ],
+  GROOMING: [
+    { href: "/groomer", label: "Dashboard", description: "Servicios y reservas" },
     { href: "/account", label: "Cuenta", description: "Historial y configuracion" }
   ],
   ADMIN: [

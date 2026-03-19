@@ -70,10 +70,31 @@ export interface ShopProfile {
   discounts?: string[] | null;
 }
 
+export interface GroomerProfile {
+  id?: string;
+  businessName?: string | null;
+  logoUrl?: string | null;
+  description?: string | null;
+  address?: string | null;
+  district?: string | null;
+  city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  openingHours?: string[] | null;
+  services?: string[] | null;
+  referencePrices?: string[] | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  websiteUrl?: string | null;
+  ratingAverage?: number | null;
+  reviewsCount?: number;
+}
+
 export interface MyProfile {
   user: BaseUserProfile;
   ownerProfile?: OwnerProfile | null;
   vetProfile?: VetProfile | null;
   caregiverProfile?: CaregiverProfile | null;
   shopProfile?: ShopProfile | null;
+  groomerProfile?: GroomerProfile | null;
 }

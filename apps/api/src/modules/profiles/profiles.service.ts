@@ -25,6 +25,11 @@ const profileInclude = {
     include: {
       businessLocation: true
     }
+  },
+  groomerProfile: {
+    include: {
+      businessLocation: true
+    }
   }
 } satisfies Prisma.UserInclude;
 
@@ -47,7 +52,8 @@ function serializeProfile(user: UserWithProfiles) {
     ownerProfile: user.ownerProfile,
     vetProfile: user.vetProfile,
     caregiverProfile: user.caregiverProfile,
-    shopProfile: user.shopProfile
+    shopProfile: user.shopProfile,
+    groomerProfile: user.groomerProfile
   };
 }
 

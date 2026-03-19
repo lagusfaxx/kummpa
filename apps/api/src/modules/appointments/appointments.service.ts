@@ -39,7 +39,7 @@ const TERMINAL_APPOINTMENT_STATUSES: AppointmentStatus[] = [
   AppointmentStatus.RESCHEDULED
 ];
 
-const providerRoles = new Set<UserRole>([UserRole.VET, UserRole.CAREGIVER, UserRole.SHOP, UserRole.ADMIN]);
+const providerRoles = new Set<UserRole>([UserRole.VET, UserRole.CAREGIVER, UserRole.SHOP, UserRole.GROOMING, UserRole.ADMIN]);
 
 const serviceTypeLabels: Record<ServiceType, string> = {
   GENERAL_CONSULT: "Consulta general",
@@ -199,6 +199,7 @@ function getProviderTypeForActorRole(role: UserRole): ProviderType {
   if (role === UserRole.VET) return ProviderType.VET;
   if (role === UserRole.CAREGIVER) return ProviderType.CAREGIVER;
   if (role === UserRole.SHOP) return ProviderType.SHOP;
+  if (role === UserRole.GROOMING) return ProviderType.GROOMING;
   throw new HttpError(403, "Only provider roles can manage appointment services");
 }
 
@@ -234,6 +235,19 @@ async function resolveProviderSourceIdForUser(
 
   if (providerType === ProviderType.SHOP) {
     const profile = await prisma.shopProfile.findUnique({
+      where: {
+        userId: providerUserId
+      },
+      select: {
+        id: true
+      }
+    });
+
+    return profile?.id ?? null;
+  }
+
+  if (providerType === ProviderType.GROOMING) {
+    const profile = await prisma.groomerProfile.findUnique({
       where: {
         userId: providerUserId
       },
@@ -613,6 +627,33 @@ async function resolveProviderFromTypeAndSource(
     };
   }
 
+  if (providerType === ProviderType.GROOMING) {
+    const profile = await prisma.groomerProfile.findUnique({
+      where: { id: providerSourceId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+
+    if (!profile) return null;
+
+    return {
+      providerUserId: profile.user.id,
+      providerSourceId: profile.id,
+      providerName:
+        profile.businessName?.trim() || fullName(profile.user.firstName, profile.user.lastName) || "Peluqueria",
+      providerEmail: profile.user.email,
+      providerFirstName: profile.user.firstName ?? null
+    };
+  }
+
   return null;
 }
 
@@ -628,7 +669,8 @@ async function resolveProviderFromUser(
     include: {
       vetProfile: true,
       caregiverProfile: true,
-      shopProfile: true
+      shopProfile: true,
+      groomerProfile: true
     }
   });
 
@@ -652,6 +694,14 @@ async function resolveProviderFromUser(
     throw new HttpError(400, "Provider user role does not match providerType SHOP");
   }
 
+  if (
+    providerType === ProviderType.GROOMING &&
+    user.role !== UserRole.GROOMING &&
+    user.role !== UserRole.ADMIN
+  ) {
+    throw new HttpError(400, "Provider user role does not match providerType GROOMING");
+  }
+
   let providerSourceId: string | null = null;
   let providerName = fullName(user.firstName, user.lastName) || getDefaultProviderName(providerType);
 
@@ -673,6 +723,14 @@ async function resolveProviderFromUser(
     providerSourceId = user.shopProfile.id;
     providerName =
       user.shopProfile.businessName?.trim() ||
+      fullName(user.firstName, user.lastName) ||
+      getDefaultProviderName(providerType);
+  }
+
+  if (providerType === ProviderType.GROOMING && user.groomerProfile) {
+    providerSourceId = user.groomerProfile.id;
+    providerName =
+      user.groomerProfile.businessName?.trim() ||
       fullName(user.firstName, user.lastName) ||
       getDefaultProviderName(providerType);
   }

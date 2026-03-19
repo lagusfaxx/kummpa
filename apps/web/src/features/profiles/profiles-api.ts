@@ -92,3 +92,20 @@ export async function updateShopProfile(accessToken: string, payload: Record<str
     body: payload
   });
 }
+
+export async function updateGroomerProfile(accessToken: string, payload: Record<string, unknown>) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const response = await fetch(`${API_URL}/api/v1/groomers/me`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  const json = await response.json().catch(() => null);
+  if (!response.ok || !json?.ok) {
+    throw new Error(json?.error?.message ?? "No se pudo guardar el perfil");
+  }
+  return json.data;
+}

@@ -9,6 +9,7 @@ import {
   ACCOUNT_NAV_ITEM,
   ADMIN_NAV_ITEM,
   BUSINESS_NAV_ITEM,
+  GROOMER_NAV_ITEM,
   PRIMARY_NAV_ITEMS,
   isAuthRoute,
   isMinimalShellRoute,
@@ -59,6 +60,7 @@ export function TopNav() {
   const utilityItems = useMemo(() => {
     if (!session?.user.role) return [ACCOUNT_NAV_ITEM];
     if (session.user.role === "ADMIN") return [ACCOUNT_NAV_ITEM, ADMIN_NAV_ITEM];
+    if (session.user.role === "GROOMING") return [ACCOUNT_NAV_ITEM, GROOMER_NAV_ITEM];
     if (["VET", "CAREGIVER", "SHOP"].includes(session.user.role)) {
       return [ACCOUNT_NAV_ITEM, BUSINESS_NAV_ITEM];
     }
