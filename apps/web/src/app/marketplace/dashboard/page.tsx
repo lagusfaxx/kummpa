@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/features/auth/auth-context";
 import { listOrders, updateOrderStatus } from "@/features/orders/orders-api";
@@ -902,7 +903,8 @@ function SectionConfig({ shop }: { shop: ShopProfile | null | undefined }) {
 
 /* ─── Page ───────────────────────────────────────────────────── */
 export default function ShopDashboardPage() {
-  const { session } = useAuth();
+  const { session, isReady } = useAuth();
+  const router = useRouter();
   const token = session?.tokens.accessToken ?? "";
   const [section, setSection] = useState<Section>("resumen");
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
@@ -910,6 +912,14 @@ export default function ShopDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  /* ── Role guard: only SHOP users can access this panel ── */
+  useEffect(() => {
+    if (!isReady) return;
+    if (session && session.user.role !== "SHOP") {
+      router.replace("/marketplace");
+    }
+  }, [isReady, session, router]);
 
   async function loadData() {
     if (!token) return;
