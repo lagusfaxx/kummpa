@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { adminRouter } from "../modules/admin/admin.router";
+import { ordersRouter } from "../modules/orders/orders.router";
 import { appointmentsRouter } from "../modules/appointments/appointments.router";
 import { authRouter } from "../modules/auth/auth.router";
 import { benefitsRouter } from "../modules/benefits/benefits.router";
@@ -38,3 +39,4 @@ rootRouter.use(`${API_PREFIX}/explore`, exploreRouter);
 rootRouter.use(`${API_PREFIX}/groomers`, groomersRouter);
 rootRouter.use(`${API_PREFIX}/news`, newsRouter);
 rootRouter.use(`${API_PREFIX}/admin`, adminRouter);
+rootRouter.use(`${API_PREFIX}/orders`, ordersRouter);

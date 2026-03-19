@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/features/auth/auth-context";
+import { listOrders, updateOrderStatus } from "@/features/orders/orders-api";
+import type { Order, OrderStatus } from "@/features/orders/types";
 import {
   createMarketplaceListing,
   listMarketplaceListings,
@@ -654,25 +656,179 @@ function SectionEnvios() {
 }
 
 /* ─── Pedidos ────────────────────────────────────────────────── */
-function SectionPedidos() {
-  const statuses = [
-    { label: "Nuevos", count: 0, color: "blue" as const },
-    { label: "Pagados", count: 0, color: "green" as const },
-    { label: "Preparando", count: 0, color: "orange" as const },
-    { label: "Enviados", count: 0, color: "blue" as const },
-    { label: "Entregados", count: 0, color: "green" as const },
-    { label: "Cancelados", count: 0, color: "red" as const },
-  ];
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  PENDING: "Pendiente",
+  CONFIRMED: "Confirmado",
+  SHIPPED: "En camino",
+  DELIVERED: "Entregado",
+  CANCELLED: "Cancelado",
+};
+
+const SELLER_TRANSITIONS: Partial<Record<OrderStatus, { next: OrderStatus; label: string }[]>> = {
+  PENDING: [
+    { next: "CONFIRMED", label: "✓ Confirmar" },
+    { next: "CANCELLED", label: "✕ Rechazar" },
+  ],
+  CONFIRMED: [
+    { next: "SHIPPED", label: "🚚 Marcar enviado" },
+    { next: "CANCELLED", label: "✕ Cancelar" },
+  ],
+  SHIPPED: [
+    { next: "DELIVERED", label: "✓ Marcar entregado" },
+  ],
+};
+
+function SectionPedidos({ accessToken }: { accessToken: string }) {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const loadOrders = useCallback(() => {
+    if (!accessToken) return;
+    setLoadingOrders(true);
+    void listOrders(accessToken, { role: "seller", limit: 50 })
+      .then(setOrders)
+      .catch(() => null)
+      .finally(() => setLoadingOrders(false));
+  }, [accessToken]);
+
+  useEffect(() => { loadOrders(); }, [loadOrders]);
+
+  async function handleStatusChange(orderId: string, status: OrderStatus) {
+    setUpdating(orderId);
+    try {
+      const updated = await updateOrderStatus(accessToken, orderId, status);
+      setOrders(prev => prev.map(o => o.id === orderId ? updated : o));
+    } catch { /* ignore */ }
+    finally { setUpdating(null); }
+  }
+
+  const byStatus = {
+    PENDING: orders.filter(o => o.status === "PENDING").length,
+    CONFIRMED: orders.filter(o => o.status === "CONFIRMED").length,
+    SHIPPED: orders.filter(o => o.status === "SHIPPED").length,
+    DELIVERED: orders.filter(o => o.status === "DELIVERED").length,
+    CANCELLED: orders.filter(o => o.status === "CANCELLED").length,
+  };
+
+  const ORDER_STATUS_COLOR: Record<string, string> = {
+    PENDING: "bg-amber-100 text-amber-700",
+    CONFIRMED: "bg-emerald-100 text-emerald-700",
+    SHIPPED: "bg-blue-100 text-blue-700",
+    DELIVERED: "bg-slate-100 text-slate-600",
+    CANCELLED: "bg-red-100 text-red-600",
+  };
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Pedidos" subtitle="Gestión de órdenes de compra" />
+      <SectionHeader title="Pedidos" subtitle="Órdenes de compra recibidas" />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {statuses.map(s => <StatCard key={s.label} label={s.label} value={s.count} color={s.color} />)}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <StatCard label="Pendientes" value={byStatus.PENDING} color="orange" />
+        <StatCard label="Confirmados" value={byStatus.CONFIRMED} color="green" />
+        <StatCard label="En camino" value={byStatus.SHIPPED} color="blue" />
+        <StatCard label="Entregados" value={byStatus.DELIVERED} color="slate" />
+        <StatCard label="Cancelados" value={byStatus.CANCELLED} color="red" />
       </div>
 
-      <ComingSoon section="Gestión de pedidos" />
+      {loadingOrders ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-100" />)}
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+          <p className="text-5xl">🛒</p>
+          <p className="mt-4 font-bold text-slate-800">Aún no has recibido pedidos</p>
+          <p className="mt-1 text-sm text-slate-500">Cuando un cliente realice una compra, aparecerá aquí.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {orders.map(order => {
+            const transitions = SELLER_TRANSITIONS[order.status] ?? [];
+            return (
+              <div key={order.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <button
+                  className="flex w-full items-start gap-4 px-5 py-4 text-left hover:bg-slate-50/60 transition"
+                  onClick={() => setExpanded(expanded === order.id ? null : order.id)}
+                >
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-black text-slate-900">{order.orderNumber}</p>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${ORDER_STATUS_COLOR[order.status] ?? "bg-slate-100 text-slate-600"}`}>
+                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                      </span>
+                      <span className="text-[11px] text-slate-400">{order.deliveryType === "PICKUP" ? "🏪 Retiro" : "🚚 Despacho"}</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {order.buyer.firstName} {order.buyer.lastName} — {order.buyer.email}
+                    </p>
+                    <p className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-black text-[hsl(22_92%_50%)]">{fmtClp(order.totalCents)}</p>
+                    <p className="mt-1 text-xs text-slate-400">{expanded === order.id ? "▲" : "▼"}</p>
+                  </div>
+                </button>
+
+                {expanded === order.id && (
+                  <div className="border-t border-slate-100 px-5 pb-5 pt-3 space-y-4">
+                    <div className="space-y-2">
+                      {order.items.map(item => (
+                        <div key={item.id} className="flex items-center gap-3">
+                          {item.photoUrl && (
+                            <img src={item.photoUrl} alt={item.title} className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-slate-800 truncate">{item.title}</p>
+                            <p className="text-[11px] text-slate-500">{fmtClp(item.priceCents)} × {item.quantity}</p>
+                          </div>
+                          <p className="text-xs font-bold text-slate-700 shrink-0">{fmtClp(item.priceCents * item.quantity)}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {order.deliveryAddress && (
+                      <div className="rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+                        <span className="font-bold">Dirección: </span>{order.deliveryAddress}
+                      </div>
+                    )}
+                    {order.notes && (
+                      <div className="rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+                        <span className="font-bold">Notas: </span>{order.notes}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                      <span className="text-xs text-slate-500">Total</span>
+                      <span className="text-sm font-black text-[hsl(22_92%_50%)]">{fmtClp(order.totalCents)}</span>
+                    </div>
+
+                    {transitions.length > 0 && (
+                      <div className="flex gap-2 flex-wrap pt-1">
+                        {transitions.map(({ next, label }) => (
+                          <button
+                            key={next}
+                            disabled={updating === order.id}
+                            onClick={() => void handleStatusChange(order.id, next)}
+                            className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                              next === "CANCELLED"
+                                ? "border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                : "bg-[hsl(var(--primary))] text-white hover:opacity-90 disabled:opacity-50"
+                            }`}
+                          >
+                            {updating === order.id ? "..." : label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -864,7 +1020,7 @@ export default function ShopDashboardPage() {
                   {section === "promociones" && <SectionPromociones />}
                   {section === "pagos" && <SectionPagos />}
                   {section === "envios" && <SectionEnvios />}
-                  {section === "pedidos" && <SectionPedidos />}
+                  {section === "pedidos" && <SectionPedidos accessToken={token} />}
                   {section === "config" && <SectionConfig shop={shop} />}
                 </>
               )}

@@ -7,6 +7,7 @@ import { listMapServices } from "@/features/map/map-api";
 import type { MapServicePoint } from "@/features/map/types";
 import { listMarketplaceListings } from "@/features/marketplace/marketplace-api";
 import type { MarketplaceListing, MarketplaceCategory } from "@/features/marketplace/types";
+import { createOrder } from "@/features/orders/orders-api";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 function fmtClp(cents: number) {
@@ -21,60 +22,264 @@ const CAT_LABELS: Record<MarketplaceCategory, string> = {
 /* ─── Cart ────────────────────────────────────────────────────── */
 type CartItem = { listing: MarketplaceListing; qty: number };
 
-function CartPanel({ items, onRemove, onQty, onClose }: {
+/* ─── Checkout panel ──────────────────────────────────────────── */
+type CheckoutStep = "cart" | "delivery" | "confirm" | "success";
+
+function CheckoutPanel({ items, onRemove, onQty, onClose, accessToken, shopName }: {
   items: CartItem[];
   onRemove: (id: string) => void;
   onQty: (id: string, qty: number) => void;
   onClose: () => void;
+  accessToken: string | undefined;
+  shopName: string;
 }) {
+  const [step, setStep] = useState<CheckoutStep>("cart");
+  const [deliveryType, setDeliveryType] = useState<"PICKUP" | "DELIVERY">("PICKUP");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+
   const subtotal = items.reduce((s, i) => s + i.listing.priceCents * i.qty, 0);
 
+  async function handleConfirm() {
+    if (!accessToken) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const order = await createOrder(accessToken, {
+        items: items.map(i => ({ listingId: i.listing.id, quantity: i.qty })),
+        deliveryType,
+        deliveryAddress: deliveryType === "DELIVERY" ? deliveryAddress : undefined,
+        notes: notes.trim() || undefined,
+      });
+      setOrderNumber(order.orderNumber);
+      setOrderId(order.id);
+      setStep("success");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "No se pudo realizar el pedido.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  /* ── Success ── */
+  if (step === "success") {
+    return (
+      <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-[hsl(var(--border)/0.5)] px-5 py-4">
+          <p className="font-bold text-[hsl(var(--foreground))]">✅ ¡Pedido realizado!</p>
+        </div>
+        <div className="p-6 space-y-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">✅</div>
+          <div>
+            <p className="font-bold text-[hsl(var(--foreground))] text-lg">¡Tu pedido fue enviado!</p>
+            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+              Número de pedido: <span className="font-black text-[hsl(var(--foreground))]">{orderNumber}</span>
+            </p>
+            <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+              {shopName} confirmará tu pedido pronto.
+            </p>
+          </div>
+          <Link href="/account?tab=pedidos"
+            className="inline-block rounded-2xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-bold text-white transition hover:opacity-90">
+            Ver mis pedidos
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Cart step ── */
+  if (step === "cart") {
+    return (
+      <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-[hsl(var(--border)/0.5)] px-5 py-4">
+          <p className="font-bold text-[hsl(var(--foreground))]">🛒 Carrito ({items.length})</p>
+          <button onClick={onClose} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition text-lg">✕</button>
+        </div>
+        {items.length === 0 ? (
+          <div className="p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">Tu carrito está vacío</div>
+        ) : (
+          <>
+            <div className="divide-y divide-[hsl(var(--border)/0.5)] max-h-80 overflow-y-auto">
+              {items.map(({ listing, qty }) => (
+                <div key={listing.id} className="flex items-start gap-3 px-5 py-3">
+                  {listing.photoUrls[0] && (
+                    <img src={listing.photoUrls[0]} alt={listing.title} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-[hsl(var(--foreground))] truncate">{listing.title}</p>
+                    <p className="text-xs font-bold text-[hsl(22_92%_50%)]">{fmtClp(listing.priceCents)}</p>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <button onClick={() => onQty(listing.id, Math.max(1, qty - 1))} className="h-6 w-6 rounded-full bg-[hsl(var(--muted))] text-sm font-bold hover:bg-[hsl(var(--muted-foreground)/0.2)] transition">−</button>
+                      <span className="text-xs font-bold w-4 text-center">{qty}</span>
+                      <button onClick={() => onQty(listing.id, qty + 1)} className="h-6 w-6 rounded-full bg-[hsl(var(--muted))] text-sm font-bold hover:bg-[hsl(var(--muted-foreground)/0.2)] transition">+</button>
+                    </div>
+                  </div>
+                  <button onClick={() => onRemove(listing.id)} className="text-[hsl(var(--muted-foreground))] hover:text-red-500 transition text-sm mt-1">✕</button>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-[hsl(var(--border)/0.5)] p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Subtotal</span>
+                <span className="text-base font-black text-[hsl(var(--foreground))]">{fmtClp(subtotal)}</span>
+              </div>
+              {!accessToken ? (
+                <Link href="/login"
+                  className="block w-full rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-center text-sm font-bold text-white transition hover:opacity-90">
+                  Inicia sesión para comprar
+                </Link>
+              ) : (
+                <button
+                  className="w-full rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-sm font-bold text-white shadow-sm transition hover:opacity-90"
+                  onClick={() => setStep("delivery")}
+                >
+                  Ir al pago →
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  /* ── Delivery step ── */
+  if (step === "delivery") {
+    return (
+      <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-[hsl(var(--border)/0.5)] px-5 py-4">
+          <p className="font-bold text-[hsl(var(--foreground))]">📦 Entrega</p>
+          <button onClick={onClose} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition text-lg">✕</button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Tipo de entrega</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(["PICKUP", "DELIVERY"] as const).map(type => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setDeliveryType(type)}
+                  className={`flex flex-col items-center gap-1 rounded-2xl border px-3 py-4 text-center transition ${
+                    deliveryType === type
+                      ? "border-[hsl(22_92%_60%)] bg-orange-50 text-orange-700"
+                      : "border-slate-200 hover:border-orange-200"
+                  }`}
+                >
+                  <span className="text-xl">{type === "PICKUP" ? "🏪" : "🚚"}</span>
+                  <span className="text-xs font-bold">{type === "PICKUP" ? "Retiro en tienda" : "Despacho"}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {deliveryType === "DELIVERY" && (
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Dirección de despacho *</label>
+              <input
+                value={deliveryAddress}
+                onChange={e => setDeliveryAddress(e.target.value)}
+                placeholder="Av. Ejemplo 123, Providencia, Santiago"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-orange-300"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Notas (opcional)</label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Ej: timbre 4, dejar en portería..."
+              className="mt-1.5 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-orange-300"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => setStep("cart")} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+              ← Atrás
+            </button>
+            <button
+              disabled={deliveryType === "DELIVERY" && !deliveryAddress.trim()}
+              onClick={() => setStep("confirm")}
+              className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-sm font-bold text-white hover:opacity-90 disabled:opacity-40 transition"
+            >
+              Revisar pedido →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Confirm step ── */
   return (
     <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-[hsl(var(--border)/0.5)] px-5 py-4">
-        <p className="font-bold text-[hsl(var(--foreground))]">🛒 Carrito ({items.length})</p>
+        <p className="font-bold text-[hsl(var(--foreground))]">✅ Confirmar pedido</p>
         <button onClick={onClose} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition text-lg">✕</button>
       </div>
-      {items.length === 0 ? (
-        <div className="p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">Tu carrito está vacío</div>
-      ) : (
-        <>
-          <div className="divide-y divide-[hsl(var(--border)/0.5)] max-h-80 overflow-y-auto">
+      <div className="p-5 space-y-4">
+        {submitError && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{submitError}</div>
+        )}
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Resumen</p>
+          <div className="space-y-1.5 max-h-40 overflow-y-auto">
             {items.map(({ listing, qty }) => (
-              <div key={listing.id} className="flex items-start gap-3 px-5 py-3">
-                {listing.photoUrls[0] && (
-                  <img src={listing.photoUrls[0]} alt={listing.title} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-[hsl(var(--foreground))] truncate">{listing.title}</p>
-                  <p className="text-xs font-bold text-[hsl(22_92%_50%)]">{fmtClp(listing.priceCents)}</p>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <button onClick={() => onQty(listing.id, Math.max(1, qty - 1))} className="h-6 w-6 rounded-full bg-[hsl(var(--muted))] text-sm font-bold hover:bg-[hsl(var(--muted-foreground)/0.2)] transition">−</button>
-                    <span className="text-xs font-bold w-4 text-center">{qty}</span>
-                    <button onClick={() => onQty(listing.id, qty + 1)} className="h-6 w-6 rounded-full bg-[hsl(var(--muted))] text-sm font-bold hover:bg-[hsl(var(--muted-foreground)/0.2)] transition">+</button>
-                  </div>
-                </div>
-                <button onClick={() => onRemove(listing.id)} className="text-[hsl(var(--muted-foreground))] hover:text-red-500 transition text-sm mt-1">✕</button>
+              <div key={listing.id} className="flex items-center justify-between text-sm">
+                <span className="text-slate-700 truncate flex-1 mr-2">{listing.title} <span className="text-slate-400">×{qty}</span></span>
+                <span className="font-bold text-slate-800 shrink-0">{fmtClp(listing.priceCents * qty)}</span>
               </div>
             ))}
           </div>
-          <div className="border-t border-[hsl(var(--border)/0.5)] p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">Subtotal</span>
-              <span className="text-base font-black text-[hsl(var(--foreground))]">{fmtClp(subtotal)}</span>
-            </div>
-            <button
-              className="w-full rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-sm font-bold text-white shadow-sm transition hover:opacity-90"
-              onClick={() => alert("Función de pago disponible próximamente. Contacta a la tienda directamente.")}
-            >
-              Ir al pago
-            </button>
-            <p className="text-center text-xs text-[hsl(var(--muted-foreground))]">
-              O contáctanos directamente para coordinar
-            </p>
+          <div className="border-t border-slate-200 pt-2 flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-600">Total</span>
+            <span className="text-base font-black text-[hsl(22_92%_50%)]">{fmtClp(subtotal)}</span>
           </div>
-        </>
-      )}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-1.5 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500 w-20 shrink-0">Entrega</span>
+            <span className="font-semibold text-slate-800">{deliveryType === "PICKUP" ? "🏪 Retiro en tienda" : "🚚 Despacho a domicilio"}</span>
+          </div>
+          {deliveryType === "DELIVERY" && deliveryAddress && (
+            <div className="flex items-start gap-2">
+              <span className="text-slate-500 w-20 shrink-0 mt-0.5">Dirección</span>
+              <span className="font-semibold text-slate-800">{deliveryAddress}</span>
+            </div>
+          )}
+          {notes.trim() && (
+            <div className="flex items-start gap-2">
+              <span className="text-slate-500 w-20 shrink-0 mt-0.5">Notas</span>
+              <span className="font-semibold text-slate-800">{notes}</span>
+            </div>
+          )}
+        </div>
+
+        <p className="text-center text-xs text-slate-400">Pago al momento de retirar o recibir el pedido</p>
+
+        <div className="flex gap-2">
+          <button onClick={() => setStep("delivery")} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+            ← Atrás
+          </button>
+          <button
+            onClick={() => void handleConfirm()}
+            disabled={submitting}
+            className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-sm font-bold text-white shadow-sm hover:opacity-90 disabled:opacity-50 transition"
+          >
+            {submitting ? "Enviando pedido..." : "Confirmar pedido ✓"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -146,8 +351,8 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
     });
     setShowCart(true);
   }
-  function removeFromCart(id: string) { setCart(cur => cur.filter(i => i.listing.id !== id)); }
-  function setQty(id: string, qty: number) { setCart(cur => cur.map(i => i.listing.id === id ? { ...i, qty } : i)); }
+  function removeFromCart(listingId: string) { setCart(cur => cur.filter(i => i.listing.id !== listingId)); }
+  function setQty(listingId: string, qty: number) { setCart(cur => cur.map(i => i.listing.id === listingId ? { ...i, qty } : i)); }
 
   const cats = Array.from(new Set(listings.map(l => l.category)));
   const visible = catFilter ? listings.filter(l => l.category === catFilter) : listings;
@@ -176,12 +381,10 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="pb-16 space-y-6">
-      {/* back */}
       <Link href="/explore" className="inline-flex items-center gap-1 text-sm font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">
         ← Volver
       </Link>
 
-      {/* shop header */}
       <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white shadow-sm">
         <div className="h-32 bg-gradient-to-r from-amber-600 to-orange-500" />
         <div className="p-5">
@@ -231,7 +434,6 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {/* discounts */}
       {shop.priceInfo.length > 0 && (
         <div className="overflow-hidden rounded-3xl border border-orange-200 bg-orange-50 shadow-sm p-5">
           <p className="text-[11px] font-bold uppercase tracking-widest text-orange-500 mb-2">Descuentos y promociones</p>
@@ -243,10 +445,8 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      {/* main grid: catalog + cart */}
       <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          {/* category filter */}
           {cats.length > 1 && (
             <div className="flex flex-wrap gap-2">
               <button onClick={() => setCatFilter("")}
@@ -262,7 +462,6 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          {/* product grid */}
           {visible.length === 0 ? (
             <div className="rounded-3xl border border-[hsl(var(--border))] bg-white p-8 text-center">
               <p className="text-4xl">📦</p>
@@ -280,9 +479,15 @@ export default function PublicShopPage({ params }: { params: { id: string } }) {
           )}
         </div>
 
-        {/* cart panel */}
         {showCart && (
-          <CartPanel items={cart} onRemove={removeFromCart} onQty={setQty} onClose={() => setShowCart(false)} />
+          <CheckoutPanel
+            items={cart}
+            onRemove={removeFromCart}
+            onQty={setQty}
+            onClose={() => setShowCart(false)}
+            accessToken={accessToken}
+            shopName={shop.name}
+          />
         )}
       </div>
     </div>

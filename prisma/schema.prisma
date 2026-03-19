@@ -34,6 +34,19 @@ enum MarketplaceCategory {
   OTHER
 }
 
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum DeliveryType {
+  PICKUP
+  DELIVERY
+}
+
 enum PetSex {
   MALE
   FEMALE
@@ -277,6 +290,8 @@ model User {
   benefitRedemptions               BenefitRedemption[]
   newsArticleSaves                 NewsArticleSave[]
   newsArticleShares                NewsArticleShare[]
+  purchasedOrders                  Order[]                   @relation("OrderBuyer")
+  receivedOrders                   Order[]                   @relation("OrderSeller")
 
   @@index([role])
   @@index([deletedAt])
@@ -1143,6 +1158,7 @@ model MarketplaceListing {
   district      String?
   latitude      Decimal?                  @db.Decimal(9, 6)
   longitude     Decimal?                  @db.Decimal(9, 6)
+  stockQuantity Int?
   isActive      Boolean                   @default(true)
   featuredUntil DateTime?
   createdAt     DateTime                  @default(now())
@@ -1152,6 +1168,7 @@ model MarketplaceListing {
   favorites     MarketplaceFavorite[]
   conversations MarketplaceConversation[]
   reports       MarketplaceReport[]
+  orderItems    OrderItem[]
 
   @@index([sellerId, createdAt])
   @@index([isActive, category, condition, createdAt])
@@ -1159,6 +1176,42 @@ model MarketplaceListing {
   @@index([latitude, longitude])
   @@index([featuredUntil])
   @@index([deletedAt])
+}
+
+model Order {
+  id              String       @id @default(cuid())
+  orderNumber     String       @unique
+  buyerId         String
+  sellerId        String
+  status          OrderStatus  @default(PENDING)
+  deliveryType    DeliveryType @default(PICKUP)
+  deliveryAddress String?
+  notes           String?
+  totalCents      Int
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  buyer           User         @relation("OrderBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
+  seller          User         @relation("OrderSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  items           OrderItem[]
+
+  @@index([buyerId, createdAt])
+  @@index([sellerId, status, createdAt])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id        String             @id @default(cuid())
+  orderId   String
+  listingId String?
+  title     String
+  priceCents Int
+  quantity  Int
+  photoUrl  String?
+  order     Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listing   MarketplaceListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([listingId])
 }
 
 model MarketplaceFavorite {
