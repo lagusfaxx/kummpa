@@ -55,6 +55,23 @@ function toStringArray(value: Prisma.JsonValue | null | undefined): string[] {
     .filter((item) => item.length > 0);
 }
 
+function toServiceNamesArray(value: Prisma.JsonValue | null | undefined): string[] {
+  if (!Array.isArray(value)) return [];
+  const names: string[] = [];
+  for (const item of value as unknown[]) {
+    if (typeof item === "string") {
+      const s = item.trim();
+      if (s.length > 0) names.push(s);
+    } else if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+      const obj = item as Record<string, unknown>;
+      if (typeof obj["name"] === "string" && obj["name"].trim().length > 0) {
+        names.push(obj["name"].trim());
+      }
+    }
+  }
+  return names;
+}
+
 function decimalToNumber(value: Prisma.Decimal | number | null | undefined): number | null {
   if (value === null || value === undefined) return null;
   const parsed = Number(value);
@@ -528,7 +545,7 @@ async function loadBaseMapPoints(includeLostPets: boolean, searchQuery?: string)
     if (latitude === null || longitude === null) continue;
 
     const openingHours = toStringArray(groomer.businessLocation?.openingHours ?? groomer.openingHours);
-    const services = toStringArray(groomer.services);
+    const services = toServiceNamesArray(groomer.services);
     const prices = toStringArray(groomer.referencePrices);
     const ownerName = fullName(groomer.user.firstName, groomer.user.lastName);
 
