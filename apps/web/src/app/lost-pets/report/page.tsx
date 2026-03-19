@@ -19,16 +19,10 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
 function defaultDateTime() {
   const now = new Date();
-  now.setMinutes(0, 0, 0);
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  now.setSeconds(0, 0);
+  const offset = now.getTimezoneOffset();
+  now.setMinutes(now.getMinutes() - offset);
   return now.toISOString().slice(0, 16);
-}
-
-function formatDateTime(value: string) {
-  return new Date(value).toLocaleString("es-CL", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
 }
 
 export default function LostPetsReportPage() {
@@ -40,44 +34,34 @@ export default function LostPetsReportPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState("");
   const [step, setStep] = useState(1);
+
   const [lastSeenAt, setLastSeenAt] = useState(defaultDateTime());
   const [locationMode, setLocationMode] = useState<"current" | "search" | "map">("current");
   const [pickedLocation, setPickedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [lastSeenAddress, setLastSeenAddress] = useState("");
   const [addressQuery, setAddressQuery] = useState("");
   const [addressResults, setAddressResults] = useState<GeocodingSuggestion[]>([]);
+  const [geoLoading, setGeoLoading] = useState(false);
+
   const [description, setDescription] = useState("");
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [emergencyNotes, setEmergencyNotes] = useState("");
   const [searchRadiusKm, setSearchRadiusKm] = useState(10);
   const [medicalPriority, setMedicalPriority] = useState(false);
-  const [broadcastEnabled, setBroadcastEnabled] = useState(true);
+  const [broadcastEnabled] = useState(true);
   const [shareAfterCreate, setShareAfterCreate] = useState(true);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!accessToken) {
-      setIsLoading(false);
-      return;
-    }
-
-    const loadPetsData = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const petRows = await listPets(accessToken);
-        setPets(petRows);
-        setSelectedPetId(petRows[0]?.id ?? "");
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "No se pudieron cargar mascotas.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void loadPetsData();
+    if (!accessToken) { setIsLoading(false); return; }
+    listPets(accessToken)
+      .then((rows) => { setPets(rows); setSelectedPetId(rows[0]?.id ?? ""); })
+      .catch((e) => setError(e instanceof Error ? e.message : "No se pudieron cargar mascotas."))
+      .finally(() => setIsLoading(false));
   }, [accessToken]);
 
   useEffect(() => {
@@ -85,74 +69,48 @@ export default function LostPetsReportPage() {
       setAddressResults([]);
       return;
     }
-
-    const timeout = setTimeout(() => {
+    const t = setTimeout(() => {
       void searchAddressSuggestions(addressQuery)
-        .then((rows) => setAddressResults(rows))
+        .then(setAddressResults)
         .catch(() => setAddressResults([]));
     }, 250);
-
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [addressQuery, locationMode]);
 
-  const selectedPet = useMemo(
-    () => pets.find((pet) => pet.id === selectedPetId) ?? null,
-    [pets, selectedPetId]
-  );
-
-  const canContinueStep2 = Boolean(pickedLocation && lastSeenAddress);
-  const canContinueStep3 = Boolean(lastSeenAt && description.trim());
+  const selectedPet = useMemo(() => pets.find((p) => p.id === selectedPetId) ?? null, [pets, selectedPetId]);
 
   const requestCurrentLocation = () => {
-    if (!("geolocation" in navigator)) {
-      setError("Tu navegador no soporta geolocalizacion.");
-      return;
-    }
-
+    if (!("geolocation" in navigator)) { setError("Tu navegador no soporta geolocalización."); return; }
+    setGeoLoading(true);
     setError(null);
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const nextLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        setPickedLocation(nextLocation);
-        const address = await reverseGeocodeLocation(nextLocation.lat, nextLocation.lng).catch(() => null);
-        setLastSeenAddress(address ?? "Ubicacion actual");
+      async (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setPickedLocation(loc);
+        const addr = await reverseGeocodeLocation(loc.lat, loc.lng).catch(() => null);
+        setLastSeenAddress(addr ?? "Ubicación actual");
+        setGeoLoading(false);
       },
-      (locationError) => {
-        setError(locationError.message || "No fue posible obtener tu ubicacion.");
-      },
+      (e) => { setError(e.message || "No se pudo obtener tu ubicación."); setGeoLoading(false); },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
-  useEffect(() => {
-    if (locationMode === "current" && !pickedLocation) {
-      requestCurrentLocation();
-    }
-  }, [locationMode, pickedLocation]);
-
-  const handlePickSuggestion = (suggestion: GeocodingSuggestion) => {
-    setPickedLocation({
-      lat: suggestion.lat,
-      lng: suggestion.lng
-    });
-    setLastSeenAddress(suggestion.address);
-    setAddressQuery(suggestion.address);
+  const handlePickSuggestion = (s: GeocodingSuggestion) => {
+    setPickedLocation({ lat: s.lat, lng: s.lng });
+    setLastSeenAddress(s.address);
+    setAddressQuery(s.address);
     setAddressResults([]);
   };
 
   const handlePublish = async () => {
     if (!accessToken || !selectedPetId || !pickedLocation) {
-      setError("Completa la mascota y la ultima ubicacion antes de publicar.");
+      setError("Selecciona la mascota y la ubicación antes de publicar.");
       return;
     }
-
     try {
       setIsSaving(true);
       setError(null);
-
       const created = await createLostPetAlert(accessToken, {
         petId: selectedPetId,
         lastSeenAt: new Date(lastSeenAt).toISOString(),
@@ -163,366 +121,337 @@ export default function LostPetsReportPage() {
         emergencyNotes: emergencyNotes || undefined,
         medicalPriority,
         searchRadiusKm,
-        broadcastEnabled
+        broadcastEnabled,
       });
-
-      const shareUrl = `${window.location.origin}/lost-pets/public/${created.shareToken}`;
-
       if (shareAfterCreate) {
+        const shareUrl = `${window.location.origin}/lost-pets/public/${created.shareToken}`;
         try {
           if (navigator.share) {
-            await navigator.share({
-              title: `Ayuda a encontrar a ${selectedPet?.name ?? "esta mascota"}`,
-              text: "Difunde esta alerta pet.",
-              url: shareUrl
-            });
+            await navigator.share({ title: `Ayuda a encontrar a ${selectedPet?.name ?? "esta mascota"}`, url: shareUrl });
           } else {
             await navigator.clipboard.writeText(shareUrl);
           }
-        } catch {
-          // Keep navigation flow even if share is cancelled.
-        }
+        } catch { /* cancelled */ }
       }
-
-      showToast({
-        tone: "success",
-        title: "Alerta publicada",
-        description: shareAfterCreate
-          ? "La alerta quedo publicada y lista para difusion."
-          : "La alerta ya aparece disponible para la comunidad."
-      });
-
+      showToast({ tone: "success", title: "Alerta publicada", description: "La comunidad ya puede ver y difundir la alerta." });
       router.push(`/lost-pets/${created.id}`);
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "No se pudo crear la alerta.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo crear la alerta.");
     } finally {
       setIsSaving(false);
     }
   };
 
+  const canStep2 = Boolean(pickedLocation && lastSeenAddress);
+  const canPublish = canStep2 && Boolean(lastSeenAt);
+
+  const STEPS = ["Mascota", "Ubicación", "Detalles"];
+
   return (
     <AuthGate>
-      <div className="space-y-6">
-        <section className="kumpa-soft-section p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <span className="kumpa-eyebrow">Reportar mascota perdida</span>
-              <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                Wizard simple, visual y pensado para movil
-              </h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-                Selecciona la mascota, marca la ultima ubicacion, agrega contexto, define la difusion y
-                publica sin campos tecnicos ni coordenadas manuales.
-              </p>
-            </div>
-            <Link href="/lost-pets" className="btn btn-outline">
-              Volver a alertas
-            </Link>
-          </div>
+      <div className="mx-auto max-w-lg space-y-0 pb-16">
 
-          <div className="mt-5 grid gap-2 sm:grid-cols-5">
-            {[
-              "Mascota",
-              "Ubicacion",
-              "Datos",
-              "Difusion",
-              "Previsualizar"
-            ].map((label, index) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => setStep(index + 1)}
-                className={`kumpa-chip justify-center ${step === index + 1 ? "kumpa-chip-active" : ""}`}
-              >
-                {index + 1}. {label}
-              </button>
-            ))}
+        {/* ── header urgente ── */}
+        <div className="flex items-center justify-between px-1 pb-4 pt-2">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-red-500">Alerta de emergencia</p>
+            <h1 className="mt-0.5 text-xl font-black tracking-tight text-slate-900">Reportar mascota perdida</h1>
           </div>
-        </section>
+          <Link href="/lost-pets" className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+            Cancelar
+          </Link>
+        </div>
 
-        {error && <InlineBanner tone="error">{error}</InlineBanner>}
+        {/* ── step indicator ── */}
+        <div className="flex gap-0 border border-slate-200 overflow-hidden rounded-xl mb-5">
+          {STEPS.map((label, i) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => { if (i + 1 < step || (i + 1 === 2 && selectedPetId) || (i + 1 === 3 && canStep2)) setStep(i + 1); }}
+              className={`flex-1 py-2.5 text-xs font-bold transition-colors ${
+                step === i + 1
+                  ? "bg-red-600 text-white"
+                  : step > i + 1
+                  ? "bg-red-50 text-red-600"
+                  : "bg-white text-slate-400"
+              }`}
+            >
+              {i + 1}. {label}
+            </button>
+          ))}
+        </div>
+
+        {error && <div className="mb-4"><InlineBanner tone="error">{error}</InlineBanner></div>}
 
         {isLoading ? (
-          <>
-            <SurfaceSkeleton blocks={5} />
-            <SurfaceSkeleton blocks={4} />
-          </>
+          <SurfaceSkeleton blocks={4} />
         ) : pets.length === 0 ? (
           <EmptyState
-            eyebrow="Mascotas"
-            title="Necesitas al menos una mascota registrada para crear la alerta"
-            description="Crea primero la ficha de tu mascota para usar reportes de perdida, identidad compartible y seguimiento."
-            action={
-              <Link href="/pets/new" className="btn btn-primary">
-                Crear mascota
-              </Link>
-            }
+            eyebrow="Sin mascotas"
+            title="Necesitas al menos una mascota registrada"
+            description="Crea la ficha de tu mascota para poder crear alertas de pérdida."
+            action={<Link href="/pets/new" className="btn btn-primary">Crear mascota</Link>}
           />
         ) : (
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_360px]">
-            <section className="space-y-5">
-              {step === 1 && (
-                <div className="card p-5">
-                  <h2 className="kumpa-section-title">Paso 1. Seleccionar mascota</h2>
-                  <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    Elige la mascota que quieres reportar. Usaremos su foto y datos para la alerta.
-                  </p>
-                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                    {pets.map((pet) => (
-                      <button
-                        key={pet.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedPetId(pet.id);
-                          setStep(2);
-                        }}
-                        className={`card p-4 text-left ${selectedPetId === pet.id ? "border-[hsl(var(--destructive))]" : ""}`}
-                      >
-                        <p className="text-lg font-semibold">{pet.name}</p>
-                        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                          {pet.species} · {pet.breed || "Sin raza"}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
+          <>
+            {/* ─────────────────── PASO 1: MASCOTA ─────────────────── */}
+            {step === 1 && (
+              <div className="overflow-hidden rounded-none border border-slate-200 bg-white">
+                <div className="border-b border-slate-100 px-5 py-4">
+                  <p className="text-sm font-bold text-slate-800">¿Cuál de tus mascotas está perdida?</p>
+                  <p className="mt-0.5 text-xs text-slate-500">Toca para seleccionar y continuar.</p>
                 </div>
-              )}
-
-              {step === 2 && (
-                <div className="card p-5">
-                  <h2 className="kumpa-section-title">Paso 2. Ultima ubicacion conocida</h2>
-                  <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    Usa tu ubicacion actual, busca la direccion o mueve el pin en el mapa.
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
+                <div className="divide-y divide-slate-100">
+                  {pets.map((pet) => (
                     <button
+                      key={pet.id}
                       type="button"
-                      onClick={() => {
-                        setLocationMode("current");
-                        requestCurrentLocation();
-                      }}
-                      className={`kumpa-chip ${locationMode === "current" ? "kumpa-chip-active" : ""}`}
+                      onClick={() => { setSelectedPetId(pet.id); setStep(2); requestCurrentLocation(); }}
+                      className={`flex w-full items-center gap-4 px-5 py-4 text-left transition hover:bg-slate-50 ${
+                        selectedPetId === pet.id ? "bg-red-50" : ""
+                      }`}
                     >
-                      Usar mi ubicacion actual
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLocationMode("search")}
-                      className={`kumpa-chip ${locationMode === "search" ? "kumpa-chip-active" : ""}`}
-                    >
-                      Buscar direccion
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLocationMode("map")}
-                      className={`kumpa-chip ${locationMode === "map" ? "kumpa-chip-active" : ""}`}
-                    >
-                      Mover pin en mapa
-                    </button>
-                  </div>
-
-                  {locationMode === "search" && (
-                    <div className="mt-4 space-y-3">
-                      <input
-                        value={addressQuery}
-                        onChange={(event) => setAddressQuery(event.target.value)}
-                        placeholder="Escribe una direccion, parque o referencia..."
-                      />
-                      {addressResults.length > 0 && (
-                        <div className="space-y-2">
-                          {addressResults.map((result) => (
-                            <button
-                              key={result.id}
-                              type="button"
-                              onClick={() => handlePickSuggestion(result)}
-                              className="card w-full p-4 text-left"
-                            >
-                              <p className="font-semibold">{result.label}</p>
-                              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{result.address}</p>
-                            </button>
-                          ))}
+                      {pet.primaryPhotoUrl ? (
+                        <img src={pet.primaryPhotoUrl} alt={pet.name} className="h-12 w-12 shrink-0 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg font-black text-slate-400">
+                          {pet.name[0]?.toUpperCase()}
                         </div>
                       )}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-900">{pet.name}</p>
+                        <p className="text-xs text-slate-500">{pet.species} · {pet.breed || "Sin raza"}</p>
+                      </div>
+                      {selectedPetId === pet.id && (
+                        <span className="shrink-0 rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-black uppercase text-white">
+                          Seleccionada
+                        </span>
+                      )}
+                      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ─────────────────── PASO 2: UBICACIÓN ─────────────────── */}
+            {step === 2 && (
+              <div className="space-y-3">
+                <div className="overflow-hidden rounded-none border border-slate-200 bg-white">
+                  <div className="border-b border-slate-100 px-5 py-4">
+                    <p className="text-sm font-bold text-slate-800">¿Dónde fue vista por última vez?</p>
+                    <p className="mt-0.5 text-xs text-slate-500">Marca el punto más cercano posible.</p>
+                  </div>
+
+                  {/* modo de ubicación */}
+                  <div className="flex border-b border-slate-100">
+                    {(["current", "search", "map"] as const).map((mode) => {
+                      const labels = { current: "Mi ubicación", search: "Buscar dirección", map: "Mover pin" };
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => {
+                            setLocationMode(mode);
+                            if (mode === "current") requestCurrentLocation();
+                          }}
+                          className={`flex-1 py-2.5 text-[11px] font-semibold transition-colors ${
+                            locationMode === mode
+                              ? "bg-slate-900 text-white"
+                              : "text-slate-500 hover:bg-slate-50"
+                          }`}
+                        >
+                          {labels[mode]}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* búsqueda por texto */}
+                  {locationMode === "search" && (
+                    <div className="px-5 py-4 space-y-2">
+                      <input
+                        value={addressQuery}
+                        onChange={(e) => setAddressQuery(e.target.value)}
+                        placeholder="Calle, parque, referencia..."
+                        className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-slate-900"
+                        autoFocus
+                      />
+                      {addressResults.map((r) => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => handlePickSuggestion(r)}
+                          className="w-full rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-left hover:bg-slate-100"
+                        >
+                          <p className="text-xs font-semibold text-slate-800">{r.label}</p>
+                          <p className="mt-0.5 text-[11px] text-slate-500">{r.address}</p>
+                        </button>
+                      ))}
                     </div>
                   )}
 
-                  <div className="mt-4">
-                    <MapCanvas
-                      accessToken={MAPBOX_TOKEN}
-                      points={[]}
-                      pickedLocation={pickedLocation}
-                      onPickLocation={(locationData) => {
-                        setPickedLocation(locationData);
-                        void reverseGeocodeLocation(locationData.lat, locationData.lng).then((address) => {
-                          setLastSeenAddress(address ?? "Punto seleccionado en el mapa");
-                        });
-                      }}
-                      center={pickedLocation}
-                      className="h-[320px] w-full rounded-[1.8rem] lg:h-[420px]"
-                    />
-                  </div>
+                  {/* mapa */}
+                  <MapCanvas
+                    accessToken={MAPBOX_TOKEN}
+                    points={[]}
+                    pickedLocation={pickedLocation}
+                    onPickLocation={(loc) => {
+                      setPickedLocation(loc);
+                      void reverseGeocodeLocation(loc.lat, loc.lng).then((a) => setLastSeenAddress(a ?? "Punto en el mapa"));
+                    }}
+                    center={pickedLocation}
+                    className="h-[280px] w-full"
+                  />
 
-                  <div className="mt-4 rounded-2xl bg-[hsl(var(--muted))] p-4 text-sm">
-                    <p className="font-semibold">Ubicacion seleccionada</p>
-                    <p className="mt-1 text-[hsl(var(--muted-foreground))]">
-                      {lastSeenAddress || "Aun no hay una ubicacion confirmada."}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      type="button"
-                      disabled={!canContinueStep2}
-                      onClick={() => setStep(3)}
-                      className="btn btn-primary"
-                    >
-                      Continuar
-                    </button>
+                  {/* dirección confirmada */}
+                  <div className="px-5 py-3">
+                    {geoLoading ? (
+                      <p className="text-xs text-slate-400">Obteniendo tu ubicación…</p>
+                    ) : pickedLocation ? (
+                      <div className="flex items-start gap-2">
+                        <svg viewBox="0 0 24 24" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        <p className="text-xs font-semibold text-slate-700">{lastSeenAddress}</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400">Aún sin ubicación confirmada.</p>
+                    )}
                   </div>
                 </div>
-              )}
 
-              {step === 3 && (
-                <div className="card p-5">
-                  <h2 className="kumpa-section-title">Paso 3. Datos simples</h2>
-                  <div className="mt-4 grid gap-4">
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold">Fecha y hora ultima vez vista</label>
-                      <input type="datetime-local" value={lastSeenAt} onChange={(event) => setLastSeenAt(event.target.value)} />
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setStep(1)} className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                    Volver
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canStep2}
+                    onClick={() => setStep(3)}
+                    className="flex-1 rounded-full bg-red-600 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-red-700 disabled:opacity-40"
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ─────────────────── PASO 3: DETALLES + PUBLICAR ─────────────────── */}
+            {step === 3 && (
+              <div className="space-y-3">
+                <div className="overflow-hidden rounded-none border border-slate-200 bg-white">
+                  {/* resumen compacto */}
+                  <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3">
+                    {selectedPet?.primaryPhotoUrl ? (
+                      <img src={selectedPet.primaryPhotoUrl} alt={selectedPet.name} className="h-9 w-9 rounded-full object-cover" />
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-400">
+                        {selectedPet?.name[0]?.toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-900">{selectedPet?.name}</p>
+                      <p className="truncate text-[11px] text-slate-500">{lastSeenAddress}</p>
                     </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold">Descripcion breve</label>
-                      <textarea
-                        rows={4}
-                        value={description}
-                        onChange={(event) => setDescription(event.target.value)}
-                        placeholder="Ejemplo: se asusto en el parque y corrio hacia la avenida."
+                    <button type="button" onClick={() => setStep(1)} className="text-[11px] font-semibold text-slate-400 hover:text-slate-600">
+                      Cambiar
+                    </button>
+                  </div>
+
+                  <div className="space-y-0 divide-y divide-slate-100">
+                    {/* fecha/hora */}
+                    <div className="px-5 py-4">
+                      <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Última vez vista</label>
+                      <input
+                        type="datetime-local"
+                        value={lastSeenAt}
+                        onChange={(e) => setLastSeenAt(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-slate-900"
                       />
                     </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold">Observaciones medicas opcionales</label>
+
+                    {/* descripción */}
+                    <div className="px-5 py-4">
+                      <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Descripción breve <span className="font-normal normal-case text-slate-400">(opcional)</span>
+                      </label>
                       <textarea
                         rows={3}
-                        value={emergencyNotes}
-                        onChange={(event) => setEmergencyNotes(event.target.value)}
-                        placeholder="Medicacion, alergias o cualquier dato urgente."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Ej: se asustó y corrió hacia el parque…"
+                        className="w-full resize-none rounded-lg border border-slate-200 px-4 py-3 text-sm leading-relaxed outline-none focus:border-slate-900 placeholder:text-slate-300"
                       />
                     </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold">Radio de difusion</label>
-                      <select value={searchRadiusKm} onChange={(event) => setSearchRadiusKm(Number(event.target.value))}>
-                        <option value={3}>3 km</option>
-                        <option value={5}>5 km</option>
-                        <option value={10}>10 km</option>
-                        <option value={20}>20 km</option>
-                        <option value={50}>50 km</option>
-                      </select>
-                    </div>
                   </div>
 
-                  <div className="mt-4 flex justify-between gap-3">
-                    <button type="button" onClick={() => setStep(2)} className="btn btn-outline">
-                      Volver
-                    </button>
+                  {/* opciones avanzadas */}
+                  <div className="border-t border-slate-100">
                     <button
                       type="button"
-                      disabled={!canContinueStep3}
-                      onClick={() => setStep(4)}
-                      className="btn btn-primary"
+                      onClick={() => setShowAdvanced((v) => !v)}
+                      className="flex w-full items-center justify-between px-5 py-3 text-xs font-semibold text-slate-500 hover:text-slate-700"
                     >
-                      Continuar
+                      Opciones avanzadas
+                      <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition-transform ${showAdvanced ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 9l-7 7-7-7"/></svg>
                     </button>
+
+                    {showAdvanced && (
+                      <div className="space-y-4 border-t border-slate-100 px-5 pb-5 pt-4">
+                        <div>
+                          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Notas médicas urgentes</label>
+                          <textarea
+                            rows={2}
+                            value={emergencyNotes}
+                            onChange={(e) => setEmergencyNotes(e.target.value)}
+                            placeholder="Medicación, alergias u otro dato crítico…"
+                            className="w-full resize-none rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-slate-900 placeholder:text-slate-300"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Radio de difusión</label>
+                          <select
+                            value={searchRadiusKm}
+                            onChange={(e) => setSearchRadiusKm(Number(e.target.value))}
+                            className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-slate-900"
+                          >
+                            <option value={3}>3 km</option>
+                            <option value={5}>5 km</option>
+                            <option value={10}>10 km (recomendado)</option>
+                            <option value={20}>20 km</option>
+                            <option value={50}>50 km</option>
+                          </select>
+                        </div>
+                        <label className="flex items-center gap-3 text-sm text-slate-700">
+                          <input type="checkbox" checked={medicalPriority} onChange={(e) => setMedicalPriority(e.target.checked)} className="h-4 w-4 rounded" />
+                          <span>Marcar como prioridad médica</span>
+                        </label>
+                        <label className="flex items-center gap-3 text-sm text-slate-700">
+                          <input type="checkbox" checked={shareAfterCreate} onChange={(e) => setShareAfterCreate(e.target.checked)} className="h-4 w-4 rounded" />
+                          <span>Compartir automáticamente al publicar</span>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
 
-              {step === 4 && (
-                <div className="card p-5">
-                  <h2 className="kumpa-section-title">Paso 4. Opciones de difusion</h2>
-                  <div className="mt-4 grid gap-3">
-                    <label className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--muted))] p-4 text-sm">
-                      <input type="checkbox" checked={broadcastEnabled} onChange={(event) => setBroadcastEnabled(event.target.checked)} />
-                      Activar difusion comunitaria
-                    </label>
-                    <label className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--muted))] p-4 text-sm">
-                      <input type="checkbox" checked={medicalPriority} onChange={(event) => setMedicalPriority(event.target.checked)} />
-                      Prioridad medica
-                    </label>
-                    <label className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--muted))] p-4 text-sm">
-                      <input type="checkbox" checked={shareAfterCreate} onChange={(event) => setShareAfterCreate(event.target.checked)} />
-                      Compartir automaticamente al publicar
-                    </label>
-                  </div>
-
-                  <div className="mt-4 flex justify-between gap-3">
-                    <button type="button" onClick={() => setStep(3)} className="btn btn-outline">
-                      Volver
-                    </button>
-                    <button type="button" onClick={() => setStep(5)} className="btn btn-primary">
-                      Continuar
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {step === 5 && (
-                <div className="card p-5">
-                  <h2 className="kumpa-section-title">Paso 5. Previsualizar y publicar</h2>
-                  <div className="mt-4 space-y-3 rounded-[1.6rem] bg-[hsl(var(--muted))] p-5 text-sm">
-                    <p><strong>Mascota:</strong> {selectedPet?.name || "Sin seleccionar"}</p>
-                    <p><strong>Ultima ubicacion:</strong> {lastSeenAddress || "Sin ubicacion"}</p>
-                    <p><strong>Ultima vez vista:</strong> {formatDateTime(lastSeenAt)}</p>
-                    <p><strong>Descripcion:</strong> {description || "Sin descripcion"}</p>
-                    <p><strong>Observaciones medicas:</strong> {emergencyNotes || "Sin observaciones"}</p>
-                    <p><strong>Radio:</strong> {searchRadiusKm} km</p>
-                    <p><strong>Difusion comunitaria:</strong> {broadcastEnabled ? "Activa" : "No"}</p>
-                    <p><strong>Prioridad medica:</strong> {medicalPriority ? "Si" : "No"}</p>
-                    <p><strong>Compartir al publicar:</strong> {shareAfterCreate ? "Si" : "No"}</p>
-                  </div>
-
-                  <div className="mt-4 flex justify-between gap-3">
-                    <button type="button" onClick={() => setStep(4)} className="btn btn-outline">
-                      Volver
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSaving}
-                      onClick={() => void handlePublish()}
-                      className="btn btn-primary"
-                    >
-                      {isSaving ? "Publicando..." : "Publicar alerta"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            <aside className="space-y-4">
-              <div className="card p-5">
-                <p className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))]">
-                  Resumen rapido
-                </p>
-                <div className="mt-4 space-y-3 text-sm">
-                  <p><strong>Mascota:</strong> {selectedPet?.name || "Sin seleccionar"}</p>
-                  <p><strong>Ubicacion:</strong> {lastSeenAddress || "Pendiente"}</p>
-                  <p><strong>Fecha:</strong> {formatDateTime(lastSeenAt)}</p>
-                  <p><strong>Radio:</strong> {searchRadiusKm} km</p>
+                {/* botones */}
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setStep(2)} className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                    Volver
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canPublish || isSaving}
+                    onClick={() => void handlePublish()}
+                    className="flex-1 rounded-full bg-red-600 py-2.5 text-sm font-black text-white shadow-sm hover:bg-red-700 disabled:opacity-40"
+                  >
+                    {isSaving ? "Publicando…" : "Publicar alerta"}
+                  </button>
                 </div>
               </div>
-
-              <div className="card p-5">
-                <p className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--muted-foreground))]">
-                  Reglas UX cumplidas
-                </p>
-                <div className="mt-4 space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
-                  <p>Nunca se muestran campos de latitud o longitud al usuario.</p>
-                  <p>La ubicacion se resuelve con mapa, geolocalizacion o busqueda por direccion.</p>
-                  <p>El flujo se mantiene visual, escaneable y optimizado para movil.</p>
-                </div>
-              </div>
-            </aside>
-          </div>
+            )}
+          </>
         )}
       </div>
     </AuthGate>
