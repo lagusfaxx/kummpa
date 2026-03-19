@@ -10,66 +10,25 @@ const POINT_LAYER_ID = "kumpa-pet-point-layer";
 
 let mapLibraryPromise: Promise<any> | null = null;
 
-const FALLBACK_MAP_STYLE = {
-  version: 8,
-  sources: {
-    "osm-tiles": {
-      type: "raster",
-      tiles: [
-        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      ],
-      tileSize: 256,
-      attribution:
-        '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
-    }
-  },
-  layers: [
-    {
-      id: "osm-tiles-layer",
-      type: "raster",
-      source: "osm-tiles",
-      minzoom: 0,
-      maxzoom: 22
-    }
-  ]
-} as const;
-
-function mapStyle(accessToken?: string) {
-  if (!accessToken) {
-    return FALLBACK_MAP_STYLE;
-  }
-
-  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${accessToken}`;
-}
-
-function withMapboxToken(url: string, accessToken?: string) {
-  if (!accessToken || !url.includes("api.mapbox.com")) {
-    return url;
-  }
-
-  const separator = url.includes("?") ? "&" : "?";
-  return `${url}${separator}access_token=${accessToken}`;
-}
+const MAPBOX_STYLE = "mapbox://styles/mapbox/streets-v12";
 
 function ensureMapAssets() {
   if (typeof window === "undefined") return Promise.resolve();
   if (mapLibraryPromise) return mapLibraryPromise;
 
   mapLibraryPromise = new Promise<any>((resolve, reject) => {
-    const cssId = "maplibre-gl-css";
+    const cssId = "mapbox-gl-css";
     if (!document.getElementById(cssId)) {
       const link = document.createElement("link");
       link.id = cssId;
       link.rel = "stylesheet";
-      link.href = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
+      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css";
       document.head.appendChild(link);
     }
 
-    void import("maplibre-gl")
-      .then((maplibre) => resolve(maplibre))
-      .catch(() => reject(new Error("No se pudo cargar MapLibre GL")));
+    void import("mapbox-gl")
+      .then((mapboxgl) => resolve(mapboxgl))
+      .catch(() => reject(new Error("No se pudo cargar Mapbox GL")));
   });
 
   return mapLibraryPromise;
@@ -194,15 +153,17 @@ export function MapCanvas({
       .then((maplibre) => {
         if (cancelled || !containerRef.current) return;
 
+        if (!accessToken) {
+          throw new Error("No se pudo cargar Mapbox: falta NEXT_PUBLIC_MAPBOX_TOKEN.");
+        }
+
         mapLibraryRef.current = maplibre;
+        maplibre.accessToken = accessToken;
         const map = new maplibre.Map({
           container: containerRef.current,
-          style: mapStyle(accessToken),
+          style: MAPBOX_STYLE,
           center: center ? [center.lng, center.lat] : [-70.65, -33.45],
-          zoom: 9.2,
-          transformRequest: (url: string) => ({
-            url: withMapboxToken(url, accessToken)
-          })
+          zoom: 9.2
         });
 
         map.addControl(new maplibre.NavigationControl(), "top-right");
