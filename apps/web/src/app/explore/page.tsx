@@ -593,9 +593,9 @@ function MobileCardStrip({
       {/* hide webkit scrollbar globally for this strip */}
       <style>{`#strip-scroll::-webkit-scrollbar{display:none}`}</style>
 
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 px-2 pb-2">
         <div
-          className="pointer-events-auto rounded-t-[28px] border-t border-slate-200/80 bg-white/96 shadow-[0_-10px_32px_-10px_rgba(0,0,0,0.28)] backdrop-blur-xl transition-all duration-300"
+          className="pointer-events-auto rounded-[28px] border border-white/70 bg-white/92 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all duration-300"
           style={{
             paddingBottom: `calc(${sheetState === "expanded" ? "1rem" : "0.7rem"} + env(safe-area-inset-bottom))`,
           }}
@@ -693,7 +693,7 @@ function MobileCardStrip({
             <button
               type="button"
               onClick={onToggleSheet}
-              className="mx-3 mb-1 flex w-[calc(100%-1.5rem)] items-center gap-3 rounded-2xl border border-slate-200/90 bg-white px-3 py-2 text-left shadow-[0_8px_24px_-16px_rgba(15,23,42,0.7)]"
+              className="mx-2 mb-1 flex w-[calc(100%-1rem)] items-center gap-3 rounded-2xl border border-slate-200/90 bg-white/96 px-3 py-2 text-left shadow-[0_10px_28px_-18px_rgba(15,23,42,0.7)]"
             >
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
@@ -729,7 +729,7 @@ function MobileCardStrip({
           ) : null}
 
           {activeService && (
-            <div className={`flex gap-2 px-3 ${sheetState === "expanded" ? "border-t border-slate-100 pt-2.5" : "pt-1.5"}`}>
+            <div className={`flex gap-2 px-2.5 ${sheetState === "expanded" ? "border-t border-slate-100 pt-2.5" : "pt-1.5"}`}>
               {primaryCta ?? <div className="flex-1" />}
               {activeService.phone && activeService.type !== "PARK" && (
                 <a
@@ -970,9 +970,22 @@ export default function ExplorePage() {
         {/* Mobile */}
         <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
 
-          {/* Mobile sticky header */}
-          <div className="shrink-0 border-b border-slate-200 bg-white/96 backdrop-blur-sm">
+          {/* Mobile sticky / floating header */}
+          <div
+            className={`shrink-0 ${
+              mobileTab === "map"
+                ? "pointer-events-none absolute inset-x-0 top-0 z-20 border-b-0 bg-transparent"
+                : "border-b border-slate-200 bg-white/96 backdrop-blur-sm"
+            }`}
+          >
             <div className="px-3 pt-3">
+              <div
+                className={
+                  mobileTab === "map"
+                    ? "pointer-events-auto rounded-[26px] border border-white/60 bg-white/88 px-2.5 pb-2 pt-2.5 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.55)] backdrop-blur-xl"
+                    : ""
+                }
+              >
               <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 ¿Qué quieres explorar?
               </p>
@@ -996,10 +1009,12 @@ export default function ExplorePage() {
                 })}
               </div>
             </div>
+            </div>
 
             {/* Mobile search */}
-            <div className="px-3 pb-2 pt-2">
-              <form onSubmit={submitSearch}>
+            <div className={`px-3 pb-2 pt-2 ${mobileTab === "map" ? "pointer-events-none" : ""}`}>
+              <div className={mobileTab === "map" ? "pointer-events-auto" : ""}>
+                <form onSubmit={submitSearch}>
                 <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 transition-all ${
                   inputFocused ? "border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]" : "border-slate-200 bg-slate-50"
                 }`}>
@@ -1018,21 +1033,28 @@ export default function ExplorePage() {
                     </button>
                   )}
                 </div>
-              </form>
+                </form>
+              </div>
             </div>
 
             {/* Mobile quick filters */}
-            <div className="flex gap-1.5 overflow-x-auto px-3 pb-2" style={{ scrollbarWidth: "none" }}>
-              <button onClick={() => setOpenNow((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${openNow ? "bg-emerald-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
-                Abierto ahora
-              </button>
-              <button onClick={() => setWithDiscount((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${withDiscount ? "bg-orange-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
-                Con descuento
-              </button>
+            <div className={`overflow-x-auto px-3 pb-2 ${mobileTab === "map" ? "pointer-events-none" : ""}`} style={{ scrollbarWidth: "none" }}>
+              <div className={`flex gap-1.5 ${mobileTab === "map" ? "pointer-events-auto" : ""}`}>
+                <button onClick={() => setOpenNow((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${openNow ? "bg-emerald-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
+                  Abierto ahora
+                </button>
+                <button onClick={() => setWithDiscount((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${withDiscount ? "bg-orange-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
+                  Con descuento
+                </button>
+              </div>
             </div>
 
             {/* Mobile tabs */}
-            <div className="mx-3 mb-3 flex overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-0.5">
+            <div className={`mx-3 mb-3 flex overflow-hidden rounded-xl border p-0.5 ${
+              mobileTab === "map"
+                ? "pointer-events-auto border-white/60 bg-white/88 shadow-[0_10px_24px_-16px_rgba(15,23,42,0.45)] backdrop-blur-xl"
+                : "border-slate-200 bg-slate-100"
+            }`}>
               {(["map", "list"] as const).map((tab) => (
                 <button key={tab} onClick={() => setMobileTab(tab)}
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-1.5 text-xs font-semibold transition-all ${
@@ -1045,7 +1067,7 @@ export default function ExplorePage() {
           </div>
 
           {/* Mobile content */}
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[15.75rem]" : ""}`}>
             {mobileTab === "map" ? (
               <MapCanvas
                 accessToken={MAPBOX_TOKEN}
@@ -1055,7 +1077,7 @@ export default function ExplorePage() {
                   setSelectedId(id);
                   setMobileSheetState("expanded");
                 }}
-                className="flex-1"
+                className="flex-1 min-h-[56vh]"
                 borderless
               />
             ) : (
