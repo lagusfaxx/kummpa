@@ -634,7 +634,7 @@ function SectionResumenGroomer({ appointments, groomer }: { appointments: Appoin
 function SectionPerfilGroomer({ groomer, accessToken, onSaved }: {
   groomer?: GroomerProfile | null;
   accessToken: string;
-  onSaved: () => void;
+  onSaved: (updated: GroomerProfile) => void;
 }) {
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
@@ -666,7 +666,7 @@ function SectionPerfilGroomer({ groomer, accessToken, onSaved }: {
     try {
       const photos = form.photosText.split("\n").map(u => u.trim()).filter(u => u.length > 0);
       const paymentMethods = form.paymentMethodsText.split(",").map(p => p.trim()).filter(p => p.length > 0);
-      await updateGroomerProfile(accessToken, {
+      const updated = await updateGroomerProfile(accessToken, {
         businessName: form.businessName || undefined,
         description:  form.description  || undefined,
         address:      form.address      || undefined,
@@ -680,7 +680,7 @@ function SectionPerfilGroomer({ groomer, accessToken, onSaved }: {
         photos:       photos.length > 0 ? photos : undefined,
         paymentMethods: paymentMethods.length > 0 ? paymentMethods : undefined,
       });
-      setOk(true); onSaved();
+      setOk(true); onSaved(updated);
       setTimeout(() => setOk(false), 2500);
     } finally { setSaving(false); }
   }
@@ -892,7 +892,7 @@ function GroomerDashboard({ profile, token }: { profile: MyProfile; token: strin
         ) : (
           <>
             {section === "resumen"   && <SectionResumenGroomer appointments={appointments} groomer={groomerProfile} />}
-            {section === "perfil"    && <SectionPerfilGroomer groomer={groomerProfile} accessToken={token} onSaved={() => void load()} />}
+            {section === "perfil"    && <SectionPerfilGroomer groomer={groomerProfile} accessToken={token} onSaved={(updated) => setGroomerProfile(updated)} />}
             {section === "servicios" && <SectionServiciosGroomer services={services} accessToken={token} onSaved={setServices} />}
             {section === "horarios"  && <SectionHorarios availability={availability} accessToken={token} onSaved={() => void load()} />}
             {section === "reservas"  && <SectionReservas appointments={appointments} accessToken={token} onRefresh={() => void load()} />}

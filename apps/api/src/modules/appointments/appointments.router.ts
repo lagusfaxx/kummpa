@@ -118,7 +118,7 @@ appointmentsRouter.put(
       if (invalid.length > 0) {
         res.status(400).json({
           ok: false,
-          error: "Groomers can only save services with serviceType GROOMING.",
+          error: { message: "Groomers can only save services with serviceType GROOMING." },
         });
         return;
       }
