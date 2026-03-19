@@ -466,6 +466,163 @@ function CategoryGrid({
   );
 }
 
+/* ─── Mobile Card Strip ──────────────────────────────────────── */
+function MobileCardStrip({
+  services,
+  selectedId,
+  onSelect,
+  onShowList,
+}: {
+  services: MapServicePoint[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onShowList: () => void;
+}) {
+  const stripRef = useRef<HTMLDivElement>(null);
+  const selectedService = services.find((s) => s.id === selectedId) ?? null;
+
+  /* auto-scroll the strip so the active card is centred */
+  useEffect(() => {
+    if (!selectedId || !stripRef.current) return;
+    const el = stripRef.current.querySelector<HTMLElement>(`[data-strip-id="${selectedId}"]`);
+    if (!el) return;
+    const strip = stripRef.current;
+    const cardCenter = el.offsetLeft + el.offsetWidth / 2;
+    const targetScroll = cardCenter - strip.clientWidth / 2;
+    strip.scrollTo({ left: targetScroll, behavior: "smooth" });
+  }, [selectedId]);
+
+  return (
+    <div className="absolute bottom-0 left-0 right-0 bg-transparent pointer-events-none">
+      {/* drag handle */}
+      <div className="pointer-events-none flex justify-center pb-1">
+        <div className="h-1 w-9 rounded-full bg-black/15" />
+      </div>
+
+      {/* horizontal scrollable strip */}
+      <div
+        ref={stripRef}
+        className="pointer-events-auto flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-none"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {services.map((s) => {
+          const cat = categoryFor(s.type);
+          const price = priceText(s);
+          const active = s.id === selectedId;
+          return (
+            <button
+              key={s.id}
+              data-strip-id={s.id}
+              type="button"
+              onClick={() => onSelect(s.id)}
+              style={{ scrollSnapAlign: "center", minWidth: "260px", ...(active ? { outline: `2px solid ${cat.color}`, outlineOffset: "2px" } : {}) }}
+              className={`pointer-events-auto shrink-0 rounded-2xl bg-white text-left shadow-[0_4px_20px_-4px_rgba(0,0,0,0.18)] transition-all duration-150 overflow-hidden ${
+                active ? "" : "opacity-90 hover:opacity-100"
+              }`}
+            >
+              <div className="flex items-start gap-3 p-3">
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-base font-bold text-white"
+                  style={{ backgroundColor: s.imageUrl ? "transparent" : cat.color }}
+                >
+                  {s.imageUrl
+                    ? <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
+                    : s.name.slice(0, 1)
+                  }
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-1">
+                    <p className="truncate text-[13px] font-bold text-slate-800 leading-tight">{s.name}</p>
+                    {s.isOpenNow !== null && (
+                      <span className={`ml-1 shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold leading-none ${
+                        s.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"
+                      }`}>
+                        {s.isOpenNow ? "Abierto" : "Cerrado"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400">
+                    <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
+                    {typeLabel(s.type)}
+                    {s.district && <><span className="opacity-40">·</span>{s.district}</>}
+                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    {s.rating !== null && (
+                      <span className="flex items-center gap-0.5 text-[11px] font-semibold text-amber-500">
+                        <IcoStar /> {s.rating.toFixed(1)}
+                      </span>
+                    )}
+                    {price && <span className="text-[11px] text-slate-500">{price}</span>}
+                    {s.distanceKm !== null && (
+                      <span className="ml-auto text-[10px] font-medium text-slate-400">{s.distanceKm.toFixed(1)} km</span>
+                    )}
+                  </div>
+                  {s.discountLabel && (
+                    <span className="mt-1 inline-block rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-bold text-orange-600">
+                      {s.discountLabel}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+
+        {/* extra spacing so last card centres properly */}
+        <div className="w-4 shrink-0" aria-hidden />
+      </div>
+
+      {/* CTA row for selected card */}
+      {selectedService && (
+        <div className="pointer-events-auto flex gap-2 bg-white px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-1px_0_0_rgba(0,0,0,0.06)]">
+          {selectedService.type === "PARK" ? (
+            <a
+              href={mapsUrl(selectedService.latitude, selectedService.longitude, selectedService.name)}
+              target="_blank" rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-green-700 py-2.5 text-[13px] font-bold text-white"
+            >
+              <IcoDirections /> Cómo llegar
+            </a>
+          ) : selectedService.type === "SHOP" ? (
+            <Link href={`/explore/shop/${selectedService.sourceId}`}
+              className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-2.5 text-center text-[13px] font-bold text-white">
+              Ver tienda
+            </Link>
+          ) : selectedService.type === "VET" ? (
+            <Link href={`/explore/vet/${selectedService.sourceId}`}
+              className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-2.5 text-center text-[13px] font-bold text-white">
+              Reservar
+            </Link>
+          ) : selectedService.type === "GROOMING" ? (
+            <Link href={`/explore/groomer/${selectedService.sourceId}`}
+              className="flex-1 rounded-2xl bg-pink-700 py-2.5 text-center text-[13px] font-bold text-white">
+              Reservar
+            </Link>
+          ) : (selectedService.bookingUrl ?? selectedService.profileUrl) ? (
+            <Link href={selectedService.bookingUrl ?? selectedService.profileUrl ?? "#"}
+              className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-2.5 text-center text-[13px] font-bold text-white">
+              Reservar
+            </Link>
+          ) : null}
+          {selectedService.phone && selectedService.type !== "PARK" && (
+            <a href={`tel:${selectedService.phone}`}
+              className="rounded-2xl border border-slate-200 px-4 py-2.5 text-[13px] font-semibold text-slate-700">
+              Llamar
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={onShowList}
+            className="rounded-2xl border border-slate-200 px-4 py-2.5 text-[13px] font-semibold text-slate-600"
+          >
+            Lista
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Page ────────────────────────────────────────────────────── */
 export default function ExplorePage() {
   const params = useSearchParams();
@@ -785,81 +942,14 @@ export default function ExplorePage() {
               </div>
             )}
 
-            {/* Mobile bottom sheet */}
-            {mobileTab === "map" && selectedService && (
-              <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white px-5 pt-3 pb-safe-bottom shadow-[0_-8px_40px_-4px_rgba(0,0,0,0.15)]">
-                <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-slate-200" />
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-base font-bold text-white"
-                    style={{ backgroundColor: categoryFor(selectedService.type).color }}>
-                    {selectedService.imageUrl
-                      ? <img src={selectedService.imageUrl} alt="" className="h-full w-full object-cover" />
-                      : selectedService.name.slice(0, 1)
-                    }
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-bold text-slate-800">{selectedService.name}</p>
-                    <p className="mt-0.5 text-[12px] text-slate-400">
-                      {typeLabel(selectedService.type)}
-                      {selectedService.distanceKm !== null && <> · {selectedService.distanceKm.toFixed(1)} km</>}
-                      {priceText(selectedService) && <> · {priceText(selectedService)}</>}
-                    </p>
-                  </div>
-                  {selectedService.isOpenNow !== null && (
-                    <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${selectedService.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                      {selectedService.isOpenNow ? "Abierto" : "Cerrado"}
-                    </span>
-                  )}
-                </div>
-                {selectedService.type === "SHOP" && selectedService.matchedProduct && (
-                  <div className="mb-3 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2">
-                    {selectedService.matchedProduct.imageUrl && (
-                      <img src={selectedService.matchedProduct.imageUrl} alt={selectedService.matchedProduct.title}
-                        className="h-8 w-8 shrink-0 rounded-lg object-cover" />
-                    )}
-                    {!selectedService.matchedProduct.imageUrl && (
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600"><IcoTag /></span>
-                    )}
-                    <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-slate-700">{selectedService.matchedProduct.title}</span>
-                    <span className="shrink-0 text-[12px] font-bold text-[hsl(22_92%_50%)]">
-                      ${Math.round(selectedService.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
-                    </span>
-                  </div>
-                )}
-                <div className="flex gap-2 pb-2">
-                  {selectedService.type === "PARK" ? (
-                    <a href={mapsUrl(selectedService.latitude, selectedService.longitude, selectedService.name)}
-                      target="_blank" rel="noopener noreferrer"
-                      className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-green-700 py-3 text-[13px] font-bold text-white">
-                      <IcoDirections /> Cómo llegar
-                    </a>
-                  ) : selectedService.type === "SHOP" ? (
-                    <Link href={`/explore/shop/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-center text-[13px] font-bold text-white">
-                      Ver tienda
-                    </Link>
-                  ) : selectedService.type === "VET" ? (
-                    <Link href={`/explore/vet/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
-                      Reservar
-                    </Link>
-                  ) : selectedService.type === "GROOMING" ? (
-                    <Link href={`/explore/groomer/${selectedService.sourceId}`} className="flex-1 rounded-2xl bg-pink-700 py-3 text-center text-[13px] font-bold text-white">
-                      Reservar
-                    </Link>
-                  ) : (selectedService.bookingUrl ?? selectedService.profileUrl) ? (
-                    <Link href={selectedService.bookingUrl ?? selectedService.profileUrl ?? "#"} className="flex-1 rounded-2xl bg-[hsl(var(--primary))] py-3 text-center text-[13px] font-bold text-white">
-                      Reservar
-                    </Link>
-                  ) : null}
-                  {selectedService.phone && selectedService.type !== "PARK" && (
-                    <a href={`tel:${selectedService.phone}`} className="flex-1 rounded-2xl border border-slate-200 py-3 text-center text-[13px] font-semibold text-slate-700">
-                      Llamar
-                    </a>
-                  )}
-                  <button onClick={() => setMobileTab("list")} className="rounded-2xl border border-slate-200 px-5 py-3 text-[13px] font-semibold text-slate-700">
-                    Lista
-                  </button>
-                </div>
-              </div>
+            {/* Mobile bottom card strip — swipeable, shows all results */}
+            {mobileTab === "map" && services.length > 0 && (
+              <MobileCardStrip
+                services={services}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onShowList={() => setMobileTab("list")}
+              />
             )}
           </div>
         </div>
