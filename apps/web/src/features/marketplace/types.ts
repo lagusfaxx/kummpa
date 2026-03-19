@@ -50,6 +50,7 @@ export interface MarketplaceListing {
     canFeature: boolean;
     conversationId?: string | null;
   };
+  stockQuantity?: number | null;
   distanceKm?: number | null;
   createdAt: string;
   updatedAt: string;
@@ -85,6 +86,7 @@ export interface MarketplaceCreateListingPayload {
   district?: string;
   latitude?: number;
   longitude?: number;
+  stockQuantity?: number | null;
 }
 
 export interface MarketplaceFavoriteSnapshot {

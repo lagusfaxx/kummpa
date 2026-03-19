@@ -123,7 +123,8 @@ export async function createMarketplaceListing(
       city: sanitizeText(payload.city),
       district: sanitizeText(payload.district),
       latitude: payload.latitude,
-      longitude: payload.longitude
+      longitude: payload.longitude,
+      stockQuantity: payload.stockQuantity
     }
   });
 }
@@ -143,6 +144,7 @@ export async function updateMarketplaceListing(
     latitude?: number | null;
     longitude?: number | null;
     isActive?: boolean;
+    stockQuantity?: number | null;
   }
 ): Promise<MarketplaceListing> {
   return requestWithAuth<MarketplaceListing>(`/listings/${listingId}`, accessToken, {
@@ -158,7 +160,8 @@ export async function updateMarketplaceListing(
       district: sanitizeText(payload.district),
       latitude: payload.latitude,
       longitude: payload.longitude,
-      isActive: payload.isActive
+      isActive: payload.isActive,
+      stockQuantity: payload.stockQuantity
     }
   });
 }

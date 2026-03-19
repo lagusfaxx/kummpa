@@ -1,6 +1,6 @@
 import type { CreateOrderPayload, Order, OrderStatus } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const BASE = `${API_URL}/api/v1/orders`;
 
 async function request<T>(

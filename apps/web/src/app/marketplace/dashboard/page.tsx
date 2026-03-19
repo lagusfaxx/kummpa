@@ -288,7 +288,7 @@ function SectionTienda({ shop, accessToken, onSaved }: { shop: ShopProfile | nul
 function SectionProductos({ listings, accessToken, onRefresh }: { listings: MarketplaceListing[]; accessToken: string; onRefresh: () => void }) {
   const [creating, setCreating] = useState(false);
   const [working, setWorking] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", priceCents: "", category: "ACCESSORY" as MarketplaceCategory, condition: "NEW" as "NEW" | "USED", photoUrl: "", district: "" });
+  const [form, setForm] = useState({ title: "", description: "", priceCents: "", category: "ACCESSORY" as MarketplaceCategory, condition: "NEW" as "NEW" | "USED", photoUrl: "", district: "", stock: "" });
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
@@ -303,9 +303,10 @@ function SectionProductos({ listings, accessToken, onRefresh }: { listings: Mark
         condition: form.condition, category: form.category,
         photoUrls: form.photoUrl ? [form.photoUrl] : [],
         district: form.district || undefined,
+        stockQuantity: form.stock !== "" ? parseInt(form.stock, 10) : undefined,
       });
       setCreating(false);
-      setForm({ title: "", description: "", priceCents: "", category: "ACCESSORY", condition: "NEW", photoUrl: "", district: "" });
+      setForm({ title: "", description: "", priceCents: "", category: "ACCESSORY", condition: "NEW", photoUrl: "", district: "", stock: "" });
       onRefresh();
     } finally { setWorking(null); }
   }
@@ -358,6 +359,9 @@ function SectionProductos({ listings, accessToken, onRefresh }: { listings: Mark
               </FormRow>
               <FormRow label="Comuna">
                 <Inp value={form.district} onChange={set("district")} placeholder="Providencia" />
+              </FormRow>
+              <FormRow label="Stock disponible (opcional)">
+                <Inp type="number" min="0" value={form.stock} onChange={set("stock")} placeholder="Sin límite" />
               </FormRow>
             </div>
             <FormRow label="Descripción">
@@ -473,6 +477,11 @@ function SectionInventario({ listings }: { listings: MarketplaceListing[] }) {
                 <div className="flex items-center gap-2 shrink-0">
                   {l.isFeatured && <Badge label="Destacado" color="amber" />}
                   <Badge label={l.isActive ? "Activo" : "Pausado"} color={l.isActive ? "green" : "slate"} />
+                  {l.stockQuantity != null && (
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${l.stockQuantity <= 0 ? "bg-red-100 text-red-600" : l.stockQuantity <= 3 ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"}`}>
+                      Stock: {l.stockQuantity}
+                    </span>
+                  )}
                   <p className="text-sm font-bold text-slate-700 hidden sm:block">{fmtClp(l.priceCents)}</p>
                 </div>
               </div>
