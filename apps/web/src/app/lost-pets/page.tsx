@@ -63,6 +63,57 @@ function alertToMapPoint(alert: LostPetAlert): MapServicePoint {
   };
 }
 
+/* ─── tiny SVG icons ─────────────────────────────────────────── */
+function IcoPin() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+      <circle cx="12" cy="9" r="2.5" />
+    </svg>
+  );
+}
+function IcoClock() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+function IcoEye() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+function IcoPaw() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7" cy="6" r="1.5" /><circle cx="12" cy="4" r="1.5" /><circle cx="17" cy="6" r="1.5" />
+      <circle cx="4.5" cy="10.5" r="1.5" />
+      <path d="M9 10C9 10 6 10 4 14C2 18 5 22 11 22C17 22 20 18 18 14C16 10 13 10 13 10" />
+    </svg>
+  );
+}
+function IcoShare() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </svg>
+  );
+}
+function IcoX({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 /* ─── status badge ───────────────────────────────────────────── */
 function StatusBadge({ alert }: { alert: LostPetAlert }) {
   if (alert.medicalPriority && alert.status === "ACTIVE")
@@ -97,12 +148,10 @@ function AlertCard({
   alert,
   active,
   onSelect,
-  onShare,
 }: {
   alert: LostPetAlert;
   active: boolean;
   onSelect: () => void;
-  onShare: () => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
 
@@ -148,16 +197,17 @@ function AlertCard({
           <p className="mt-0.5 truncate text-[11px] text-slate-500">
             {alert.pet.species} · {alert.pet.breed}
           </p>
-          <p className="mt-1 truncate text-[11px] text-slate-500">
-            📍 {alert.lastSeenAddress ?? "Zona no informada"}
+          <p className="mt-1 flex items-center gap-1 truncate text-[11px] text-slate-500">
+            <IcoPin />
+            {alert.lastSeenAddress ?? "Zona no informada"}
           </p>
           <div className="mt-1.5 flex items-center gap-2 text-[11px] text-slate-400">
-            <span>🕐 {timeAgo(alert.lastSeenAt)}</span>
+            <span className="flex items-center gap-0.5"><IcoClock /> {timeAgo(alert.lastSeenAt)}</span>
             {alert.distanceKm != null && (
               <span>· {alert.distanceKm.toFixed(1)} km</span>
             )}
             {alert.stats.sightingsCount > 0 && (
-              <span>· 👁 {alert.stats.sightingsCount}</span>
+              <span className="flex items-center gap-0.5">· <IcoEye /> {alert.stats.sightingsCount}</span>
             )}
           </div>
         </div>
@@ -200,8 +250,8 @@ function SelectedAlertPanel({
               <p className="text-xs text-slate-500 mt-0.5">
                 {alert.pet.species} · {alert.pet.breed}
               </p>
-              <p className="text-xs text-slate-500 mt-0.5">
-                📍 {alert.lastSeenAddress ?? "Zona no informada"}
+              <p className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
+                <IcoPin /> {alert.lastSeenAddress ?? "Zona no informada"}
               </p>
               <p className="text-xs text-slate-400 mt-0.5">
                 Visto {timeAgo(alert.lastSeenAt)}
@@ -213,15 +263,15 @@ function SelectedAlertPanel({
               onClick={onClose}
               className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             >
-              ✕
+              <IcoX />
             </button>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             <Link
-              href={`/lost-pets/${alert.id}#report-sighting`}
-              className="rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white hover:bg-orange-600"
+              href={`/lost-pets/${alert.id}`}
+              className="flex items-center gap-1 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white hover:bg-orange-600"
             >
-              👁 La vi
+              <IcoEye /> La vi
             </Link>
             <Link
               href={`/lost-pets/${alert.id}`}
@@ -232,9 +282,9 @@ function SelectedAlertPanel({
             <button
               type="button"
               onClick={onShare}
-              className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Compartir
+              <IcoShare /> Compartir
             </button>
           </div>
         </div>
@@ -345,14 +395,14 @@ export default function LostPetsPage() {
     } catch { /* cancelled */ }
   };
 
-  /* ── filter chips ── */
+  /* ── filter chip styles ── */
   const chipBase = "rounded-full px-3 py-1 text-xs font-semibold border transition-colors";
   const chipOn = "bg-slate-800 text-white border-slate-800";
   const chipOff = "bg-white text-slate-600 border-slate-200 hover:border-slate-400";
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "active", label: "🔴 Perdidas" },
-    { id: "found", label: "✅ Resueltas" },
+    { id: "active", label: "Perdidas" },
+    { id: "found", label: "Resueltas" },
     { id: "all", label: "Todas" },
     { id: "mine", label: "Mis alertas" },
   ];
@@ -361,12 +411,11 @@ export default function LostPetsPage() {
 
   return (
     <AuthGate>
-      {/* ── full-bleed incident map layout ── */}
-      <div className="flex h-full flex-col overflow-hidden">
+      {/* flex-1 participates correctly in the map-route AppShell flex chain */}
+      <div className="flex flex-1 flex-col overflow-hidden">
 
         {/* ── top action bar ── */}
         <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2.5 scrollbar-hide">
-          {/* tab filters */}
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -380,22 +429,20 @@ export default function LostPetsPage() {
 
           <div className="mx-1 h-5 w-px shrink-0 bg-slate-200" />
 
-          {/* nearby */}
           <button
             type="button"
             onClick={handleNearbyToggle}
-            className={`${chipBase} ${nearby ? chipOn : chipOff} shrink-0`}
+            className={`${chipBase} ${nearby ? chipOn : chipOff} shrink-0 flex items-center gap-1`}
           >
-            📍 Cerca de mí
+            <IcoPin /> Cerca de mí
           </button>
 
-          {/* 24h */}
           <button
             type="button"
             onClick={() => setLast24h((v) => !v)}
-            className={`${chipBase} ${last24h ? chipOn : chipOff} shrink-0`}
+            className={`${chipBase} ${last24h ? chipOn : chipOff} shrink-0 flex items-center gap-1`}
           >
-            🕐 24h
+            <IcoClock /> 24h
           </button>
 
           {geoError && (
@@ -416,7 +463,7 @@ export default function LostPetsPage() {
         {/* ── main split layout ── */}
         <div className="flex min-h-0 flex-1 overflow-hidden">
 
-          {/* ── LEFT: incident list ── */}
+          {/* ── LEFT: incident list (desktop only) ── */}
           <div className="hidden w-[360px] shrink-0 flex-col border-r border-slate-200 bg-slate-50 xl:flex">
             <div className="shrink-0 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5">
               <p className="text-sm font-bold text-slate-700">
@@ -437,7 +484,9 @@ export default function LostPetsPage() {
                 ))
               ) : filteredAlerts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-                  <span className="text-4xl">🐾</span>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                    <IcoPaw />
+                  </div>
                   <p className="text-sm font-semibold text-slate-500">
                     {tab === "mine" ? "Aún no tienes alertas" : "Sin alertas para este filtro"}
                   </p>
@@ -455,7 +504,6 @@ export default function LostPetsPage() {
                     alert={alert}
                     active={selectedId === alert.id}
                     onSelect={() => setSelectedId(alert.id)}
-                    onShare={() => void handleShare(alert)}
                   />
                 ))
               )}
@@ -486,9 +534,9 @@ export default function LostPetsPage() {
             {/* map FAB: reportar (mobile) */}
             <Link
               href="/lost-pets/report"
-              className="xl:hidden absolute bottom-5 right-4 z-20 flex items-center gap-2 rounded-full bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-red-700"
+              className="xl:hidden absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-full bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-red-700"
             >
-              🐾 Reportar pérdida
+              <IcoPaw /> Reportar pérdida
             </Link>
           </div>
         </div>
@@ -510,16 +558,16 @@ export default function LostPetsPage() {
             <button
               type="button"
               onClick={handleNearbyToggle}
-              className={`${chipBase} ${nearby ? chipOn : chipOff} shrink-0`}
+              className={`${chipBase} ${nearby ? chipOn : chipOff} shrink-0 flex items-center gap-1`}
             >
-              📍 Cerca
+              <IcoPin /> Cerca
             </button>
             <button
               type="button"
               onClick={() => setLast24h((v) => !v)}
-              className={`${chipBase} ${last24h ? chipOn : chipOff} shrink-0`}
+              className={`${chipBase} ${last24h ? chipOn : chipOff} shrink-0 flex items-center gap-1`}
             >
-              🕐 24h
+              <IcoClock /> 24h
             </button>
           </div>
 
@@ -531,8 +579,11 @@ export default function LostPetsPage() {
                 ))
               : filteredAlerts.length === 0
               ? (
-                <div className="flex w-full items-center justify-center py-6 text-sm text-slate-400">
-                  Sin alertas — <Link href="/lost-pets/report" className="ml-1 font-bold text-orange-500">Reportar</Link>
+                <div className="flex w-full items-center justify-center py-4 text-sm text-slate-400">
+                  Sin alertas —{" "}
+                  <Link href="/lost-pets/report" className="ml-1 font-bold text-orange-500">
+                    Reportar
+                  </Link>
                 </div>
               )
               : filteredAlerts.map((alert) => (
@@ -561,13 +612,15 @@ export default function LostPetsPage() {
                           <p className="truncate text-xs font-bold text-slate-800">{alert.pet.name}</p>
                           <StatusBadge alert={alert} />
                         </div>
-                        <p className="mt-0.5 truncate text-[10px] text-slate-500">
-                          📍 {alert.lastSeenAddress ?? "Zona no informada"}
+                        <p className="mt-0.5 flex items-center gap-0.5 truncate text-[10px] text-slate-500">
+                          <IcoPin /> {alert.lastSeenAddress ?? "Zona no informada"}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-slate-400">{timeAgo(alert.lastSeenAt)}</p>
+                        <p className="mt-0.5 flex items-center gap-0.5 text-[10px] text-slate-400">
+                          <IcoClock /> {timeAgo(alert.lastSeenAt)}
+                        </p>
                         <div className="mt-1.5 flex gap-1.5">
                           <Link
-                            href={`/lost-pets/${alert.id}#report-sighting`}
+                            href={`/lost-pets/${alert.id}`}
                             onClick={(e) => e.stopPropagation()}
                             className="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white"
                           >
