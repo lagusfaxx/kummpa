@@ -1,0 +1,94 @@
+La sección “Carnet de vacunación” está mal enfocada porque hoy parece un panel administrativo con formularios largos, y no un carnet real bonito, útil y compartible.
+
+OBJETIVO
+Quiero transformar esta sección para que primero se sienta como un carnet de vacunación real, premium y visual, y recién en segundo plano permita administrar vacunas y recordatorios.
+
+PROBLEMA ACTUAL
+- se ve como formulario/backoffice
+- no se siente como carnet
+- la edición pesa más que la visualización
+- falta una experiencia bonita e imprimible
+- no transmite identidad sanitaria ni documento real
+- demasiado formulario visible desde el inicio
+
+NUEVA DIRECCIÓN
+
+1. La vista principal debe ser el carnet, no el formulario.
+Al entrar, mostrar primero:
+- nombre de la mascota
+- especie / raza / edad
+- tutor
+- estado general del carnet
+- vacunas al día / por vencer / vencidas
+- próxima dosis destacada
+- QR o elemento compartible
+- botones para compartir / imprimir / PDF
+
+2. Crear una card o bloque principal tipo “carnet real”.
+Debe sentirse como:
+- documento veterinario digital
+- ficha sanitaria premium
+- carnet compartible e imprimible
+
+3. Agregar una timeline o historial visual de vacunas.
+Mostrar eventos tipo:
+- vacuna aplicada
+- próxima dosis
+- vencida
+- recordatorio pendiente
+
+Con estados visuales claros y diseño más bonito.
+
+4. Separar visualmente ver carnet de administrar carnet.
+No mostrar formularios largos de inmediato.
+Reorganizar la sección en tabs o bloques como:
+- Ver carnet
+- Historial
+- Administrar
+- Recordatorios
+
+5. En “Administrar” sí dejar:
+- agregar vacuna
+- fecha aplicación
+- próxima dosis
+- veterinaria/profesional
+- lote
+- certificado
+- observaciones
+
+6. En “Recordatorios” sí dejar:
+- crear recordatorio
+- tipo
+- fecha
+- mensaje
+- canal (email / in-app / push)
+
+7. Mejorar el diseño general.
+Quiero una experiencia:
+- más premium
+- más clara
+- más tipo documento real
+- menos formulario técnico
+- más estética de carnet y salud
+
+8. Botones y jerarquía.
+Acciones principales:
+- Descargar PDF
+- Compartir
+- Imprimir
+Acciones secundarias:
+- Agregar vacuna
+- Crear recordatorio
+- Gestionar historial
+
+9. Estados vacíos más elegantes.
+Si no hay vacunas, mostrar un estado vacío bonito, útil y coherente con la idea de carnet, no una caja plana sin vida.
+
+IMPORTANTE
+- no eliminar funcionalidad
+- reorganizar experiencia y jerarquía
+- priorizar vista bonita del carnet
+- hacer que la edición exista, pero como segunda capa
+
+ENTREGABLE
+Quiero que la sección se vea como un carnet de vacunación real, bonito y compartible, con administración separada y una experiencia mucho más premium.
