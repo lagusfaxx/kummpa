@@ -159,7 +159,9 @@ async function syncGroomerBusinessLocation(
 }
 
 export async function listGroomers(query: ListGroomersQueryInput) {
-  const where: Prisma.GroomerProfileWhereInput = {
+  const andClauses: Prisma.GroomerProfileWhereInput[] = [];
+
+  andClauses.push({
     OR: [
       { latitude: { not: null }, longitude: { not: null } },
       {
@@ -169,34 +171,75 @@ export async function listGroomers(query: ListGroomersQueryInput) {
         }
       }
     ]
-  };
+  });
 
   if (query.city) {
-    where.OR = [
-      { city: { contains: query.city, mode: "insensitive" } },
-      { businessLocation: { city: { contains: query.city, mode: "insensitive" } } }
-    ];
+    andClauses.push({
+      OR: [
+        { city: { contains: query.city, mode: "insensitive" } },
+        { businessLocation: { city: { contains: query.city, mode: "insensitive" } } }
+      ]
+    });
   }
 
   if (query.district) {
-    where.AND = [
-      {
-        OR: [
-          { district: { contains: query.district, mode: "insensitive" } },
-          { businessLocation: { district: { contains: query.district, mode: "insensitive" } } }
-        ]
-      }
-    ];
+    andClauses.push({
+      OR: [
+        { district: { contains: query.district, mode: "insensitive" } },
+        { businessLocation: { district: { contains: query.district, mode: "insensitive" } } }
+      ]
+    });
+  }
+
+  if (query.q) {
+    const q = query.q;
+    andClauses.push({
+      OR: [
+        { businessName: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+        { city: { contains: q, mode: "insensitive" } },
+        { district: { contains: q, mode: "insensitive" } },
+        { businessLocation: { city: { contains: q, mode: "insensitive" } } },
+        { businessLocation: { district: { contains: q, mode: "insensitive" } } },
+        { businessLocation: { address: { contains: q, mode: "insensitive" } } }
+      ]
+    });
   }
 
   const groomers = await prisma.groomerProfile.findMany({
-    where,
+    where: { AND: andClauses },
     include: groomerInclude,
     orderBy: { updatedAt: "desc" },
     take: query.limit
   });
 
-  return groomers.map(serializeGroomer);
+  let results = groomers.map(serializeGroomer);
+
+  if (query.lat !== undefined && query.lng !== undefined) {
+    const refLat = query.lat;
+    const refLng = query.lng;
+    results = results
+      .map((g) => {
+        const distKm =
+          g.latitude !== null && g.longitude !== null
+            ? haversineKm(refLat, refLng, g.latitude, g.longitude)
+            : Infinity;
+        return { ...g, distanceKm: distKm };
+      })
+      .sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+  }
+
+  return results;
+}
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export async function getGroomerById(groomerId: string) {
