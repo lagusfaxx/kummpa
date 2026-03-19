@@ -471,14 +471,10 @@ function MobileCardStrip({
   services,
   selectedId,
   onSelect,
-  sheetState,
-  onToggleSheet,
 }: {
   services: MapServicePoint[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  sheetState: "collapsed" | "expanded";
-  onToggleSheet: () => void;
 }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const isProgrammatic = useRef(false);
@@ -597,26 +593,14 @@ function MobileCardStrip({
         <div
           className="pointer-events-auto rounded-[28px] border border-white/70 bg-white/92 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all duration-300"
           style={{
-            paddingBottom: `calc(${sheetState === "expanded" ? "1rem" : "0.7rem"} + env(safe-area-inset-bottom))`,
+            paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
           }}
         >
-
-          {/* drag handle */}
-          <div className="flex justify-center pt-2.5 pb-1">
-            <button
-              type="button"
-              onClick={onToggleSheet}
-              className="flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400"
-              aria-expanded={sheetState === "expanded"}
-              aria-label={sheetState === "expanded" ? "Colapsar panel" : "Expandir panel"}
-            >
-              <span className="h-1 w-10 rounded-full bg-slate-200" />
-              <span>{sheetState === "expanded" ? "Menos" : "Más"}</span>
-            </button>
+          <div className="flex justify-center pt-2.5 pb-1.5">
+            <span className="h-1 w-10 rounded-full bg-slate-200" aria-hidden="true" />
           </div>
 
-          {sheetState === "expanded" ? (
-            <div
+          <div
               id="strip-scroll"
               ref={stripRef}
               className="flex overflow-x-auto"
@@ -689,47 +673,9 @@ function MobileCardStrip({
                 );
               })}
             </div>
-          ) : activeService ? (
-            <button
-              type="button"
-              onClick={onToggleSheet}
-              className="mx-2 mb-1 flex w-[calc(100%-1rem)] items-center gap-3 rounded-2xl border border-slate-200/90 bg-white/96 px-3 py-2 text-left shadow-[0_10px_28px_-18px_rgba(15,23,42,0.7)]"
-            >
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
-                style={{ backgroundColor: activeService.imageUrl ? undefined : categoryFor(activeService.type).color }}
-              >
-                {activeService.imageUrl
-                  ? <img src={activeService.imageUrl} alt={activeService.name} className="h-full w-full object-cover" />
-                  : activeService.name.slice(0, 1)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-[13px] font-bold text-slate-800">{activeService.name}</p>
-                  {activeService.isOpenNow !== null && (
-                    <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
-                      activeService.isOpenNow ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"
-                    }`}>
-                      {activeService.isOpenNow ? "Abierto" : "Cerrado"}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-0.5 truncate text-[11px] text-slate-400">
-                  {typeLabel(activeService.type)}
-                  {activeService.district && <> · {activeService.district}</>}
-                  {activeService.rating !== null && (
-                    <> · <span className="font-semibold text-amber-500">★{activeService.rating.toFixed(1)}</span></>
-                  )}
-                </p>
-              </div>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                <IcoChev />
-              </div>
-            </button>
-          ) : null}
 
           {activeService && (
-            <div className={`flex gap-2 px-2.5 ${sheetState === "expanded" ? "border-t border-slate-100 pt-2.5" : "pt-1.5"}`}>
+            <div className="flex gap-2 border-t border-slate-100 px-2.5 pt-2.5">
               {primaryCta ?? <div className="flex-1" />}
               {activeService.phone && activeService.type !== "PARK" && (
                 <a
@@ -765,7 +711,6 @@ export default function ExplorePage() {
   const [isLoading, setIsLoading]       = useState(true);
   const [error, setError]               = useState<string | null>(null);
   const [mobileTab, setMobileTab]       = useState<"map" | "list">("map");
-  const [mobileSheetState, setMobileSheetState] = useState<"collapsed" | "expanded">("collapsed");
   const [retryKey, setRetryKey]         = useState(0);
   const [resultKey, setResultKey]       = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -789,7 +734,6 @@ export default function ExplorePage() {
         if (ctrl.signal.aborted) return;
         setServices(res.items);
         setSelectedId(res.items[0]?.id ?? null);
-        setMobileSheetState("collapsed");
         setResultKey((k) => k + 1);
       })
       .catch((err) => {
@@ -1073,10 +1017,7 @@ export default function ExplorePage() {
                 accessToken={MAPBOX_TOKEN}
                 points={services}
                 selectedPointId={selectedId}
-                onSelectPoint={(id) => {
-                  setSelectedId(id);
-                  setMobileSheetState("expanded");
-                }}
+                onSelectPoint={setSelectedId}
                 className="flex-1 min-h-[56vh]"
                 borderless
               />
@@ -1101,8 +1042,6 @@ export default function ExplorePage() {
                 services={services}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
-                sheetState={mobileSheetState}
-                onToggleSheet={() => setMobileSheetState((state) => state === "collapsed" ? "expanded" : "collapsed")}
               />
             )}
           </div>
