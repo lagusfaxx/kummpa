@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { InlineBanner } from "@/components/feedback/inline-banner";
 import { useAuth } from "@/features/auth/auth-context";
@@ -197,6 +197,28 @@ function Composer({ pets, onPublish, isPublishing }: {
   const [body, setBody] = useState("");
   const [petId, setPetId] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [typedPlaceholder, setTypedPlaceholder] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const target = POST_TYPES[typeIdx]!.placeholder;
+    setTypedPlaceholder("");
+    let i = 0;
+    const timer = setInterval(() => {
+      i++;
+      setTypedPlaceholder(target.slice(0, i));
+      if (i >= target.length) clearInterval(timer);
+    }, 28);
+    return () => clearInterval(timer);
+  }, [typeIdx, expanded]);
+
+  function autoResize() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -241,9 +263,16 @@ function Composer({ pets, onPublish, isPublishing }: {
           </button>
         ))}
       </div>
-      <textarea autoFocus rows={4} value={body} onChange={(e) => setBody(e.target.value)}
-        placeholder={POST_TYPES[typeIdx]!.placeholder}
-        className="w-full resize-none rounded-2xl border border-[hsl(var(--border))] bg-white/70 px-4 py-3 text-sm outline-none focus:border-[hsl(var(--secondary))] focus:shadow-[0_0_0_3px_hsl(155_48%_42%/0.1)] placeholder:text-[hsl(var(--muted-foreground)/0.5)] leading-relaxed" />
+      <textarea
+        ref={textareaRef}
+        autoFocus
+        rows={6}
+        value={body}
+        onChange={(e) => { setBody(e.target.value); autoResize(); }}
+        placeholder={typedPlaceholder}
+        className="w-full resize-none border-0 border-b border-[hsl(var(--border))] bg-transparent px-1 py-2 text-base leading-relaxed outline-none placeholder:text-[hsl(var(--muted-foreground)/0.4)] placeholder:italic focus:border-[hsl(var(--secondary))] transition-[border-color]"
+        style={{ minHeight: "144px", overflow: "hidden" }}
+      />
       <div className="grid gap-3 sm:grid-cols-2">
         {pets.length > 0 && (
           <select value={petId} onChange={(e) => setPetId(e.target.value)}
