@@ -855,9 +855,35 @@ function GroomerDashboard({ profile, token }: { profile: MyProfile; token: strin
   const pending = appointments.filter(a => a.status === "PENDING").length;
 
   return (
-    <div className="flex min-h-screen gap-0 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      {/* sidebar */}
-      <nav className="w-52 shrink-0 bg-slate-900 py-6">
+    <div className="flex min-h-screen flex-col rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden md:flex-row">
+      {/* Mobile top tab bar */}
+      <div className="md:hidden bg-slate-900 px-3 pt-4 pb-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2 mb-2">
+          {groomerProfile?.businessName ?? profile.user.firstName}
+        </p>
+        <div className="flex overflow-x-auto gap-1 pb-2 scrollbar-none">
+          {GROOMER_NAV.map(item => (
+            <button
+              key={item.id}
+              onClick={() => setSection(item.id)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition whitespace-nowrap ${
+                section === item.id
+                  ? "bg-teal-600 text-white"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <span className="leading-none">{item.icon}</span>
+              {item.label}
+              {item.id === "reservas" && pending > 0 && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white">{pending}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop sidebar */}
+      <nav className="hidden md:flex w-52 shrink-0 flex-col bg-slate-900 py-6">
         <div className="px-5 mb-6">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Panel peluquería</p>
           <p className="mt-1 text-sm font-bold text-white truncate">{groomerProfile?.businessName ?? profile.user.firstName}</p>
@@ -884,7 +910,7 @@ function GroomerDashboard({ profile, token }: { profile: MyProfile; token: strin
       </nav>
 
       {/* main */}
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-4 md:p-6">
         {isLoading ? (
           <div className="space-y-4">
             {[1,2,3].map(i => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100" />)}
