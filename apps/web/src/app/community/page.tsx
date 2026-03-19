@@ -197,21 +197,34 @@ function Composer({ pets, onPublish, isPublishing }: {
   const [body, setBody] = useState("");
   const [petId, setPetId] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [typedPlaceholder, setTypedPlaceholder] = useState("");
+  const [typedPrompt, setTypedPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const PROMPT = "¿Qué hay de nuevo con tu mascota?";
 
   useEffect(() => {
-    if (!expanded) return;
-    const target = POST_TYPES[typeIdx]!.placeholder;
-    setTypedPlaceholder("");
+    if (expanded) return;
+    let cancelled = false;
     let i = 0;
-    const timer = setInterval(() => {
+
+    function tick() {
+      if (cancelled) return;
       i++;
-      setTypedPlaceholder(target.slice(0, i));
-      if (i >= target.length) clearInterval(timer);
-    }, 28);
-    return () => clearInterval(timer);
-  }, [typeIdx, expanded]);
+      setTypedPrompt(PROMPT.slice(0, i));
+      if (i < PROMPT.length) {
+        setTimeout(tick, 38);
+      } else {
+        setTimeout(() => {
+          if (cancelled) return;
+          setTypedPrompt("");
+          i = 0;
+          setTimeout(tick, 600);
+        }, 2800);
+      }
+    }
+
+    const startId = setTimeout(tick, 500);
+    return () => { cancelled = true; clearTimeout(startId); };
+  }, [expanded]);
 
   function autoResize() {
     const el = textareaRef.current;
@@ -233,7 +246,10 @@ function Composer({ pets, onPublish, isPublishing }: {
         <button type="button" onClick={() => setExpanded(true)}
           className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary)/0.12)] text-[hsl(var(--secondary))]"><IcoPencil /></div>
-          <span className="text-sm text-[hsl(var(--muted-foreground))]">¿Qué hay de nuevo con tu mascota?</span>
+          <span className="text-sm text-[hsl(var(--muted-foreground))]">
+            {typedPrompt || <span className="opacity-40">¿Qué hay de nuevo con tu mascota?</span>}
+            {typedPrompt && <span className="ml-px inline-block w-px animate-pulse bg-current align-middle" style={{ height: "1em" }} />}
+          </span>
         </button>
         <div className="flex border-t border-[hsl(var(--border)/0.5)]">
           {POST_TYPES.map((t, i) => (
@@ -269,7 +285,7 @@ function Composer({ pets, onPublish, isPublishing }: {
         rows={6}
         value={body}
         onChange={(e) => { setBody(e.target.value); autoResize(); }}
-        placeholder={typedPlaceholder}
+        placeholder={POST_TYPES[typeIdx]!.placeholder}
         className="w-full resize-none border-0 border-b border-[hsl(var(--border))] bg-transparent px-1 py-2 text-base leading-relaxed outline-none placeholder:text-[hsl(var(--muted-foreground)/0.4)] placeholder:italic focus:border-[hsl(var(--secondary))] transition-[border-color]"
         style={{ minHeight: "144px", overflow: "hidden" }}
       />
