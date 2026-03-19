@@ -1,0 +1,81 @@
+Quiero rediseñar completamente la sección de Novedades.
+
+PROBLEMA ACTUAL
+- Cuando haces click en una noticia, se abre abajo dentro de la misma página, y eso se siente raro.
+- La experiencia mezcla demasiadas capas en una sola vista:
+  - portada de novedades
+  - filtros
+  - listado
+  - artículo abierto
+  - categorías
+  - guardadas
+- No se siente editorial ni premium.
+- Parece más un listado expandible que una sección real de noticias o contenidos.
+
+OBJETIVO
+Quiero que Novedades funcione como una experiencia editorial moderna, clara y mucho mejor estructurada.
+
+NUEVA ESTRUCTURA
+
+1. Página principal de Novedades
+Debe servir para descubrir contenido.
+Mostrar:
+- hero corto o encabezado simple
+- búsqueda
+- filtros o categorías
+- noticias destacadas
+- listado/grid de artículos
+
+IMPORTANTE:
+las noticias NO deben abrirse abajo en la misma página.
+
+2. Página individual de noticia
+Al hacer click en una noticia, abrir una página nueva.
+Esta página debe incluir:
+- categoría
+- título
+- subtítulo/bajada
+- fecha
+- autor o fuente si aplica
+- imagen principal
+- cuerpo del artículo bien maquetado
+- tags
+- acciones:
+  - guardar
+  - compartir
+  - ver fuente
+- noticias relacionadas al final
+
+3. Guardadas
+Mover guardadas a una página o tab aparte más clara.
+No dejarla mezclada al final del gran scroll principal.
+
+4. Categorías
+Replantear la sección de categorías para que no se vea como una lista de cajas largas.
+Mejor opciones:
+- chips
+- cards más visuales
+- tabs
+- o página por categoría
+
+5. Diseño
+Quiero una experiencia más:
+- editorial
+- limpia
+- premium
+- cómoda para leer
+- moderna
+- consistente con la app
+
+6. UX importante
+- click en noticia = nueva página
+- mejor jerarquía entre listado y lectura
+- menos mezcla de módulos en una sola vista
+- navegación clara entre listado, detalle, categorías y guardadas
+
+ENTREGABLE
+Quiero un rediseño completo de Novedades, incluyendo nuevas páginas si es necesario:
+- página principal de novedades
+- página detalle de noticia
+- mejor manejo de categorías
+- guardadas separadas o mejor integradas
