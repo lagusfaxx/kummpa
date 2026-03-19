@@ -34,6 +34,18 @@ const optionalStringList = z
   .max(50)
   .optional();
 
+const optionalUrlList = z
+  .array(z.string().trim().url().max(500))
+  .max(20)
+  .optional();
+
+const groomerServiceItemSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  duration: z.number().int().min(1).max(480).optional(),
+  price: z.number().min(0).optional(),
+  type: z.string().trim().max(60).optional()
+});
+
 export const groomerParamsSchema = z.object({
   groomerId: z.string().cuid()
 });
@@ -47,7 +59,7 @@ export const listGroomersQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50)
 });
 
-export const updateGroomerProfileSchema = z.object({
+const groomerProfileBodySchema = z.object({
   businessName: optionalShortString,
   logoUrl: optionalUrlString,
   description: z
@@ -62,13 +74,25 @@ export const updateGroomerProfileSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   openingHours: optionalStringList,
-  services: optionalStringList,
+  services: z.array(groomerServiceItemSchema).max(30).optional(),
   referencePrices: optionalStringList,
+  photos: optionalUrlList,
+  paymentMethods: optionalStringList,
   contactPhone: optionalPhoneString,
   contactEmail: z.string().trim().email().optional(),
   websiteUrl: optionalUrlString
 });
 
+export const updateGroomerProfileSchema = groomerProfileBodySchema;
+
+export const createGroomerSchema = groomerProfileBodySchema.extend({
+  userId: z.string().cuid()
+});
+
+export const patchGroomerSchema = groomerProfileBodySchema.partial();
+
 export type GroomerParamsInput = z.infer<typeof groomerParamsSchema>;
 export type ListGroomersQueryInput = z.infer<typeof listGroomersQuerySchema>;
 export type UpdateGroomerProfileInput = z.infer<typeof updateGroomerProfileSchema>;
+export type CreateGroomerInput = z.infer<typeof createGroomerSchema>;
+export type PatchGroomerInput = z.infer<typeof patchGroomerSchema>;

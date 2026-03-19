@@ -1,7 +1,12 @@
 import type { Prisma } from "@prisma/client";
 import { HttpError } from "../../lib/http-error";
 import { prisma } from "../../lib/prisma";
-import type { ListGroomersQueryInput, UpdateGroomerProfileInput } from "./groomers.schemas";
+import type {
+  CreateGroomerInput,
+  ListGroomersQueryInput,
+  PatchGroomerInput,
+  UpdateGroomerProfileInput
+} from "./groomers.schemas";
 
 function decimalToNumber(value: Prisma.Decimal | number | null | undefined): number | null {
   if (value === null || value === undefined) return null;
@@ -20,6 +25,24 @@ function toStringArray(value: Prisma.JsonValue | null | undefined): string[] {
   return value
     .map((item) => (typeof item === "string" ? item.trim() : ""))
     .filter((item) => item.length > 0);
+}
+
+function toServiceItems(value: Prisma.JsonValue | null | undefined): Array<{
+  name: string;
+  duration?: number;
+  price?: number;
+  type?: string;
+}> {
+  if (!Array.isArray(value)) return [];
+  return (value as unknown[])
+    .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null && !Array.isArray(item))
+    .map((item) => ({
+      name: typeof item["name"] === "string" ? item["name"] : "",
+      duration: typeof item["duration"] === "number" ? item["duration"] : undefined,
+      price: typeof item["price"] === "number" ? item["price"] : undefined,
+      type: typeof item["type"] === "string" ? item["type"] : undefined
+    }))
+    .filter((item) => item.name.length > 0);
 }
 
 function normalizeRating(value: Prisma.Decimal | number | null | undefined): number | null {
@@ -79,8 +102,10 @@ function serializeGroomer(groomer: GroomerWithRelations) {
     latitude: decimalToNumber(groomer.businessLocation?.latitude ?? groomer.latitude),
     longitude: decimalToNumber(groomer.businessLocation?.longitude ?? groomer.longitude),
     openingHours: toStringArray(groomer.businessLocation?.openingHours ?? groomer.openingHours),
-    services: toStringArray(groomer.services),
+    services: toServiceItems(groomer.services),
     referencePrices: toStringArray(groomer.referencePrices),
+    photos: toStringArray(groomer.photos),
+    paymentMethods: toStringArray(groomer.paymentMethods),
     contactPhone:
       toText(groomer.businessLocation?.contactPhone) ?? toText(groomer.contactPhone),
     contactEmail: toText(groomer.contactEmail),
@@ -97,7 +122,16 @@ function serializeGroomer(groomer: GroomerWithRelations) {
 async function syncGroomerBusinessLocation(
   tx: Prisma.TransactionClient,
   groomerProfileId: string,
-  input: UpdateGroomerProfileInput
+  input: {
+    businessName?: string;
+    address?: string;
+    district?: string;
+    city?: string;
+    latitude?: number;
+    longitude?: number;
+    openingHours?: string[];
+    contactPhone?: string;
+  }
 ) {
   const locationData = {
     label: input.businessName,
@@ -192,46 +226,116 @@ export async function getMyGroomerProfile(userId: string) {
 }
 
 export async function updateMyGroomerProfile(userId: string, input: UpdateGroomerProfileInput) {
+  const profileData = {
+    businessName: input.businessName,
+    logoUrl: input.logoUrl,
+    description: input.description,
+    address: input.address,
+    district: input.district,
+    city: input.city,
+    latitude: input.latitude,
+    longitude: input.longitude,
+    openingHours: input.openingHours,
+    services: input.services as Prisma.InputJsonValue | undefined,
+    referencePrices: input.referencePrices,
+    photos: input.photos,
+    paymentMethods: input.paymentMethods,
+    contactPhone: input.contactPhone,
+    contactEmail: input.contactEmail,
+    websiteUrl: input.websiteUrl
+  };
+
   await prisma.$transaction(async (tx) => {
     const profile = await tx.groomerProfile.upsert({
       where: { userId },
-      create: {
-        userId,
-        businessName: input.businessName,
-        logoUrl: input.logoUrl,
-        description: input.description,
-        address: input.address,
-        district: input.district,
-        city: input.city,
-        latitude: input.latitude,
-        longitude: input.longitude,
-        openingHours: input.openingHours,
-        services: input.services,
-        referencePrices: input.referencePrices,
-        contactPhone: input.contactPhone,
-        contactEmail: input.contactEmail,
-        websiteUrl: input.websiteUrl
-      },
-      update: {
-        businessName: input.businessName,
-        logoUrl: input.logoUrl,
-        description: input.description,
-        address: input.address,
-        district: input.district,
-        city: input.city,
-        latitude: input.latitude,
-        longitude: input.longitude,
-        openingHours: input.openingHours,
-        services: input.services,
-        referencePrices: input.referencePrices,
-        contactPhone: input.contactPhone,
-        contactEmail: input.contactEmail,
-        websiteUrl: input.websiteUrl
-      }
+      create: { userId, ...profileData },
+      update: profileData
     });
 
     await syncGroomerBusinessLocation(tx, profile.id, input);
   });
 
   return getMyGroomerProfile(userId);
+}
+
+export async function createGroomerProfile(input: CreateGroomerInput) {
+  const user = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true, role: true }
+  });
+
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
+
+  const existing = await prisma.groomerProfile.findUnique({ where: { userId: input.userId } });
+  if (existing) {
+    throw new HttpError(409, "Groomer profile already exists for this user");
+  }
+
+  const profileData = {
+    businessName: input.businessName,
+    logoUrl: input.logoUrl,
+    description: input.description,
+    address: input.address,
+    district: input.district,
+    city: input.city,
+    latitude: input.latitude,
+    longitude: input.longitude,
+    openingHours: input.openingHours,
+    services: input.services as Prisma.InputJsonValue | undefined,
+    referencePrices: input.referencePrices,
+    photos: input.photos,
+    paymentMethods: input.paymentMethods,
+    contactPhone: input.contactPhone,
+    contactEmail: input.contactEmail,
+    websiteUrl: input.websiteUrl
+  };
+
+  let groomerId: string;
+
+  await prisma.$transaction(async (tx) => {
+    const profile = await tx.groomerProfile.create({
+      data: { userId: input.userId, ...profileData }
+    });
+    groomerId = profile.id;
+    await syncGroomerBusinessLocation(tx, profile.id, input);
+  });
+
+  return getGroomerById(groomerId!);
+}
+
+export async function patchGroomerById(groomerId: string, input: PatchGroomerInput) {
+  const groomer = await prisma.groomerProfile.findUnique({ where: { id: groomerId } });
+  if (!groomer) {
+    throw new HttpError(404, "Groomer not found");
+  }
+
+  const profileData: Prisma.GroomerProfileUpdateInput = {};
+  if (input.businessName !== undefined) profileData.businessName = input.businessName;
+  if (input.logoUrl !== undefined) profileData.logoUrl = input.logoUrl;
+  if (input.description !== undefined) profileData.description = input.description;
+  if (input.address !== undefined) profileData.address = input.address;
+  if (input.district !== undefined) profileData.district = input.district;
+  if (input.city !== undefined) profileData.city = input.city;
+  if (input.latitude !== undefined) profileData.latitude = input.latitude;
+  if (input.longitude !== undefined) profileData.longitude = input.longitude;
+  if (input.openingHours !== undefined) profileData.openingHours = input.openingHours;
+  if (input.services !== undefined) profileData.services = input.services as Prisma.InputJsonValue;
+  if (input.referencePrices !== undefined) profileData.referencePrices = input.referencePrices;
+  if (input.photos !== undefined) profileData.photos = input.photos;
+  if (input.paymentMethods !== undefined) profileData.paymentMethods = input.paymentMethods;
+  if (input.contactPhone !== undefined) profileData.contactPhone = input.contactPhone;
+  if (input.contactEmail !== undefined) profileData.contactEmail = input.contactEmail;
+  if (input.websiteUrl !== undefined) profileData.websiteUrl = input.websiteUrl;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.groomerProfile.update({
+      where: { id: groomerId },
+      data: profileData
+    });
+    await syncGroomerBusinessLocation(tx, groomerId, input);
+  });
+
+  return getGroomerById(groomerId);
 }

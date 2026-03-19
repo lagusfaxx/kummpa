@@ -85,7 +85,7 @@ appointmentsRouter.post(
 appointmentsRouter.get(
   "/provider/services",
   asyncHandler(requireAuth),
-  requireRoles("VET", "CAREGIVER", "SHOP"),
+  requireRoles("VET", "CAREGIVER", "SHOP", "GROOMING"),
   validateRequest(providerAppointmentServicesQuerySchema, "query"),
   asyncHandler(async (req, res) => {
     const query = req.query as unknown as ProviderAppointmentServicesQueryInput;
@@ -107,7 +107,7 @@ appointmentsRouter.get(
 appointmentsRouter.put(
   "/provider/services",
   asyncHandler(requireAuth),
-  requireRoles("VET", "CAREGIVER", "SHOP"),
+  requireRoles("VET", "CAREGIVER", "SHOP", "GROOMING"),
   validateRequest(upsertProviderAppointmentServicesSchema),
   asyncHandler(async (req, res) => {
     const payload = req.body as UpsertProviderAppointmentServicesInput;
@@ -129,7 +129,7 @@ appointmentsRouter.put(
 appointmentsRouter.get(
   "/provider/availability",
   asyncHandler(requireAuth),
-  requireRoles("VET", "CAREGIVER", "SHOP", "ADMIN"),
+  requireRoles("VET", "CAREGIVER", "SHOP", "GROOMING", "ADMIN"),
   validateRequest(providerAvailabilityQuerySchema, "query"),
   asyncHandler(async (req, res) => {
     const query = req.query as unknown as ProviderAvailabilityQueryInput;
@@ -151,7 +151,7 @@ appointmentsRouter.get(
 appointmentsRouter.put(
   "/provider/availability",
   asyncHandler(requireAuth),
-  requireRoles("VET", "CAREGIVER", "SHOP", "ADMIN"),
+  requireRoles("VET", "CAREGIVER", "SHOP", "GROOMING", "ADMIN"),
   validateRequest(upsertProviderAvailabilitySchema),
   asyncHandler(async (req, res) => {
     const payload = req.body as UpsertProviderAvailabilityInput;

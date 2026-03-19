@@ -70,6 +70,13 @@ export interface ShopProfile {
   discounts?: string[] | null;
 }
 
+export interface GroomerServiceItem {
+  name: string;
+  duration?: number;
+  price?: number;
+  type?: string;
+}
+
 export interface GroomerProfile {
   id?: string;
   businessName?: string | null;
@@ -81,8 +88,10 @@ export interface GroomerProfile {
   latitude?: number | null;
   longitude?: number | null;
   openingHours?: string[] | null;
-  services?: string[] | null;
+  services?: GroomerServiceItem[] | null;
   referencePrices?: string[] | null;
+  photos?: string[] | null;
+  paymentMethods?: string[] | null;
   contactPhone?: string | null;
   contactEmail?: string | null;
   websiteUrl?: string | null;

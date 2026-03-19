@@ -3,17 +3,23 @@ import { asyncHandler } from "../../lib/async-handler";
 import { requireAuth, requireRoles } from "../../middleware/auth";
 import { validateRequest } from "../../middleware/validate-request";
 import {
+  createGroomerSchema,
   groomerParamsSchema,
   listGroomersQuerySchema,
+  patchGroomerSchema,
   updateGroomerProfileSchema,
+  type CreateGroomerInput,
   type GroomerParamsInput,
   type ListGroomersQueryInput,
+  type PatchGroomerInput,
   type UpdateGroomerProfileInput
 } from "./groomers.schemas";
 import {
+  createGroomerProfile,
   getGroomerById,
   getMyGroomerProfile,
   listGroomers,
+  patchGroomerById,
   updateMyGroomerProfile
 } from "./groomers.service";
 
@@ -27,6 +33,19 @@ groomersRouter.get(
     const data = await listGroomers(query);
 
     res.status(200).json({ ok: true, data });
+  })
+);
+
+groomersRouter.post(
+  "/",
+  asyncHandler(requireAuth),
+  requireRoles("ADMIN"),
+  validateRequest(createGroomerSchema),
+  asyncHandler(async (req, res) => {
+    const payload = req.body as CreateGroomerInput;
+    const data = await createGroomerProfile(payload);
+
+    res.status(201).json({ ok: true, data });
   })
 );
 
@@ -60,6 +79,21 @@ groomersRouter.get(
   asyncHandler(async (req, res) => {
     const { groomerId } = req.params as unknown as GroomerParamsInput;
     const data = await getGroomerById(groomerId);
+
+    res.status(200).json({ ok: true, data });
+  })
+);
+
+groomersRouter.patch(
+  "/:groomerId",
+  asyncHandler(requireAuth),
+  requireRoles("ADMIN"),
+  validateRequest(groomerParamsSchema, "params"),
+  validateRequest(patchGroomerSchema),
+  asyncHandler(async (req, res) => {
+    const { groomerId } = req.params as unknown as GroomerParamsInput;
+    const payload = req.body as PatchGroomerInput;
+    const data = await patchGroomerById(groomerId, payload);
 
     res.status(200).json({ ok: true, data });
   })
