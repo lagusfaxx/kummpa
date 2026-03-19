@@ -65,6 +65,22 @@ function Avatar({
   );
 }
 
+/* ─── Icons ──────────────────────────────────────────────── */
+function IcoHeart({ filled }: { filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+function IcoBookmark({ filled }: { filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
 /* ─── Mini post card (for profile grid) ──────────────────── */
 function MiniPostCard({
   post, onLike, onSave,
@@ -91,12 +107,12 @@ function MiniPostCard({
         <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{relativeTime(post.createdAt)}</span>
         <div className="flex gap-3">
           <button type="button" onClick={() => onLike(post)}
-            className={cls("text-xs font-semibold transition", post.viewer.liked ? "text-red-500" : "text-[hsl(var(--muted-foreground))] hover:text-red-400")}>
-            {post.viewer.liked ? "❤️" : "🤍"} {post.metrics.likesCount}
+            className={cls("flex items-center gap-1 text-xs font-semibold transition", post.viewer.liked ? "text-red-500" : "text-[hsl(var(--muted-foreground))] hover:text-red-400")}>
+            <IcoHeart filled={post.viewer.liked} /> {post.metrics.likesCount}
           </button>
           <button type="button" onClick={() => onSave(post)}
-            className={cls("text-xs font-semibold transition", post.viewer.saved ? "text-amber-500" : "text-[hsl(var(--muted-foreground))] hover:text-amber-400")}>
-            {post.viewer.saved ? "🔖" : "🏷️"} {post.metrics.savesCount}
+            className={cls("flex items-center gap-1 text-xs font-semibold transition", post.viewer.saved ? "text-amber-500" : "text-[hsl(var(--muted-foreground))] hover:text-amber-400")}>
+            <IcoBookmark filled={post.viewer.saved} /> {post.metrics.savesCount}
           </button>
         </div>
       </div>
@@ -214,7 +230,12 @@ export default function CommunityProfilePage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h1 className="text-xl font-black text-[hsl(var(--foreground))]">{displayName}</h1>
-                  {city && <p className="mt-0.5 text-sm text-[hsl(var(--muted-foreground))]">📍 {city}</p>}
+                  {city && (
+                    <p className="mt-0.5 flex items-center gap-1 text-sm text-[hsl(var(--muted-foreground))]">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {city}
+                    </p>
+                  )}
                   {bio  && <p className="mt-2 text-sm text-[hsl(var(--foreground)/0.8)] leading-relaxed max-w-md">{bio}</p>}
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -297,7 +318,12 @@ export default function CommunityProfilePage() {
               {tab === "pets" && (
                 pets.length === 0 ? (
                   <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
-                    <p className="text-4xl">🐾</p>
+                    <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(155_48%_42%/0.1)]">
+                      <svg viewBox="0 0 24 24" className="h-6 w-6 text-[hsl(155_48%_38%)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><circle cx="4" cy="8" r="2"/>
+                        <path d="M12 18c-3.5 0-6-1.5-6-4 0-1.5 1-3 2.5-3.5C9.5 10 11 9 12 7c1 2 2.5 3 3.5 3.5C17 11 18 12.5 18 14c0 2.5-2.5 4-6 4z"/>
+                      </svg>
+                    </div>
                     <p className="mt-3 font-bold text-[hsl(var(--foreground))]">Aún no tienes mascotas registradas</p>
                     <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Agrega a tus compañeros para mostrarlos en tu perfil.</p>
                     <Link href="/pets/new" className="mt-4 inline-block rounded-full bg-[hsl(var(--secondary))] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90">
@@ -318,7 +344,9 @@ export default function CommunityProfilePage() {
                           item.pet.species === "Perro" ? "bg-emerald-50" :
                           item.pet.species === "Gato"  ? "bg-purple-50"  : "bg-orange-50"
                         )}>
-                          {item.pet.species === "Perro" ? "🐕" : item.pet.species === "Gato" ? "🐈" : "🐾"}
+                          <span className="font-black text-2xl leading-none">
+                          {item.pet.species === "Perro" ? "P" : item.pet.species === "Gato" ? "G" : item.pet.species?.[0] ?? "·"}
+                        </span>
                         </div>
 
                         <p className="font-bold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--secondary))] transition">{item.pet.name}</p>
@@ -360,9 +388,11 @@ export default function CommunityProfilePage() {
               {tab === "saved" && (
                 savedPosts.length === 0 ? (
                   <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
-                    <p className="text-4xl">🔖</p>
+                    <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50">
+                      <IcoBookmark />
+                    </div>
                     <p className="mt-3 font-bold text-[hsl(var(--foreground))]">Aún no guardaste nada</p>
-                    <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Usa el botón 🏷️ en cualquier publicación del feed para guardarla aquí.</p>
+                    <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Usa el marcador en cualquier publicación del feed para guardarla aquí.</p>
                     <Link href="/community" className="mt-4 inline-block rounded-full bg-[hsl(var(--secondary))] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90">
                       Ir al feed
                     </Link>

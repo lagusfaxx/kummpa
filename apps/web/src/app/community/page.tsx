@@ -59,6 +59,37 @@ function Avatar({ src, name, size = "md" }: { src?: string | null; name?: string
   );
 }
 
+/* ─── Icons ─────────────────────────────────────────────────── */
+function IcoHeart({ filled }: { filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+function IcoComment() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+function IcoBookmark({ filled }: { filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+function IcoPencil() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z" />
+    </svg>
+  );
+}
+
 /* ─── PostCard ──────────────────────────────────────────────── */
 function PostCard({
   post, onLike, onSave, onComment,
@@ -106,17 +137,17 @@ function PostCard({
       <div className="flex items-center gap-1 px-3 pt-3 pb-2">
         <button type="button" onClick={() => onLike(post)}
           className={cls("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-            post.viewer.liked ? "bg-red-50 text-red-600" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
-          {post.viewer.liked ? "❤️" : "🤍"} {post.metrics.likesCount}
+            post.viewer.liked ? "bg-red-50 text-red-500" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
+          <IcoHeart filled={post.viewer.liked} /> {post.metrics.likesCount}
         </button>
         <button type="button" onClick={() => setShowComments((v) => !v)}
           className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]">
-          💬 {post.metrics.commentsCount}
+          <IcoComment /> {post.metrics.commentsCount}
         </button>
         <button type="button" onClick={() => onSave(post)}
           className={cls("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-            post.viewer.saved ? "bg-amber-50 text-amber-600" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
-          {post.viewer.saved ? "🔖" : "🏷️"} {post.metrics.savesCount}
+            post.viewer.saved ? "bg-amber-50 text-amber-500" : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted)/0.5)]")}>
+          <IcoBookmark filled={post.viewer.saved} /> {post.metrics.savesCount}
         </button>
       </div>
 
@@ -149,11 +180,11 @@ function PostCard({
 
 /* ─── Composer ──────────────────────────────────────────────── */
 const POST_TYPES = [
-  { label: "📸 Momento",        placeholder: "¿Qué pasó hoy con tu mascota?" },
-  { label: "📍 Recomendación",  placeholder: "Recomienda un lugar, parque o veterinaria…" },
-  { label: "❓ Consulta",       placeholder: "Pregunta a la comunidad…" },
-  { label: "🐕 Paseo",          placeholder: "¿Organizas una salida? Cuéntanos…" },
-  { label: "💡 Tip",            placeholder: "Comparte algo que aprendiste…" },
+  { label: "Momento",        placeholder: "¿Qué pasó hoy con tu mascota?" },
+  { label: "Recomendación",  placeholder: "Recomienda un lugar, parque o veterinaria…" },
+  { label: "Consulta",       placeholder: "Pregunta a la comunidad…" },
+  { label: "Paseo",          placeholder: "¿Organizas una salida? Cuéntanos…" },
+  { label: "Tip",            placeholder: "Comparte algo que aprendiste…" },
 ];
 
 function Composer({ pets, onPublish, isPublishing }: {
@@ -179,7 +210,7 @@ function Composer({ pets, onPublish, isPublishing }: {
       <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-white/85 shadow-sm">
         <button type="button" onClick={() => setExpanded(true)}
           className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary)/0.12)] text-base">✏️</div>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary)/0.12)] text-[hsl(var(--secondary))]"><IcoPencil /></div>
           <span className="text-sm text-[hsl(var(--muted-foreground))]">¿Qué hay de nuevo con tu mascota?</span>
         </button>
         <div className="flex border-t border-[hsl(var(--border)/0.5)]">
@@ -187,8 +218,8 @@ function Composer({ pets, onPublish, isPublishing }: {
             <button key={t.label} type="button"
               onClick={() => { setTypeIdx(i); setExpanded(true); }}
               className="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted)/0.4)] hover:text-[hsl(var(--foreground))]">
-              <span className="text-base leading-none">{t.label.split(" ")[0]}</span>
-              <span className="hidden sm:block">{t.label.split(" ").slice(1).join(" ")}</span>
+              <span className="hidden sm:block">{t.label}</span>
+              <span className="sm:hidden text-[10px]">{t.label.slice(0, 3)}</span>
             </button>
           ))}
         </div>
@@ -270,11 +301,11 @@ const FEED_TABS: Array<{ value: CommunityFeedMode; label: string }> = [
 
 const TYPE_FILTERS = [
   { key: "", label: "Todo" },
-  { key: "STORY", label: "📸 Momentos" },
-  { key: "RECOMMENDATION", label: "📍 Recomendaciones" },
-  { key: "QUESTION", label: "❓ Consultas" },
-  { key: "WALK", label: "🐕 Paseos" },
-  { key: "TIP", label: "💡 Tips" },
+  { key: "STORY", label: "Momentos" },
+  { key: "RECOMMENDATION", label: "Recomendaciones" },
+  { key: "QUESTION", label: "Consultas" },
+  { key: "WALK", label: "Paseos" },
+  { key: "TIP", label: "Tips" },
 ];
 
 function eventTypeLabel(type: GroupEvent["type"]) {
@@ -394,7 +425,7 @@ export default function CommunityPage() {
           <div className="flex items-center gap-2">
             <Link href="/community/meet"
               className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-bold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted)/0.5)]">
-              🐕 Paseos
+              Paseos
             </Link>
             <Link href="/community/profile"
               className="rounded-full bg-[hsl(var(--primary))] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
@@ -463,7 +494,12 @@ export default function CommunityPage() {
               <FeedSkeleton />
             ) : visiblePosts.length === 0 ? (
               <div className="rounded-3xl border border-[hsl(var(--border))] bg-white/70 p-8 text-center">
-                <p className="text-4xl">🐾</p>
+                <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(155_48%_42%/0.1)]">
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 text-[hsl(155_48%_38%)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><circle cx="4" cy="8" r="2"/>
+                    <path d="M12 18c-3.5 0-6-1.5-6-4 0-1.5 1-3 2.5-3.5C9.5 10 11 9 12 7c1 2 2.5 3 3.5 3.5C17 11 18 12.5 18 14c0 2.5-2.5 4-6 4z"/>
+                  </svg>
+                </div>
                 <p className="mt-3 font-bold text-[hsl(var(--foreground))]">
                   {mode === "discover" ? "Sé el primero en compartir algo" :
                    mode === "following" ? "Aún no sigues a nadie" : "No tienes publicaciones guardadas"}
@@ -495,7 +531,9 @@ export default function CommunityPage() {
                 <div className="mt-3 space-y-2">
                   {events.slice(0, 3).map((ev) => (
                     <div key={ev.id} className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--muted)/0.4)] px-3 py-2.5">
-                      <span className="text-xl">{ev.type === "WALK" ? "🐕" : ev.type === "PLAYDATE" ? "🎾" : "🏕️"}</span>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${ev.type === "WALK" ? "bg-green-100 text-green-700" : ev.type === "PLAYDATE" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}>
+                        {ev.type === "WALK" ? "P" : ev.type === "PLAYDATE" ? "J" : "S"}
+                      </span>
                       <div className="min-w-0">
                         <p className="truncate text-xs font-semibold">{ev.title}</p>
                         <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{ev.location.district ?? ev.location.city} · {eventTypeLabel(ev.type)}</p>
