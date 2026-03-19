@@ -22,9 +22,19 @@ export interface AuthSession {
 export interface RegisterPayload {
   email: string;
   password: string;
-  firstName: string;
-  lastName?: string;
   role: Exclude<UserRole, "ADMIN">;
+  /* Personal account (OWNER / CAREGIVER) */
+  firstName?: string;
+  lastName?: string;
+  city?: string;
+  /* All accounts */
+  phone?: string;
+  /* Business accounts (SHOP / VET / GROOMING) */
+  businessName?: string;
+  address?: string;
+  district?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface LoginPayload {

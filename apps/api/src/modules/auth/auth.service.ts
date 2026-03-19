@@ -114,11 +114,53 @@ export async function registerUser(input: RegisterInput, metadata: RequestMetada
     data: {
       email: input.email,
       passwordHash,
-      firstName: input.firstName,
+      firstName: input.firstName ?? null,
       lastName: input.lastName ?? null,
+      phone: input.phone ?? null,
+      city: input.city ?? null,
       role: input.role
     }
   });
+
+  /* Auto-create the role-specific profile with data collected at registration */
+  const locationData = {
+    address: input.address ?? null,
+    city: input.city ?? null,
+    district: input.district ?? null,
+    latitude: input.latitude != null ? input.latitude : null,
+    longitude: input.longitude != null ? input.longitude : null,
+    contactPhone: input.phone ?? null
+  };
+
+  if (input.role === "SHOP") {
+    await prisma.shopProfile.create({
+      data: {
+        userId: user.id,
+        businessName: input.businessName ?? null,
+        ...locationData
+      }
+    });
+  } else if (input.role === "VET") {
+    await prisma.vetProfile.create({
+      data: {
+        userId: user.id,
+        clinicName: input.businessName ?? null,
+        ...locationData
+      }
+    });
+  } else if (input.role === "GROOMING") {
+    await prisma.groomerProfile.create({
+      data: {
+        userId: user.id,
+        businessName: input.businessName ?? null,
+        ...locationData
+      }
+    });
+  } else if (input.role === "OWNER") {
+    await prisma.ownerProfile.create({
+      data: { userId: user.id }
+    });
+  }
 
   const tokens = await createSessionForUser(user, metadata);
   const [welcomeSent, verificationSent] = await Promise.all([

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isMinimalShellRoute } from "@/features/navigation/site-map";
+import { useAuth } from "@/features/auth/auth-context";
 
 function IcoHome() {
   return (
@@ -57,8 +58,39 @@ function IcoUser() {
     </svg>
   );
 }
+function IcoDashboard() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
+}
+function IcoBox() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <polyline points="21 8 21 21 3 21 3 8" />
+      <rect x="1" y="3" width="22" height="5" rx="1" />
+      <line x1="10" y1="12" x2="14" y2="12" />
+    </svg>
+  );
+}
+function IcoCalendar() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
 
-const TABS = [
+type Tab = { href: string; label: string; Icon: () => JSX.Element };
+
+const TABS_OWNER: Tab[] = [
   { href: "/",           label: "Inicio",    Icon: IcoHome      },
   { href: "/explore",    label: "Cerca",     Icon: IcoMap       },
   { href: "/pets",       label: "Mascotas",  Icon: IcoPaw       },
@@ -67,14 +99,53 @@ const TABS = [
   { href: "/account",    label: "Cuenta",    Icon: IcoUser      },
 ];
 
+const TABS_SHOP: Tab[] = [
+  { href: "/",                       label: "Inicio",     Icon: IcoHome      },
+  { href: "/explore",                label: "Cerca",      Icon: IcoMap       },
+  { href: "/marketplace/dashboard",  label: "Tienda",     Icon: IcoDashboard },
+  { href: "/marketplace/dashboard?s=pedidos", label: "Pedidos", Icon: IcoBox },
+  { href: "/community",              label: "Comunidad",  Icon: IcoCommunity },
+  { href: "/account",                label: "Cuenta",     Icon: IcoUser      },
+];
+
+const TABS_VET: Tab[] = [
+  { href: "/",           label: "Inicio",     Icon: IcoHome      },
+  { href: "/explore",    label: "Cerca",      Icon: IcoMap       },
+  { href: "/business",   label: "Dashboard",  Icon: IcoDashboard },
+  { href: "/business?s=reservas", label: "Reservas", Icon: IcoCalendar },
+  { href: "/community",  label: "Comunidad",  Icon: IcoCommunity },
+  { href: "/account",    label: "Cuenta",     Icon: IcoUser      },
+];
+
+const TABS_GROOMING: Tab[] = [
+  { href: "/",           label: "Inicio",     Icon: IcoHome      },
+  { href: "/explore",    label: "Cerca",      Icon: IcoMap       },
+  { href: "/groomer",    label: "Dashboard",  Icon: IcoDashboard },
+  { href: "/business",   label: "Reservas",   Icon: IcoCalendar  },
+  { href: "/community",  label: "Comunidad",  Icon: IcoCommunity },
+  { href: "/account",    label: "Cuenta",     Icon: IcoUser      },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
+  const { session } = useAuth();
 
   if (isMinimalShellRoute(pathname)) return null;
 
+  const role = session?.user.role;
+  const TABS =
+    role === "SHOP"
+      ? TABS_SHOP
+      : role === "VET"
+      ? TABS_VET
+      : role === "GROOMING"
+      ? TABS_GROOMING
+      : TABS_OWNER;
+
   function isActive(href: string) {
-    if (href === "/") return pathname === "/";
-    return pathname === href || pathname.startsWith(`${href}/`);
+    const base = href.split("?")[0];
+    if (base === "/") return pathname === "/";
+    return pathname === base || pathname.startsWith(`${base}/`);
   }
 
   return (

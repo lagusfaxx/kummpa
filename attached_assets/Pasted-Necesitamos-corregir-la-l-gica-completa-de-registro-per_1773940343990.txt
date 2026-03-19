@@ -1,0 +1,167 @@
+Necesitamos corregir la lógica completa de registro, perfiles y visibilidad por tipo de cuenta en Kummpa.
+
+PROBLEMA GENERAL
+Ahora mismo el sistema mezcla clientes y negocios de forma incorrecta:
+- una tienda creada no siempre aparece en “Cerca de ti”
+- se están pidiendo campos poco adecuados como coordenadas manuales
+- el registro de tienda/peluquería/veterinaria se parece demasiado al de cliente
+- aparecen secciones incorrectas como “Mi tienda” o “Marketplace” para cuentas cliente
+- establecimientos siguen viendo páginas como “Mis mascotas”, que no les corresponden
+
+OBJETIVO
+Separar claramente la lógica entre:
+- Cliente / tutor
+- Tienda
+- Peluquería
+- Veterinaria
+
+y hacer que el registro, el perfil, la navegación y la visibilidad funcionen correctamente según el tipo de cuenta.
+
+1. NUEVO FLUJO DE CREAR CUENTA
+Al presionar “Crear cuenta”, primero mostrar una pantalla moderna para elegir tipo de cuenta:
+
+- Tutor / cliente
+- Tienda
+- Peluquería
+- Veterinaria
+
+Cada tipo debe llevar a un flujo de registro distinto.
+
+2. REGISTRO CLIENTE / TUTOR
+Debe pedir campos de persona:
+- nombre
+- apellido
+- email
+- teléfono
+- contraseña
+- ciudad/comuna opcional
+
+3. REGISTRO TIENDA
+No debe pedir nombre y apellido como si fuera persona.
+Debe pedir:
+- nombre del negocio
+- categoría o rubro
+- dirección
+- comuna / ciudad
+- teléfono comercial
+- email
+- contraseña
+- horarios base
+
+4. REGISTRO PELUQUERÍA
+Debe pedir:
+- nombre del local
+- dirección
+- comuna / ciudad
+- teléfono
+- email
+- contraseña
+- horarios base
+- servicios base si aplica
+
+5. REGISTRO VETERINARIA
+Debe pedir:
+- nombre de la clínica
+- dirección
+- comuna / ciudad
+- teléfono
+- email
+- contraseña
+- horarios base
+- especialidades base
+- urgencias 24/7 si aplica
+
+6. DIRECCIÓN CON MAPBOX
+Para tienda, peluquería y veterinaria:
+- no pedir coordenadas manuales
+- pedir dirección normal
+- usar autocompletado / validación con Mapbox
+- al guardar resolver internamente:
+  - address
+  - city
+  - district/comuna
+  - latitude
+  - longitude
+- el usuario no debe ver ni escribir coordenadas
+
+7. GUARDAR PERFIL INICIAL
+Todo lo completado en el registro debe quedar guardado automáticamente en el perfil de ese negocio o cuenta.
+No quiero registro vacío que después haya que volver a completar.
+
+8. VISIBILIDAD EN CERCA DE TI
+Las tiendas o servicios creados deben aparecer en “Cerca de ti” si:
+- son de tipo correcto
+- tienen dirección válida con coordenadas resueltas
+- están marcados como activos/publicables
+- tienen datos mínimos completos
+
+Revisar la lógica actual por la cual una tienda con dirección y producto creado no aparece.
+
+9. MARKETPLACE / MI TIENDA
+Si el usuario es cliente/tutor:
+- no debe ver “Mi tienda”
+- no debe ver panel de marketplace
+- no debe ver opciones comerciales
+
+Las únicas tiendas deben ser las cuentas registradas explícitamente como tipo tienda.
+
+10. NAVEGACIÓN Y PÁGINAS POR TIPO DE CUENTA
+
+CLIENTE / TUTOR:
+- Inicio
+- Cerca de ti
+- Mis mascotas
+- Comunidad
+- Alertas
+- Cuenta
+
+TIENDA:
+- Dashboard tienda
+- Productos
+- Pedidos
+- Pagos
+- Perfil tienda
+- Cuenta
+- NO ver Mis mascotas
+
+PELUQUERÍA:
+- Dashboard peluquería
+- Reservas
+- Servicios
+- Horarios
+- Perfil local
+- Cuenta
+- NO ver Mis mascotas
+
+VETERINARIA:
+- Dashboard veterinaria
+- Reservas
+- Agenda
+- Servicios
+- Perfil clínica
+- Cuenta
+- NO ver Mis mascotas
+
+11. RUTAS Y PROTECCIÓN POR ROL
+Implementar control para que cada tipo de cuenta solo vea y acceda a las páginas que le corresponden.
+
+12. DB / MODELOS
+Revisar si faltan campos o migraciones para soportar:
+- accountType / profileType correcto
+- businessName vs firstName/lastName
+- address normalizada
+- latitude / longitude
+- visibilidad pública
+- categorías de negocio
+- estado activo/publicable
+
+13. OBJETIVO FINAL
+Quiero una lógica de registro y perfiles completamente coherente:
+- clientes como clientes
+- tiendas como tiendas
+- peluquerías como peluquerías
+- veterinarias como veterinarias
+- navegación correcta
+- dirección normal con Mapbox
+- publicación correcta en “Cerca de ti”
+- sin paneles de negocio para usuarios cliente
