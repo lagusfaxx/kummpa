@@ -466,6 +466,180 @@ function CategoryGrid({
   );
 }
 
+/* ─── Mobile Service Card (full-width, list view) ───────────── */
+function MobileServiceCard({
+  service,
+  onSelect,
+  animIndex,
+}: {
+  service: MapServicePoint;
+  onSelect: () => void;
+  animIndex: number;
+}) {
+  const cat = categoryFor(service.type);
+  const price = priceText(service);
+
+  const cta = (() => {
+    if (service.type === "PARK") {
+      return (
+        <a
+          href={mapsUrl(service.latitude, service.longitude, service.name)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-700 py-2.5 text-[13px] font-bold text-white"
+        >
+          <IcoDirections /> Cómo llegar
+        </a>
+      );
+    }
+    if (service.type === "SHOP") {
+      return (
+        <Link
+          href={`/explore/shop/${service.sourceId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-1 items-center justify-center rounded-xl bg-[hsl(22_92%_60%)] py-2.5 text-[13px] font-bold text-white"
+        >
+          Ver tienda
+        </Link>
+      );
+    }
+    if (service.type === "VET") {
+      return (
+        <Link
+          href={`/explore/vet/${service.sourceId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-1 items-center justify-center rounded-xl bg-[hsl(var(--primary))] py-2.5 text-[13px] font-bold text-white"
+        >
+          Reservar
+        </Link>
+      );
+    }
+    if (service.type === "GROOMING") {
+      return (
+        <Link
+          href={`/explore/groomer/${service.sourceId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-1 items-center justify-center rounded-xl bg-pink-700 py-2.5 text-[13px] font-bold text-white"
+        >
+          Reservar
+        </Link>
+      );
+    }
+    if (service.bookingUrl ?? service.profileUrl) {
+      return (
+        <Link
+          href={service.bookingUrl ?? service.profileUrl ?? "#"}
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-1 items-center justify-center rounded-xl bg-[hsl(var(--primary))] py-2.5 text-[13px] font-bold text-white"
+        >
+          Reservar
+        </Link>
+      );
+    }
+    return null;
+  })();
+
+  return (
+    <article
+      onClick={onSelect}
+      style={{ animationDelay: `${Math.min(animIndex * 28, 280)}ms` }}
+      className="explore-card mx-3 mb-3 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_2px_14px_-4px_rgba(0,0,0,0.10)] active:scale-[0.985] transition-transform duration-100 cursor-pointer"
+    >
+      {/* Main info */}
+      <div className="flex items-start gap-3.5 p-4">
+        <div
+          className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl font-bold text-white"
+          style={{ backgroundColor: service.imageUrl ? "transparent" : cat.color }}
+        >
+          {service.imageUrl
+            ? <img src={service.imageUrl} alt={service.name} className="h-full w-full object-cover" />
+            : service.name.slice(0, 1)
+          }
+          {service.isEmergency24x7 && (
+            <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-px text-center text-[7px] font-black tracking-wider text-white">24/7</span>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[15px] font-bold leading-snug text-slate-800">{service.name}</p>
+            {service.isOpenNow !== null && (
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none ${
+                service.isOpenNow ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+              }`}>
+                {service.isOpenNow ? "Abierto" : "Cerrado"}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-slate-400">
+            <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
+            <span>{typeLabel(service.type)}</span>
+            {(service.district ?? service.address) && (
+              <><span className="opacity-30">·</span><span className="truncate">{service.district ?? service.address}</span></>
+            )}
+          </p>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {service.rating !== null && (
+              <span className="flex items-center gap-1 text-[12px] font-semibold text-amber-500">
+                <IcoStar /> {service.rating.toFixed(1)}
+              </span>
+            )}
+            {price && <span className="text-[12px] font-medium text-slate-500">{price}</span>}
+            {service.discountLabel && (
+              <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-orange-600">{service.discountLabel}</span>
+            )}
+            {service.distanceKm !== null && (
+              <span className="ml-auto text-[11px] font-medium text-slate-400">{service.distanceKm.toFixed(1)} km</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Product match — shown prominently */}
+      {service.type === "SHOP" && service.matchedProduct && (
+        <div className="mx-4 mb-4 flex items-center gap-3 rounded-xl bg-amber-50 p-3">
+          {service.matchedProduct.imageUrl
+            ? <img
+                src={service.matchedProduct.imageUrl}
+                alt={service.matchedProduct.title}
+                className="h-12 w-12 shrink-0 rounded-xl object-cover border border-amber-100"
+              />
+            : <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-500">
+                <IcoTag />
+              </span>
+          }
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold leading-snug text-slate-800 line-clamp-2">{service.matchedProduct.title}</p>
+            <p className="mt-0.5 text-[11px] text-slate-400">Disponible en esta tienda</p>
+          </div>
+          <span className="shrink-0 text-[16px] font-bold text-[hsl(22_92%_50%)]">
+            ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+          </span>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {(cta || (service.phone && service.type !== "PARK")) && (
+        <div className="flex gap-2.5 border-t border-slate-100 px-4 py-3">
+          {cta}
+          {service.phone && service.type !== "PARK" && (
+            <a
+              href={`tel:${service.phone}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-slate-700"
+            >
+              <IcoPhone /> Llamar
+            </a>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
 /* ─── Mobile Card Strip ──────────────────────────────────────── */
 function MobileCardStrip({
   services,
@@ -922,17 +1096,14 @@ export default function ExplorePage() {
                 : "border-b border-slate-200 bg-white/96 backdrop-blur-sm"
             }`}
           >
-            <div className="px-3 pt-3">
+            <div className="px-3 pt-2.5">
               <div
                 className={
                   mobileTab === "map"
-                    ? "pointer-events-auto rounded-[26px] border border-white/60 bg-white/88 px-2.5 pb-2 pt-2.5 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.55)] backdrop-blur-xl"
+                    ? "pointer-events-auto rounded-[24px] border border-white/60 bg-white/90 px-2.5 pb-1.5 pt-2 shadow-[0_14px_36px_-18px_rgba(15,23,42,0.5)] backdrop-blur-xl"
                     : ""
                 }
               >
-              <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                ¿Qué quieres explorar?
-              </p>
               <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                 {CATEGORIES.map((cat) => {
                   const active = cat.type ? selectedType === cat.type : selectedType === null;
@@ -942,7 +1113,7 @@ export default function ExplorePage() {
                       key={cat.label}
                       onClick={() => setSelectedType(cat.type ?? null)}
                       style={active ? { backgroundColor: cat.color } : {}}
-                      className={`flex shrink-0 items-center gap-1.5 rounded-2xl px-3 py-2 transition-all duration-200 active:scale-95 ${
+                      className={`flex shrink-0 items-center gap-1.5 rounded-2xl px-3 py-1.5 transition-all duration-200 active:scale-95 ${
                         active ? "text-white shadow-md" : "border border-slate-200 bg-white text-slate-500"
                       }`}
                     >
@@ -1011,7 +1182,7 @@ export default function ExplorePage() {
           </div>
 
           {/* Mobile content */}
-          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[15.75rem]" : ""}`}>
+          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[14.5rem]" : ""}`}>
             {mobileTab === "map" ? (
               <MapCanvas
                 accessToken={MAPBOX_TOKEN}
@@ -1022,14 +1193,36 @@ export default function ExplorePage() {
                 borderless
               />
             ) : (
-              <div className="flex-1 overflow-y-auto bg-white pb-[calc(5rem+env(safe-area-inset-bottom))]">
+              <div className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+                {/* Results count row */}
+                {!isLoading && !error && (
+                  <div className="flex items-center justify-between px-4 py-2.5">
+                    <span className="text-[12px] font-semibold text-slate-400">
+                      {services.length > 0
+                        ? `${services.length} lugar${services.length !== 1 ? "es" : ""}${search ? ` para "${search}"` : ""}`
+                        : ""}
+                    </span>
+                    {(openNow || withDiscount || selectedType !== null || !!search) && (
+                      <button
+                        onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
+                        className="flex items-center gap-1 rounded-full bg-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-500"
+                      >
+                        Limpiar <IcoX />
+                      </button>
+                    )}
+                  </div>
+                )}
                 {isLoading
-                  ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                  ? <div className="pt-3">{Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="mx-3 mb-3 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_2px_14px_-4px_rgba(0,0,0,0.08)]">
+                        <SkeletonRow />
+                      </div>
+                    ))}</div>
                   : error ? <ErrorState onRetry={() => setRetryKey((k) => k + 1)} />
                   : services.length === 0 ? <EmptyState query={search} onClear={clearSearch} />
-                  : <div key={resultKey}>{services.map((s, i) => (
+                  : <div key={resultKey} className="pt-1">{services.map((s, i) => (
                       <div key={s.id} data-id={s.id}>
-                        <ServiceCard service={s} selected={selectedId === s.id} onSelect={() => setSelectedId(s.id)} animIndex={i} />
+                        <MobileServiceCard service={s} onSelect={() => setSelectedId(s.id)} animIndex={i} />
                       </div>
                     ))}</div>
                 }
