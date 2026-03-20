@@ -809,7 +809,7 @@ function MobileCardStrip({
                     }}
                     className="overflow-hidden bg-white text-left"
                   >
-                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                    <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-2">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
                         style={{ backgroundColor: s.imageUrl ? undefined : cat.color }}
@@ -843,24 +843,48 @@ function MobileCardStrip({
                         </p>
                       </div>
                     </div>
+
+                    {/* Producto matcheado visible directo en la tarjeta del mapa */}
+                    {s.type === "SHOP" && s.matchedProduct && (
+                      <div className="mx-2.5 mb-2.5 flex items-center gap-2 rounded-xl bg-amber-50 px-2.5 py-2">
+                        {s.matchedProduct.imageUrl
+                          ? <img
+                              src={s.matchedProduct.imageUrl}
+                              alt={s.matchedProduct.title}
+                              className="h-9 w-9 shrink-0 rounded-lg object-cover border border-amber-100"
+                            />
+                          : <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-500">
+                              <IcoTag />
+                            </span>
+                        }
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[11px] font-semibold text-slate-700">{s.matchedProduct.title}</p>
+                          <p className="text-[12px] font-bold text-[hsl(22_92%_50%)]">
+                            ${Math.round(s.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
 
           {activeService && (
-            <div className="flex gap-2 border-t border-slate-100 px-2.5 pt-2.5">
-              {primaryCta ?? <div className="flex-1" />}
-              {activeService.phone && activeService.type !== "PARK" && (
-                <a
-                  href={`tel:${activeService.phone}`}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-[12px] font-semibold text-slate-700"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <IcoPhone /> Llamar
-                  </span>
-                </a>
-              )}
+            <div className="border-t border-slate-100 px-2.5 pt-2.5 pb-0.5">
+              <div className="flex gap-2">
+                {primaryCta ?? <div className="flex-1" />}
+                {activeService.phone && activeService.type !== "PARK" && (
+                  <a
+                    href={`tel:${activeService.phone}`}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-[12px] font-semibold text-slate-700"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <IcoPhone /> Llamar
+                    </span>
+                  </a>
+                )}
+              </div>
             </div>
           )}
         </div>
