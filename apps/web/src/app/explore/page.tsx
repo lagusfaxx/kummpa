@@ -1012,88 +1012,92 @@ export default function ExplorePage() {
         {/* Mobile */}
         <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
 
-          {/* Header unificado — siempre estático, el mapa queda limpio */}
-          <div className="shrink-0 border-b border-slate-100 bg-white px-3 pt-3 pb-2.5 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.06)]">
+          {/* Header — 3 zonas claras, separadas */}
+          <div className="shrink-0 bg-white shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
 
-            {/* Buscador */}
-            <form onSubmit={submitSearch}>
-              <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 transition-all ${
-                inputFocused
-                  ? "border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]"
-                  : "border-slate-200 bg-slate-50"
-              }`}>
-                <span className="shrink-0 text-slate-400"><IcoSearch /></span>
-                <input
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onFocus={() => setInputFocused(true)}
-                  onBlur={() => setInputFocused(false)}
-                  placeholder={inputFocused ? "Buscar lugares, marcas..." : (typingText || (SEARCH_PHRASES[0] ?? ""))}
-                  className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400"
-                />
-                {inputValue && (
-                  <button type="button" onClick={clearSearch}
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
-                    <IcoX />
-                  </button>
-                )}
-              </div>
-            </form>
-
-            {/* Categorías + filtros + tabs — todo en una fila scrollable */}
-            <div className="mt-2 flex items-center gap-1.5">
-              {/* Scroll: categorías y filtros juntos */}
-              <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                {CATEGORIES.map((cat) => {
-                  const active = cat.type ? selectedType === cat.type : selectedType === null;
-                  const Icon = cat.icon;
-                  return (
-                    <button
-                      key={cat.label}
-                      onClick={() => setSelectedType(cat.type ?? null)}
-                      style={active ? { backgroundColor: cat.color } : {}}
-                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-all duration-200 active:scale-95 ${
-                        active ? "text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
-                      }`}
-                    >
-                      <Icon />
-                      <span className="text-[11px] font-semibold">{cat.label}</span>
+            {/* Zona 1: buscador */}
+            <div className="px-4 pt-4 pb-3">
+              <form onSubmit={submitSearch}>
+                <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 transition-all ${
+                  inputFocused
+                    ? "border-[hsl(var(--secondary)/0.4)] bg-white shadow-[0_0_0_3px_hsl(var(--secondary)/0.07)]"
+                    : "border-slate-200 bg-slate-50"
+                }`}>
+                  <span className="shrink-0 text-slate-400"><IcoSearch /></span>
+                  <input
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    placeholder={inputFocused ? "Buscar lugares, marcas..." : (typingText || (SEARCH_PHRASES[0] ?? ""))}
+                    className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400"
+                  />
+                  {inputValue && (
+                    <button type="button" onClick={clearSearch}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
+                      <IcoX />
                     </button>
-                  );
-                })}
+                  )}
+                </div>
+              </form>
+            </div>
 
-                {/* Separador visual */}
-                <div className="mx-0.5 my-1 w-px shrink-0 bg-slate-200" />
-
-                <button onClick={() => setOpenNow((v) => !v)}
-                  className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                    openNow ? "bg-emerald-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
-                  }`}>
-                  {openNow && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
-                  Abierto
-                </button>
-
-                <button onClick={() => setWithDiscount((v) => !v)}
-                  className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                    withDiscount ? "bg-orange-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
-                  }`}>
-                  {withDiscount && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
-                  Descuento
-                </button>
-              </div>
-
-              {/* Tab Mapa / Lista — fijo a la derecha */}
-              <div className="shrink-0 flex overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-0.5">
-                {(["map", "list"] as const).map((tab) => (
-                  <button key={tab} onClick={() => setMobileTab(tab)}
-                    className={`flex items-center justify-center gap-1 rounded-[10px] px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
-                      mobileTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500"
-                    }`}>
-                    {tab === "map" ? <><IcoMapTab /> Mapa</> : <><IcoListTab /> Lista</>}
+            {/* Zona 2: categorías + filtros */}
+            <div className="flex gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
+              {CATEGORIES.map((cat) => {
+                const active = cat.type ? selectedType === cat.type : selectedType === null;
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.label}
+                    onClick={() => setSelectedType(cat.type ?? null)}
+                    style={active ? { backgroundColor: cat.color } : {}}
+                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-all duration-200 active:scale-95 ${
+                      active ? "text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
+                    }`}
+                  >
+                    <Icon />
+                    <span className="text-[11px] font-semibold">{cat.label}</span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
+
+              <div className="mx-0.5 my-1 w-px shrink-0 self-stretch bg-slate-150" style={{ backgroundColor: "#e8ecf0" }} />
+
+              <button onClick={() => setOpenNow((v) => !v)}
+                className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                  openNow ? "bg-emerald-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
+                }`}>
+                {openNow && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
+                Abierto
+              </button>
+
+              <button onClick={() => setWithDiscount((v) => !v)}
+                className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                  withDiscount ? "bg-orange-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
+                }`}>
+                {withDiscount && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
+                Descuento
+              </button>
+            </div>
+
+            {/* Zona 3: vista Mapa / Lista — tab ligero, separado */}
+            <div className="flex border-t border-slate-100">
+              {(["map", "list"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setMobileTab(tab)}
+                  className={`relative flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12px] font-semibold transition-colors ${
+                    mobileTab === tab ? "text-slate-800" : "text-slate-400"
+                  }`}
+                >
+                  {tab === "map" ? <><IcoMapTab /> Mapa</> : <><IcoListTab /> Lista{!isLoading && services.length > 0 && <span className="ml-0.5 text-[10px] font-normal text-slate-400">({services.length})</span>}</>}
+                  {mobileTab === tab && (
+                    <span className="absolute bottom-0 left-1/4 right-1/4 h-[2px] rounded-full bg-slate-700" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
