@@ -830,8 +830,8 @@ export default function ExplorePage() {
     })
       .then((res) => {
         if (ctrl.signal.aborted) return;
-        setServices(res.items);
-        setSelectedId(res.items[0]?.id ?? null);
+        setServices(res.items.filter((s) => s.type !== "LOST_PET"));
+        setSelectedId(null);
         setResultKey((k) => k + 1);
       })
       .catch((err) => {
@@ -1117,6 +1117,7 @@ export default function ExplorePage() {
                 onSelectPoint={setSelectedId}
                 className="flex-1 min-h-[56vh]"
                 borderless
+                showPopup={false}
               />
             ) : (
               <div className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(5rem+env(safe-area-inset-bottom))]">
@@ -1175,6 +1176,7 @@ export default function ExplorePage() {
             onSelectPoint={setSelectedId}
             className="h-full w-full"
             borderless
+            showPopup={false}
           />
 
           {!isLoading && services.length > 0 && (
