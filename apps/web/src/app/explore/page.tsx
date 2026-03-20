@@ -641,7 +641,7 @@ function MobileServiceCard({
 }
 
 /* ─── Mobile Card Strip ──────────────────────────────────────── */
-/* ─── Mobile Map Card (single-card view, replaces strip) ────── */
+/* ─── Mobile Map Card (ultra-compacto, 2 filas) ─────────────── */
 function MobileMapCard({
   services,
   selectedId,
@@ -665,47 +665,30 @@ function MobileMapCard({
     if (next) onSelect(next.id);
   };
 
-  const cta = (() => {
-    if (service.type === "PARK") return (
-      <a href={mapsUrl(service.latitude, service.longitude, service.name)} target="_blank" rel="noopener noreferrer"
-        className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-green-700 py-3 text-[13px] font-bold text-white">
-        <IcoDirections /> Cómo llegar
-      </a>
-    );
-    if (service.type === "SHOP") return (
-      <Link href={`/explore/shop/${service.sourceId}`}
-        className="flex flex-1 items-center justify-center rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-[13px] font-bold text-white">
-        Ver tienda
-      </Link>
-    );
-    if (service.type === "VET") return (
-      <Link href={`/explore/vet/${service.sourceId}`}
-        className="flex flex-1 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] py-3 text-[13px] font-bold text-white">
-        Reservar
-      </Link>
-    );
-    if (service.type === "GROOMING") return (
-      <Link href={`/explore/groomer/${service.sourceId}`}
-        className="flex flex-1 items-center justify-center rounded-2xl bg-pink-700 py-3 text-[13px] font-bold text-white">
-        Reservar
-      </Link>
-    );
-    if (service.bookingUrl ?? service.profileUrl) return (
-      <Link href={service.bookingUrl ?? service.profileUrl ?? "#"}
-        className="flex flex-1 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] py-3 text-[13px] font-bold text-white">
-        Reservar
-      </Link>
-    );
-    return null;
-  })();
+  const ctaHref =
+    service.type === "SHOP"     ? `/explore/shop/${service.sourceId}`    :
+    service.type === "VET"      ? `/explore/vet/${service.sourceId}`      :
+    service.type === "GROOMING" ? `/explore/groomer/${service.sourceId}`  :
+    service.type === "PARK"     ? mapsUrl(service.latitude, service.longitude, service.name) :
+    (service.bookingUrl ?? service.profileUrl ?? null);
+
+  const ctaLabel =
+    service.type === "SHOP" ? "Ver tienda" :
+    service.type === "PARK" ? "Ir" : "Reservar";
+
+  const ctaBg =
+    service.type === "SHOP"     ? "hsl(22 92% 60%)"          :
+    service.type === "PARK"     ? "#15803d"                   :
+    service.type === "GROOMING" ? "#be185d"                   :
+    cat.color;
 
   return (
     <div
       className="pointer-events-none absolute inset-x-0 bottom-0 px-3"
-      style={{ paddingBottom: "calc(0.875rem + env(safe-area-inset-bottom))" }}
+      style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
       <div
-        className="pointer-events-auto overflow-hidden rounded-[26px] border border-white/60 bg-white/96 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.42)] backdrop-blur-2xl"
+        className="pointer-events-auto overflow-hidden rounded-[20px] border border-white/50 bg-white/95 shadow-[0_16px_48px_-16px_rgba(0,0,0,0.36)] backdrop-blur-2xl"
         onTouchStart={(e) => { touchStartX.current = e.touches[0]?.clientX ?? null; }}
         onTouchEnd={(e) => {
           if (touchStartX.current === null) return;
@@ -715,15 +698,14 @@ function MobileMapCard({
         }}
       >
         {/* Handle */}
-        <div className="flex justify-center pt-2.5 pb-1">
-          <span className="h-[3px] w-9 rounded-full bg-slate-200" />
+        <div className="flex justify-center pt-2 pb-0.5">
+          <span className="h-[3px] w-8 rounded-full bg-slate-200" />
         </div>
 
-        {/* Main info row */}
-        <div className="flex items-center gap-3 px-4 pb-3 pt-1">
-          {/* Avatar */}
+        {/* Fila 1: avatar · nombre · open · nav */}
+        <div className="flex items-center gap-2.5 px-3.5 pt-1.5 pb-2">
           <div
-            className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-2xl text-lg font-bold text-white"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
             style={{ backgroundColor: service.imageUrl ? "transparent" : cat.color }}
           >
             {service.imageUrl
@@ -731,36 +713,33 @@ function MobileMapCard({
               : service.name.slice(0, 1)
             }
             {service.isEmergency24x7 && (
-              <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-px text-center text-[7px] font-black tracking-wider text-white">24/7</span>
+              <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-px text-center text-[6px] font-black tracking-wider text-white">24/7</span>
             )}
           </div>
 
-          {/* Text */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-[15px] font-bold leading-snug text-slate-800">{service.name}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-[13px] font-bold text-slate-800">{service.name}</p>
               {service.isOpenNow !== null && (
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold leading-none ${
+                <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold leading-none ${
                   service.isOpenNow ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
                 }`}>{service.isOpenNow ? "Abierto" : "Cerrado"}</span>
               )}
             </div>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] text-slate-400">
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-                {typeLabel(service.type)}
-              </span>
-              {service.district && <><span className="opacity-30">·</span><span>{service.district}</span></>}
+            <p className="mt-px flex items-center gap-1 text-[10px] text-slate-400">
+              <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
+              {typeLabel(service.type)}
+              {service.district && <><span className="opacity-30">·</span><span className="truncate">{service.district}</span></>}
               {service.rating !== null && <><span className="opacity-30">·</span><span className="font-semibold text-amber-500">★{service.rating.toFixed(1)}</span></>}
-              {service.distanceKm !== null && <><span className="opacity-30">·</span><span>{service.distanceKm.toFixed(1)} km</span></>}
+              {service.distanceKm !== null && <><span className="opacity-30">·</span><span className="font-semibold">{service.distanceKm.toFixed(1)} km</span></>}
             </p>
           </div>
 
-          {/* Prev / counter / next */}
-          <div className="flex shrink-0 items-center gap-1">
+          {/* Nav compacto */}
+          <div className="flex shrink-0 items-center gap-0.5">
             <button type="button" onClick={() => goTo(activeIdx - 1)} disabled={activeIdx === 0}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition active:bg-slate-100 disabled:opacity-25">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-25">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
                 <polyline points="10 13 5 8 10 3"/>
               </svg>
             </button>
@@ -768,44 +747,47 @@ function MobileMapCard({
               {activeIdx + 1}/{services.length}
             </span>
             <button type="button" onClick={() => goTo(activeIdx + 1)} disabled={activeIdx === services.length - 1}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition active:bg-slate-100 disabled:opacity-25">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-25">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
                 <polyline points="6 3 11 8 6 13"/>
               </svg>
             </button>
           </div>
         </div>
 
-        {/* Product match — prominente */}
-        {service.type === "SHOP" && service.matchedProduct && (
-          <div className="mx-4 mb-3 flex items-center gap-3 rounded-2xl bg-amber-50 px-3 py-2.5">
-            {service.matchedProduct.imageUrl
-              ? <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
-                  className="h-11 w-11 shrink-0 rounded-xl object-cover border border-amber-100" />
-              : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-500"><IcoTag /></span>
-            }
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold text-slate-800">{service.matchedProduct.title}</p>
-              <p className="text-[11px] text-slate-400">Disponible aquí</p>
-            </div>
-            <span className="shrink-0 text-[16px] font-bold text-[hsl(22_92%_50%)]">
-              ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
-            </span>
-          </div>
-        )}
+        {/* Fila 2: producto+precio (si hay) + CTA — todo en una línea */}
+        <div className="flex items-center gap-2 border-t border-slate-100/80 px-3.5 py-2.5">
+          {service.type === "SHOP" && service.matchedProduct ? (
+            <>
+              {service.matchedProduct.imageUrl && (
+                <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
+                  className="h-8 w-8 shrink-0 rounded-lg object-cover border border-amber-100 bg-amber-50" />
+              )}
+              <p className="min-w-0 flex-1 truncate text-[11px] text-slate-500">{service.matchedProduct.title}</p>
+              <span className="shrink-0 text-[15px] font-bold text-[hsl(22_92%_50%)]">
+                ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+              </span>
+            </>
+          ) : (
+            <div className="flex-1" />
+          )}
 
-        {/* CTA */}
-        {(cta || (service.phone && service.type !== "PARK")) && (
-          <div className="flex gap-2.5 px-4 pb-4">
-            {cta}
-            {service.phone && service.type !== "PARK" && (
-              <a href={`tel:${service.phone}`}
-                className="flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[12px] font-semibold text-slate-700">
-                <IcoPhone /> Llamar
+          {ctaHref && (
+            service.type === "PARK" ? (
+              <a href={ctaHref} target="_blank" rel="noopener noreferrer"
+                className="shrink-0 rounded-xl px-3.5 py-1.5 text-[12px] font-bold text-white"
+                style={{ backgroundColor: ctaBg }}>
+                {ctaLabel}
               </a>
-            )}
-          </div>
-        )}
+            ) : (
+              <Link href={ctaHref}
+                className="shrink-0 rounded-xl px-3.5 py-1.5 text-[12px] font-bold text-white"
+                style={{ backgroundColor: ctaBg }}>
+                {ctaLabel}
+              </Link>
+            )
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1127,7 +1109,7 @@ export default function ExplorePage() {
           </div>
 
           {/* Mobile content */}
-          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[11.5rem]" : ""}`}>
+          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[10rem]" : ""}`}>
             {mobileTab === "map" ? (
               <MapCanvas
                 accessToken={MAPBOX_TOKEN}
