@@ -997,6 +997,12 @@ export default function ExplorePage() {
         .category-chip {
           animation: catChipIn 0.18s ease both;
         }
+        @media (max-width: 1023px) {
+          .mapboxgl-ctrl-bottom-left,
+          .mapboxgl-ctrl-bottom-right {
+            margin-bottom: calc(8rem + env(safe-area-inset-bottom));
+          }
+        }
       `}</style>
 
       <div className="flex flex-1 w-full overflow-hidden">
