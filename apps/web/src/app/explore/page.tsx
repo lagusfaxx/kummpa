@@ -641,7 +641,8 @@ function MobileServiceCard({
 }
 
 /* ─── Mobile Card Strip ──────────────────────────────────────── */
-function MobileCardStrip({
+/* ─── Mobile Map Card (single-card view, replaces strip) ────── */
+function MobileMapCard({
   services,
   selectedId,
   onSelect,
@@ -650,246 +651,163 @@ function MobileCardStrip({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const stripRef = useRef<HTMLDivElement>(null);
-  const isProgrammatic = useRef(false);
+  const rawIdx = selectedId ? services.findIndex((s) => s.id === selectedId) : 0;
+  const activeIdx = rawIdx < 0 ? 0 : rawIdx;
+  const service = services[activeIdx] ?? null;
+  const touchStartX = useRef<number | null>(null);
 
-  /* Derive the visually-active service (fallback to first) */
-  const activeService =
-    (selectedId ? services.find((s) => s.id === selectedId) : null) ??
-    services[0] ??
-    null;
+  if (!service) return null;
 
-  /* ── On user swipe: find the centred card and update selectedId ── */
-  useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip) return;
-    let timer: ReturnType<typeof setTimeout>;
+  const cat = categoryFor(service.type);
 
-    const handleScroll = () => {
-      if (isProgrammatic.current) return;
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        const centre = strip.scrollLeft + strip.clientWidth / 2;
-        let best: { id: string; dist: number } | null = null;
-        strip.querySelectorAll<HTMLElement>("[data-strip-id]").forEach((el) => {
-          const dist = Math.abs(el.offsetLeft + el.offsetWidth / 2 - centre);
-          if (!best || dist < best.dist) best = { id: el.dataset.stripId!, dist };
-        });
-        if (best) onSelect((best as { id: string; dist: number }).id);
-      }, 60);
-    };
+  const goTo = (i: number) => {
+    const next = services[Math.max(0, Math.min(i, services.length - 1))];
+    if (next) onSelect(next.id);
+  };
 
-    strip.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      strip.removeEventListener("scroll", handleScroll);
-      clearTimeout(timer);
-    };
-  }, [onSelect]);
-
-  /* ── When selectedId changes from outside (map marker tap): scroll to card ── */
-  useEffect(() => {
-    if (!selectedId || !stripRef.current) return;
-    const el = stripRef.current.querySelector<HTMLElement>(
-      `[data-strip-id="${selectedId}"]`
+  const cta = (() => {
+    if (service.type === "PARK") return (
+      <a href={mapsUrl(service.latitude, service.longitude, service.name)} target="_blank" rel="noopener noreferrer"
+        className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-green-700 py-3 text-[13px] font-bold text-white">
+        <IcoDirections /> Cómo llegar
+      </a>
     );
-    if (!el) return;
-    const strip = stripRef.current;
-    const target = el.offsetLeft + el.offsetWidth / 2 - strip.clientWidth / 2;
-    if (Math.abs(strip.scrollLeft - target) < 4) return;
-    isProgrammatic.current = true;
-    strip.scrollTo({ left: target, behavior: "smooth" });
-    setTimeout(() => { isProgrammatic.current = false; }, 700);
-  }, [selectedId]);
-
-  const primaryCta = (() => {
-    if (!activeService) return null;
-    if (activeService.type === "PARK") {
-      return (
-        <a
-          href={mapsUrl(activeService.latitude, activeService.longitude, activeService.name)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-700 px-3 py-2 text-[12px] font-semibold text-white"
-        >
-          <IcoDirections /> Cómo llegar
-        </a>
-      );
-    }
-    if (activeService.type === "SHOP") {
-      return (
-        <Link
-          href={`/explore/shop/${activeService.sourceId}`}
-          className="flex-1 rounded-xl bg-[hsl(22_92%_60%)] px-3 py-2 text-center text-[12px] font-semibold text-white"
-        >
-          Ver tienda
-        </Link>
-      );
-    }
-    if (activeService.type === "VET") {
-      return (
-        <Link
-          href={`/explore/vet/${activeService.sourceId}`}
-          className="flex-1 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-center text-[12px] font-semibold text-white"
-        >
-          Reservar
-        </Link>
-      );
-    }
-    if (activeService.type === "GROOMING") {
-      return (
-        <Link
-          href={`/explore/groomer/${activeService.sourceId}`}
-          className="flex-1 rounded-xl bg-pink-700 px-3 py-2 text-center text-[12px] font-semibold text-white"
-        >
-          Reservar
-        </Link>
-      );
-    }
-    if (activeService.bookingUrl ?? activeService.profileUrl) {
-      return (
-        <Link
-          href={activeService.bookingUrl ?? activeService.profileUrl ?? "#"}
-          className="flex-1 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-center text-[12px] font-semibold text-white"
-        >
-          Reservar
-        </Link>
-      );
-    }
+    if (service.type === "SHOP") return (
+      <Link href={`/explore/shop/${service.sourceId}`}
+        className="flex flex-1 items-center justify-center rounded-2xl bg-[hsl(22_92%_60%)] py-3 text-[13px] font-bold text-white">
+        Ver tienda
+      </Link>
+    );
+    if (service.type === "VET") return (
+      <Link href={`/explore/vet/${service.sourceId}`}
+        className="flex flex-1 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] py-3 text-[13px] font-bold text-white">
+        Reservar
+      </Link>
+    );
+    if (service.type === "GROOMING") return (
+      <Link href={`/explore/groomer/${service.sourceId}`}
+        className="flex flex-1 items-center justify-center rounded-2xl bg-pink-700 py-3 text-[13px] font-bold text-white">
+        Reservar
+      </Link>
+    );
+    if (service.bookingUrl ?? service.profileUrl) return (
+      <Link href={service.bookingUrl ?? service.profileUrl ?? "#"}
+        className="flex flex-1 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] py-3 text-[13px] font-bold text-white">
+        Reservar
+      </Link>
+    );
     return null;
   })();
 
   return (
-    <>
-      {/* hide webkit scrollbar globally for this strip */}
-      <style>{`#strip-scroll::-webkit-scrollbar{display:none}`}</style>
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 px-3"
+      style={{ paddingBottom: "calc(0.875rem + env(safe-area-inset-bottom))" }}
+    >
+      <div
+        className="pointer-events-auto overflow-hidden rounded-[26px] border border-white/60 bg-white/96 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.42)] backdrop-blur-2xl"
+        onTouchStart={(e) => { touchStartX.current = e.touches[0]?.clientX ?? null; }}
+        onTouchEnd={(e) => {
+          if (touchStartX.current === null) return;
+          const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
+          touchStartX.current = null;
+          if (Math.abs(dx) > 44) goTo(activeIdx + (dx < 0 ? 1 : -1));
+        }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-2.5 pb-1">
+          <span className="h-[3px] w-9 rounded-full bg-slate-200" />
+        </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 px-2 pb-2">
-        <div
-          className="pointer-events-auto rounded-[28px] border border-white/70 bg-white/92 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all duration-300"
-          style={{
-            paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
-          }}
-        >
-          <div className="flex justify-center pt-2.5 pb-1.5">
-            <span className="h-1 w-10 rounded-full bg-slate-200" aria-hidden="true" />
+        {/* Main info row */}
+        <div className="flex items-center gap-3 px-4 pb-3 pt-1">
+          {/* Avatar */}
+          <div
+            className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-2xl text-lg font-bold text-white"
+            style={{ backgroundColor: service.imageUrl ? "transparent" : cat.color }}
+          >
+            {service.imageUrl
+              ? <img src={service.imageUrl} alt={service.name} className="h-full w-full object-cover" />
+              : service.name.slice(0, 1)
+            }
+            {service.isEmergency24x7 && (
+              <span className="absolute bottom-0 left-0 right-0 bg-red-600 py-px text-center text-[7px] font-black tracking-wider text-white">24/7</span>
+            )}
           </div>
 
-          <div
-              id="strip-scroll"
-              ref={stripRef}
-              className="flex overflow-x-auto"
-              style={{
-                scrollSnapType: "x mandatory",
-                scrollbarWidth: "none",
-                gap: "10px",
-                paddingBottom: "8px",
-                paddingLeft: "max(14px, calc(50vw - 132px))",
-                paddingRight: "max(14px, calc(50vw - 132px))",
-              }}
-            >
-              {services.map((s) => {
-                const cat = categoryFor(s.type);
-                const active = s.id === (selectedId ?? services[0]?.id);
-                return (
-                  <button
-                    key={s.id}
-                    data-strip-id={s.id}
-                    type="button"
-                    onClick={() => onSelect(s.id)}
-                    style={{
-                      scrollSnapAlign: "center",
-                      flexShrink: 0,
-                      width: "min(72vw, 264px)",
-                      borderRadius: "16px",
-                      border: active ? `1.5px solid ${cat.color}` : "1.5px solid rgba(226,232,240,0.9)",
-                      boxShadow: active
-                        ? `0 6px 18px -8px ${cat.color}66`
-                        : "0 3px 10px -8px rgba(15,23,42,0.35)",
-                      transition: "border-color 0.15s, box-shadow 0.15s",
-                    }}
-                    className="overflow-hidden bg-white text-left"
-                  >
-                    <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-2">
-                      <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
-                        style={{ backgroundColor: s.imageUrl ? undefined : cat.color }}
-                      >
-                        {s.imageUrl
-                          ? <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
-                          : s.name.slice(0, 1)
-                        }
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <p className="truncate text-[13px] font-bold leading-snug text-slate-800">
-                            {s.name}
-                          </p>
-                          {s.isOpenNow !== null && (
-                            <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold leading-none ${
-                              s.isOpenNow
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-slate-100 text-slate-400"
-                            }`}>
-                              {s.isOpenNow ? "Abierto" : "Cerrado"}
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-0.5 truncate text-[11px] text-slate-400">
-                          {typeLabel(s.type)}
-                          {s.district && <> · {s.district}</>}
-                          {s.rating !== null && (
-                            <> · <span className="font-semibold text-amber-500">★{s.rating.toFixed(1)}</span></>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Producto matcheado visible directo en la tarjeta del mapa */}
-                    {s.type === "SHOP" && s.matchedProduct && (
-                      <div className="mx-2.5 mb-2.5 flex items-center gap-2 rounded-xl bg-amber-50 px-2.5 py-2">
-                        {s.matchedProduct.imageUrl
-                          ? <img
-                              src={s.matchedProduct.imageUrl}
-                              alt={s.matchedProduct.title}
-                              className="h-9 w-9 shrink-0 rounded-lg object-cover border border-amber-100"
-                            />
-                          : <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-500">
-                              <IcoTag />
-                            </span>
-                        }
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-[11px] font-semibold text-slate-700">{s.matchedProduct.title}</p>
-                          <p className="text-[12px] font-bold text-[hsl(22_92%_50%)]">
-                            ${Math.round(s.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+          {/* Text */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="truncate text-[15px] font-bold leading-snug text-slate-800">{service.name}</p>
+              {service.isOpenNow !== null && (
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold leading-none ${
+                  service.isOpenNow ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+                }`}>{service.isOpenNow ? "Abierto" : "Cerrado"}</span>
+              )}
             </div>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] text-slate-400">
+              <span className="inline-flex items-center gap-1">
+                <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
+                {typeLabel(service.type)}
+              </span>
+              {service.district && <><span className="opacity-30">·</span><span>{service.district}</span></>}
+              {service.rating !== null && <><span className="opacity-30">·</span><span className="font-semibold text-amber-500">★{service.rating.toFixed(1)}</span></>}
+              {service.distanceKm !== null && <><span className="opacity-30">·</span><span>{service.distanceKm.toFixed(1)} km</span></>}
+            </p>
+          </div>
 
-          {activeService && (
-            <div className="border-t border-slate-100 px-2.5 pt-2.5 pb-0.5">
-              <div className="flex gap-2">
-                {primaryCta ?? <div className="flex-1" />}
-                {activeService.phone && activeService.type !== "PARK" && (
-                  <a
-                    href={`tel:${activeService.phone}`}
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-[12px] font-semibold text-slate-700"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <IcoPhone /> Llamar
-                    </span>
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Prev / counter / next */}
+          <div className="flex shrink-0 items-center gap-1">
+            <button type="button" onClick={() => goTo(activeIdx - 1)} disabled={activeIdx === 0}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition active:bg-slate-100 disabled:opacity-25">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                <polyline points="10 13 5 8 10 3"/>
+              </svg>
+            </button>
+            <span className="min-w-[28px] text-center text-[10px] font-bold tabular-nums text-slate-400">
+              {activeIdx + 1}/{services.length}
+            </span>
+            <button type="button" onClick={() => goTo(activeIdx + 1)} disabled={activeIdx === services.length - 1}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition active:bg-slate-100 disabled:opacity-25">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                <polyline points="6 3 11 8 6 13"/>
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Product match — prominente */}
+        {service.type === "SHOP" && service.matchedProduct && (
+          <div className="mx-4 mb-3 flex items-center gap-3 rounded-2xl bg-amber-50 px-3 py-2.5">
+            {service.matchedProduct.imageUrl
+              ? <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
+                  className="h-11 w-11 shrink-0 rounded-xl object-cover border border-amber-100" />
+              : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-500"><IcoTag /></span>
+            }
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold text-slate-800">{service.matchedProduct.title}</p>
+              <p className="text-[11px] text-slate-400">Disponible aquí</p>
+            </div>
+            <span className="shrink-0 text-[16px] font-bold text-[hsl(22_92%_50%)]">
+              ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+            </span>
+          </div>
+        )}
+
+        {/* CTA */}
+        {(cta || (service.phone && service.type !== "PARK")) && (
+          <div className="flex gap-2.5 px-4 pb-4">
+            {cta}
+            {service.phone && service.type !== "PARK" && (
+              <a href={`tel:${service.phone}`}
+                className="flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[12px] font-semibold text-slate-700">
+                <IcoPhone /> Llamar
+              </a>
+            )}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1176,37 +1094,40 @@ export default function ExplorePage() {
               </div>
             </div>
 
-            {/* Mobile quick filters */}
-            <div className={`overflow-x-auto px-3 pb-2 ${mobileTab === "map" ? "pointer-events-none" : ""}`} style={{ scrollbarWidth: "none" }}>
-              <div className={`flex gap-1.5 ${mobileTab === "map" ? "pointer-events-auto" : ""}`}>
-                <button onClick={() => setOpenNow((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${openNow ? "bg-emerald-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
-                  Abierto ahora
+            {/* Filters + tabs — una sola fila */}
+            <div className={`flex items-center gap-1.5 px-3 pb-3 ${mobileTab === "map" ? "pointer-events-none" : ""}`}>
+              <div className={`flex items-center gap-1.5 ${mobileTab === "map" ? "pointer-events-auto" : ""}`}>
+                <button onClick={() => setOpenNow((v) => !v)}
+                  className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-all ${openNow ? "bg-emerald-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"}`}>
+                  {openNow && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
+                  Abierto
                 </button>
-                <button onClick={() => setWithDiscount((v) => !v)} className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${withDiscount ? "bg-orange-600 text-white" : "border border-slate-200 bg-white text-slate-500"}`}>
-                  Con descuento
+                <button onClick={() => setWithDiscount((v) => !v)}
+                  className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-all ${withDiscount ? "bg-orange-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"}`}>
+                  {withDiscount && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
+                  Descuento
                 </button>
               </div>
-            </div>
 
-            {/* Mobile tabs */}
-            <div className={`mx-3 mb-3 flex overflow-hidden rounded-xl border p-0.5 ${
-              mobileTab === "map"
-                ? "pointer-events-auto border-white/60 bg-white/88 shadow-[0_10px_24px_-16px_rgba(15,23,42,0.45)] backdrop-blur-xl"
-                : "border-slate-200 bg-slate-100"
-            }`}>
-              {(["map", "list"] as const).map((tab) => (
-                <button key={tab} onClick={() => setMobileTab(tab)}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-1.5 text-xs font-semibold transition-all ${
-                    mobileTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500"
-                  }`}>
-                  {tab === "map" ? <><IcoMapTab /> Mapa</> : <><IcoListTab /> Lista {!isLoading && `(${services.length})`}</>}
-                </button>
-              ))}
+              <div className={`ml-auto flex overflow-hidden rounded-xl border p-0.5 ${
+                mobileTab === "map"
+                  ? "pointer-events-auto border-white/60 bg-white/88 shadow-[0_8px_20px_-12px_rgba(15,23,42,0.4)] backdrop-blur-xl"
+                  : "border-slate-200 bg-slate-100"
+              }`}>
+                {(["map", "list"] as const).map((tab) => (
+                  <button key={tab} onClick={() => setMobileTab(tab)}
+                    className={`flex items-center justify-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                      mobileTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500"
+                    }`}>
+                    {tab === "map" ? <><IcoMapTab /> Mapa</> : <><IcoListTab /> Lista{!isLoading && services.length > 0 && ` (${services.length})`}</>}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Mobile content */}
-          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[14.5rem]" : ""}`}>
+          <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${mobileTab === "map" ? "pt-[11.5rem]" : ""}`}>
             {mobileTab === "map" ? (
               <MapCanvas
                 accessToken={MAPBOX_TOKEN}
@@ -1253,9 +1174,9 @@ export default function ExplorePage() {
               </div>
             )}
 
-            {/* Mobile bottom card strip — swipeable, shows all results */}
+            {/* Mobile map card — single card con nav prev/next */}
             {mobileTab === "map" && services.length > 0 && (
-              <MobileCardStrip
+              <MobileMapCard
                 services={services}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
