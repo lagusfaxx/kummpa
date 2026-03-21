@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MapCanvas } from "@/components/map/map-canvas";
 import { listMapServices } from "@/features/map/map-api";
 import type { MapServicePoint, MapServiceType } from "@/features/map/types";
@@ -465,6 +465,14 @@ export default function ExplorePage() {
     if (selectedId && listRef.current) listRef.current.querySelector(`[data-id="${selectedId}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [selectedId]);
 
+  /* Debounce: update search 400ms after user stops typing */
+  useEffect(() => {
+    const trimmed = inputValue.trim();
+    if (trimmed === search) return;
+    const t = setTimeout(() => setSearch(trimmed), 400);
+    return () => clearTimeout(t);
+  }, [inputValue]);
+
   const submitSearch = (e: React.FormEvent) => { e.preventDefault(); setSearch(inputValue.trim()); inputRef.current?.blur(); };
   const clearSearch = () => { setInputValue(""); setSearch(""); };
   const activeFilters = [openNow, withDiscount, selectedType !== null, !!search].filter(Boolean).length;
@@ -476,7 +484,7 @@ export default function ExplorePage() {
         <span className={`shrink-0 ${inputFocused ? "text-teal-600" : "text-slate-400"}`}><IcoSearch /></span>
         <input ref={inputRef} value={inputValue} onChange={(e) => setInputValue(e.target.value)} onFocus={() => setInputFocused(true)} onBlur={() => setInputFocused(false)}
           placeholder={inputFocused ? "Buscar lugares, marcas, productos..." : typingText}
-          className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" />
+          className="min-w-0 flex-1 bg-transparent text-[16px] lg:text-[13px] text-slate-800 outline-none placeholder:text-slate-400" />
         {inputValue && <button type="button" onClick={clearSearch} className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300"><IcoX /></button>}
       </div>
     </form>
