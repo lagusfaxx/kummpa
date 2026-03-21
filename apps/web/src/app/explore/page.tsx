@@ -54,7 +54,7 @@ function useTypingPlaceholder() {
 }
 
 /* ─── Category system ────────────────────────────────────────── */
-type Cat = { label: string; type?: MapServiceType; color: string; bg: string; text: string; icon: () => JSX.Element };
+type Cat = { label: string; type?: MapServiceType; color: string; bg: string; text: string; lightBg: string; lightText: string; icon: () => JSX.Element };
 
 function IcAll() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>; }
 function IcVet() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]"><path d="M12 2C8.13 2 5 5.13 5 9c0 3.1 1.7 5.8 4.2 7.2L8 21h8l-1.2-4.8A8 8 0 0 0 19 9c0-3.87-3.13-7-7-7z"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="9" y1="10" x2="15" y2="10"/></svg>; }
@@ -65,13 +65,13 @@ function IcPark() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentC
 function IcHotel() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>; }
 
 const CATS: Cat[] = [
-  { label: "Todo",         color: "#475569", bg: "bg-slate-600",    text: "text-white",       icon: IcAll },
-  { label: "Veterinarias", type: "VET",       color: "#0d9488", bg: "bg-teal-600",     text: "text-white",       icon: IcVet },
-  { label: "Tiendas",      type: "SHOP",      color: "#d97706", bg: "bg-amber-600",    text: "text-white",       icon: IcShop },
-  { label: "Peluquerías",  type: "GROOMING",  color: "#db2777", bg: "bg-pink-600",     text: "text-white",       icon: IcGroom },
-  { label: "Paseos",       type: "CAREGIVER", color: "#2563eb", bg: "bg-blue-600",     text: "text-white",       icon: IcWalk },
-  { label: "Parques",      type: "PARK",      color: "#16a34a", bg: "bg-green-600",    text: "text-white",       icon: IcPark },
-  { label: "Hoteles",      type: "HOTEL",     color: "#7c3aed", bg: "bg-violet-600",   text: "text-white",       icon: IcHotel },
+  { label: "Todo",         color: "#475569", bg: "bg-slate-600",    text: "text-white", lightBg: "bg-slate-50",    lightText: "text-slate-600",  icon: IcAll },
+  { label: "Veterinarias", type: "VET",       color: "#0d9488", bg: "bg-teal-600",     text: "text-white", lightBg: "bg-teal-50",     lightText: "text-teal-700",   icon: IcVet },
+  { label: "Tiendas",      type: "SHOP",      color: "#d97706", bg: "bg-amber-600",    text: "text-white", lightBg: "bg-amber-50",    lightText: "text-amber-700",  icon: IcShop },
+  { label: "Peluquerías",  type: "GROOMING",  color: "#db2777", bg: "bg-pink-600",     text: "text-white", lightBg: "bg-pink-50",     lightText: "text-pink-700",   icon: IcGroom },
+  { label: "Paseos",       type: "CAREGIVER", color: "#2563eb", bg: "bg-blue-600",     text: "text-white", lightBg: "bg-blue-50",     lightText: "text-blue-700",   icon: IcWalk },
+  { label: "Parques",      type: "PARK",      color: "#16a34a", bg: "bg-green-600",    text: "text-white", lightBg: "bg-green-50",    lightText: "text-green-700",  icon: IcPark },
+  { label: "Hoteles",      type: "HOTEL",     color: "#7c3aed", bg: "bg-violet-600",   text: "text-white", lightBg: "bg-violet-50",   lightText: "text-violet-700", icon: IcHotel },
 ];
 
 function catFor(t: MapServiceType) { return CATS.find((c) => c.type === t) ?? CATS[0]!; }
@@ -260,27 +260,60 @@ function DesktopCard({ service, selected, onSelect, i }: { service: MapServicePo
 /* ═══ Mobile List Card ═══════════════════════════════════════════ */
 function MobileCard({ service, onSelect, i }: { service: MapServicePoint; onSelect: () => void; i: number }) {
   const cat = catFor(service.type);
+  const price = priceText(service);
   return (
     <article onClick={onSelect} style={{ animationDelay: `${Math.min(i * 25, 250)}ms` }}
-      className="explore-card mx-4 mb-3 overflow-hidden rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06),0_6px_16px_-6px_rgba(0,0,0,0.1)] ring-1 ring-slate-100 active:scale-[0.985] transition-all cursor-pointer">
-      {/* Top color stripe */}
-      <div className="h-[3px]" style={{ backgroundColor: cat.color }} />
+      className="explore-card mx-4 mb-3.5 overflow-hidden rounded-[1.25rem] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_-8px_rgba(0,0,0,0.12)] active:scale-[0.985] transition-all cursor-pointer">
+      {/* Colored gradient header */}
+      <div className="relative h-[5px]" style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}88)` }} />
 
-      <div className="flex gap-3.5 p-4 pb-3">
-        <Avatar service={service} size={52} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-[15px] font-bold leading-snug text-slate-800">{service.name}</p>
-            <OpenBadge isOpen={service.isOpenNow} />
+      <div className="p-4 pb-3">
+        {/* Top row: avatar + info */}
+        <div className="flex gap-3.5">
+          <Avatar service={service} size={56} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-[15px] font-bold leading-snug text-slate-800">{service.name}</p>
+              <OpenBadge isOpen={service.isOpenNow} />
+            </div>
+            <p className="mt-0.5 truncate text-[12px] text-slate-400">{service.district ?? service.address ?? ""}</p>
           </div>
-          <p className="mt-0.5 truncate text-[12px] text-slate-400">{service.district ?? service.address ?? ""}</p>
-          <InfoBadges service={service} />
         </div>
+
+        {/* Colorful info row */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold" style={{ backgroundColor: cat.color + "18", color: cat.color }}>
+            <cat.icon />{typeLabel(service.type)}
+          </span>
+          {service.distanceKm !== null && (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-600">
+              <IcoPin />{service.distanceKm.toFixed(1)} km
+            </span>
+          )}
+          {service.rating !== null && (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-600">
+              <IcoStar />{service.rating.toFixed(1)}
+            </span>
+          )}
+          {price && (
+            <span className="ml-auto text-[14px] font-bold tabular-nums" style={{ color: cat.color }}>
+              {price}
+            </span>
+          )}
+        </div>
+
+        {service.discountLabel && (
+          <div className="mt-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-3 py-1 text-[10px] font-bold text-white shadow-sm">
+              <IcoTag />{service.discountLabel}
+            </span>
+          </div>
+        )}
       </div>
 
       {service.type === "SHOP" && service.matchedProduct && <div className="mx-4 mb-3"><ProductRow product={service.matchedProduct} /></div>}
 
-      <div className="flex gap-2.5 border-t border-slate-100 px-4 py-3">
+      <div className="flex gap-2.5 border-t px-4 py-3" style={{ borderColor: cat.color + "18" }}>
         <CtaBtn service={service} expand />
         {service.phone && service.type !== "PARK" && <CallBtn phone={service.phone} expand />}
       </div>
@@ -301,39 +334,54 @@ function MapBottomCard({ services, selectedId, onSelect }: { services: MapServic
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 px-3" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
-      <div className="pointer-events-auto overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_-12px_rgba(0,0,0,0.3)] ring-1 ring-black/5"
+      <div className="pointer-events-auto overflow-hidden rounded-[1.25rem] bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10),0_12px_40px_-12px_rgba(0,0,0,0.25)]"
         onTouchStart={(e) => { touchX.current = e.touches[0]?.clientX ?? null; }}
         onTouchEnd={(e) => { if (touchX.current === null) return; const dx = (e.changedTouches[0]?.clientX ?? 0) - touchX.current; touchX.current = null; if (Math.abs(dx) > 44) go(idx + (dx < 0 ? 1 : -1)); }}>
-        {/* Color top */}
-        <div className="h-[3px]" style={{ backgroundColor: cat.color }} />
+        {/* Thicker color gradient top */}
+        <div className="h-[5px]" style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}88)` }} />
 
-        <div className="flex items-center gap-3 px-3.5 py-3">
-          <Avatar service={s} size={44} />
+        {/* Swipe indicator */}
+        <div className="flex justify-center pt-2 pb-1">
+          <div className="h-1 w-8 rounded-full bg-slate-200" />
+        </div>
+
+        <div className="flex items-center gap-3.5 px-4 pb-3">
+          <Avatar service={s} size={50} />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <p className="truncate text-[14px] font-bold text-slate-800">{s.name}</p>
+            <div className="flex items-center gap-2">
+              <p className="truncate text-[15px] font-bold text-slate-800">{s.name}</p>
               <OpenBadge isOpen={s.isOpenNow} />
             </div>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="rounded-md px-1.5 py-px text-[10px] font-semibold" style={{ backgroundColor: cat.color + "14", color: cat.color }}>{typeLabel(s.type)}</span>
-              {s.distanceKm !== null && <span className="text-[11px] font-semibold text-blue-600">{s.distanceKm.toFixed(1)} km</span>}
-              {price && <span className="text-[11px] font-bold text-slate-700">{price}</span>}
-              {s.rating !== null && <span className="flex items-center gap-0.5 text-[11px] font-semibold text-amber-500"><IcoStar />{s.rating.toFixed(1)}</span>}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold" style={{ backgroundColor: cat.color + "18", color: cat.color }}>
+                <cat.icon />{typeLabel(s.type)}
+              </span>
+              {s.distanceKm !== null && <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-blue-600"><IcoPin />{s.distanceKm.toFixed(1)} km</span>}
+              {s.rating !== null && <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-500"><IcoStar />{s.rating.toFixed(1)}</span>}
+              {price && <span className="ml-auto text-[14px] font-bold tabular-nums" style={{ color: cat.color }}>{price}</span>}
             </div>
-          </div>
-          {/* Nav */}
-          <div className="flex shrink-0 items-center gap-0.5">
-            <button onClick={() => go(idx - 1)} disabled={idx === 0} className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-20"><IcoChevL /></button>
-            <span className="min-w-[28px] text-center text-[10px] font-bold tabular-nums text-slate-400">{idx + 1}/{services.length}</span>
-            <button onClick={() => go(idx + 1)} disabled={idx === services.length - 1} className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-20"><IcoChevR /></button>
           </div>
         </div>
 
-        {s.type === "SHOP" && s.matchedProduct && <div className="mx-3.5 mb-2"><ProductRow product={s.matchedProduct} /></div>}
+        {s.type === "SHOP" && s.matchedProduct && <div className="mx-4 mb-2"><ProductRow product={s.matchedProduct} /></div>}
 
-        <div className="flex gap-2 border-t border-slate-100 px-3.5 py-2.5">
+        {s.discountLabel && (
+          <div className="mx-4 mb-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-3 py-1 text-[10px] font-bold text-white shadow-sm">
+              <IcoTag />{s.discountLabel}
+            </span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2.5 border-t px-4 py-3" style={{ borderColor: cat.color + "18" }}>
           <CtaBtn service={s} expand />
           {s.phone && s.type !== "PARK" && <CallBtn phone={s.phone} />}
+          {/* Nav arrows */}
+          <div className="flex shrink-0 items-center gap-0.5">
+            <button onClick={() => go(idx - 1)} disabled={idx === 0} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-20"><IcoChevL /></button>
+            <span className="min-w-[32px] text-center text-[10px] font-bold tabular-nums text-slate-400">{idx + 1}/{services.length}</span>
+            <button onClick={() => go(idx + 1)} disabled={idx === services.length - 1} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-20"><IcoChevR /></button>
+          </div>
         </div>
       </div>
     </div>
@@ -343,16 +391,16 @@ function MapBottomCard({ services, selectedId, onSelect }: { services: MapServic
 /* ═══ Category Grid (mobile: wrap, desktop: scroll) ══════════════ */
 function CategoryBar({ selected, onSelect, wrap = false }: { selected: MapServiceType | null; onSelect: (t: MapServiceType | null) => void; wrap?: boolean }) {
   return (
-    <div className={wrap ? "flex flex-wrap gap-2 px-4 py-2.5" : "flex gap-2 overflow-x-auto px-4 py-3"} style={wrap ? undefined : { scrollbarWidth: "none" }}>
+    <div className={wrap ? "flex flex-wrap gap-2 px-4 py-3" : "flex gap-2 overflow-x-auto px-4 py-3"} style={wrap ? undefined : { scrollbarWidth: "none" }}>
       {CATS.map((cat) => {
         const active = cat.type ? selected === cat.type : selected === null;
         const Icon = cat.icon;
         return (
           <button key={cat.label} onClick={() => onSelect(cat.type ?? null)}
-            className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-semibold transition-all active:scale-95 ${wrap ? "" : "shrink-0"} ${
+            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${wrap ? "" : "shrink-0"} ${
               active
-                ? `${cat.bg} ${cat.text} shadow-sm`
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:ring-slate-300"
+                ? `${cat.bg} ${cat.text} shadow-md`
+                : `${cat.lightBg} ${cat.lightText} ring-1 ring-black/5`
             }`}>
             <Icon />{cat.label}
           </button>
@@ -405,8 +453,8 @@ export default function ExplorePage() {
   /* ─ Search bar ─ */
   const SearchInput = (
     <form onSubmit={submitSearch}>
-      <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all ${inputFocused ? "border-blue-300 bg-white shadow-[0_0_0_3px_rgba(59,130,246,0.08)]" : "border-slate-200 bg-slate-50"}`}>
-        <span className={`shrink-0 ${inputFocused ? "text-blue-500" : "text-slate-400"}`}><IcoSearch /></span>
+      <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-all ${inputFocused ? "border-teal-300 bg-white shadow-[0_0_0_3px_rgba(13,148,136,0.10)]" : "border-slate-200 bg-white shadow-sm"}`}>
+        <span className={`shrink-0 ${inputFocused ? "text-teal-600" : "text-slate-400"}`}><IcoSearch /></span>
         <input ref={inputRef} value={inputValue} onChange={(e) => setInputValue(e.target.value)} onFocus={() => setInputFocused(true)} onBlur={() => setInputFocused(false)}
           placeholder={inputFocused ? "Buscar lugares, marcas, productos..." : typingText}
           className="min-w-0 flex-1 bg-transparent text-[14px] text-slate-800 outline-none placeholder:text-slate-400" />
@@ -417,17 +465,17 @@ export default function ExplorePage() {
 
   /* ─ Filter pills ─ */
   const Filters = (
-    <div className="flex items-center gap-2 overflow-x-auto px-4 pb-2.5" style={{ scrollbarWidth: "none" }}>
+    <div className="flex items-center gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
       <button onClick={() => setOpenNow((v) => !v)}
-        className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-semibold transition-all ${openNow ? "bg-emerald-500 text-white shadow-sm" : "bg-white text-slate-500 ring-1 ring-slate-200"}`}>
-        {openNow && <span className="h-1.5 w-1.5 rounded-full bg-white/80" />}Abierto ahora
+        className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${openNow ? "bg-emerald-500 text-white shadow-md" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"}`}>
+        <span className={`h-2 w-2 rounded-full ${openNow ? "bg-white animate-pulse" : "bg-emerald-400"}`} />Abierto ahora
       </button>
       <button onClick={() => setWithDiscount((v) => !v)}
-        className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-semibold transition-all ${withDiscount ? "bg-red-500 text-white shadow-sm" : "bg-white text-slate-500 ring-1 ring-slate-200"}`}>
-        {withDiscount && <span className="h-1.5 w-1.5 rounded-full bg-white/80" />}Con descuento
+        className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${withDiscount ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md" : "bg-red-50 text-red-600 ring-1 ring-red-100"}`}>
+        <IcoTag />Con descuento
       </button>
       {activeFilters > 0 && <button onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
-        className="flex shrink-0 items-center gap-1 rounded-xl bg-slate-100 px-3 py-2 text-[12px] font-semibold text-slate-500 hover:bg-slate-200">Limpiar <IcoX /></button>}
+        className="flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-100 px-3.5 py-2.5 text-[12px] font-bold text-slate-500 hover:bg-slate-200 active:scale-95">Limpiar <IcoX /></button>}
     </div>
   );
 
@@ -468,17 +516,17 @@ export default function ExplorePage() {
 
         {/* ── Mobile ───────────────────────────────────────── */}
         <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
-          <div className="shrink-0 bg-white border-b border-slate-100">
-            <div className="px-4 pt-3.5 pb-2">{SearchInput}</div>
+          <div className="shrink-0 border-b border-slate-100" style={{ background: "linear-gradient(180deg, #f8fafb 0%, #ffffff 100%)" }}>
+            <div className="px-4 pt-4 pb-2">{SearchInput}</div>
             <CategoryBar selected={selectedType} onSelect={setSelectedType} wrap />
             {Filters}
             {/* Tabs */}
-            <div className="flex">
+            <div className="flex border-t border-slate-100">
               {(["map", "list"] as const).map((tab) => (
                 <button key={tab} onClick={() => setMobileTab(tab)}
-                  className={`relative flex flex-1 items-center justify-center gap-2 py-2.5 text-[13px] font-semibold transition-colors ${mobileTab === tab ? "text-slate-800" : "text-slate-400"}`}>
-                  {tab === "map" ? <><IcoMap /> Mapa</> : <><IcoList /> Lista {!isLoading && services.length > 0 && <span className="text-[11px] font-normal text-slate-400">({services.length})</span>}</>}
-                  {mobileTab === tab && <span className="absolute bottom-0 left-[20%] right-[20%] h-[2.5px] rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#475569" }} />}
+                  className={`relative flex flex-1 items-center justify-center gap-2 py-3 text-[13px] font-bold transition-colors ${mobileTab === tab ? "text-slate-800" : "text-slate-400"}`}>
+                  {tab === "map" ? <><IcoMap /> Mapa</> : <><IcoList /> Lista {!isLoading && services.length > 0 && <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: selectedType ? catFor(selectedType).color + "18" : "#f1f5f9", color: selectedType ? catFor(selectedType).color : "#64748b" }}>{services.length}</span>}</>}
+                  {mobileTab === tab && <span className="absolute bottom-0 left-[15%] right-[15%] h-[3px] rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />}
                 </button>
               ))}
             </div>
@@ -488,11 +536,16 @@ export default function ExplorePage() {
             {mobileTab === "map" ? (
               <MapCanvas accessToken={MAPBOX_TOKEN} points={services} selectedPointId={selectedId} onSelectPoint={setSelectedId} userLocation={userLocation} center={userLocation} className="flex-1 min-h-[56vh]" borderless minZoom={8} maxZoom={17} />
             ) : (
-              <div className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+              <div className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))]" style={{ background: "linear-gradient(180deg, #f1f5f9 0%, #f8fafc 100%)" }}>
                 {!isLoading && !error && services.length > 0 && (
-                  <div className="px-5 py-2.5"><span className="text-[12px] font-semibold text-slate-400">{services.length} resultado{services.length !== 1 ? "s" : ""}{search ? ` para "${search}"` : ""}</span></div>
+                  <div className="flex items-center gap-2 px-5 py-3">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />
+                    <span className="text-[12px] font-bold text-slate-500">
+                      {services.length} resultado{services.length !== 1 ? "s" : ""}{search ? ` para "${search}"` : ""}
+                    </span>
+                  </div>
                 )}
-                {isLoading ? <div className="pt-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="mx-4 mb-3 rounded-2xl bg-white ring-1 ring-slate-100 overflow-hidden"><Skeleton /></div>)}</div>
+                {isLoading ? <div className="pt-3">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="mx-4 mb-3.5 rounded-[1.25rem] bg-white shadow-sm overflow-hidden"><Skeleton /></div>)}</div>
                   : error ? <ErrorView onRetry={() => setRetryKey((k) => k + 1)} />
                   : services.length === 0 ? <Empty query={search} onClear={clearSearch} />
                   : <div key={resultKey} className="pt-1">{services.map((s, i) => <div key={s.id} data-id={s.id}><MobileCard service={s} onSelect={() => setSelectedId(s.id)} i={i} /></div>)}</div>}
