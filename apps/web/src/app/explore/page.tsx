@@ -526,9 +526,9 @@ export default function ExplorePage() {
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {mobileTab === "map" ? (
               <div className="flex flex-1 flex-col min-h-0">
-                {/* Map: capped at 50vh so carousel and content are always visible */}
-                <div className="relative w-full" style={{ height: "clamp(200px, 45vh, 380px)" }}>
-                  <MapCanvas accessToken={MAPBOX_TOKEN} points={services} selectedPointId={selectedId} onSelectPoint={setSelectedId} userLocation={userLocation} center={userLocation} className="absolute inset-0" borderless minZoom={8} maxZoom={17} />
+                {/* Map: capped height so carousel is always visible */}
+                <div className="shrink-0 w-full overflow-hidden" style={{ height: "clamp(200px, 45vh, 380px)" }}>
+                  <MapCanvas accessToken={MAPBOX_TOKEN} points={services} selectedPointId={selectedId} onSelectPoint={setSelectedId} userLocation={userLocation} center={userLocation} className="h-full w-full" borderless minZoom={8} maxZoom={17} />
                 </div>
                 {/* Carousel + nearby list below map */}
                 <div className="flex-1 min-h-0 overflow-y-auto bg-white" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
