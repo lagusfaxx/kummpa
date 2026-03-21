@@ -13,9 +13,9 @@ let mapLibraryPromise: Promise<any> | null = null;
 /* Premium minimal map style */
 const MAPBOX_STYLE = "mapbox://styles/mapbox/light-v11";
 
-/* 2× for retina crisp markers */
-const MARKER_W = 64;
-const MARKER_H = 80;
+/* 3× for retina crisp markers — displayed at 40×50 */
+const MARKER_W = 120;
+const MARKER_H = 150;
 
 function ensureMapAssets() {
   if (typeof window === "undefined") return Promise.resolve();
@@ -51,56 +51,56 @@ function markerAccent(type: MapServiceType): string {
   return "#dc2626";
 }
 
-/* Premium pin — dark body with subtle colored ring, 2× resolution */
+/* Premium pin — dark body with colored accent glow, 3× resolution (120×150 → displayed 40×50) */
 function markerSvg(type: MapServiceType): string {
   const body = markerColor(type);
   const accent = markerAccent(type);
-  const pin = "M32 74C32 74 10 44 10 28C10 15.85 19.85 6 32 6C44.15 6 54 15.85 54 28C54 44 32 74 32 74Z";
-  const innerCircle = "M32 28";
+  /* Centered in 120×150 canvas, pin ~100 tall */
+  const pin = "M60 140C60 140 16 82 16 52C16 27.7 35.7 8 60 8C84.3 8 104 27.7 104 52C104 82 60 140 60 140Z";
 
   const icons: Record<MapServiceType, string> = {
     VET:
-      `<path d="M32 16v24M20 28h24" stroke="white" stroke-width="4" stroke-linecap="round"/>`,
+      `<path d="M60 30v44M38 52h44" stroke="white" stroke-width="7" stroke-linecap="round"/>`,
     SHOP:
-      `<path d="M22 26h20l-3 14h-14L22 26z" stroke="white" stroke-width="2.5" fill="none" stroke-linejoin="round"/>` +
-      `<path d="M27 26V23a5 5 0 0110 0V26" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+      `<path d="M40 49h40l-5.5 26h-29L40 49z" stroke="white" stroke-width="4.5" fill="none" stroke-linejoin="round"/>` +
+      `<path d="M50 49V44a10 10 0 0120 0V49" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
     GROOMING:
-      `<circle cx="23" cy="20" r="3.5" stroke="white" stroke-width="2.5" fill="none"/>` +
-      `<circle cx="23" cy="36" r="3.5" stroke="white" stroke-width="2.5" fill="none"/>` +
-      `<line x1="26" y1="22.5" x2="43" y2="35" stroke="white" stroke-width="2.5" stroke-linecap="round"/>` +
-      `<line x1="26" y1="33.5" x2="43" y2="21" stroke="white" stroke-width="2.5" stroke-linecap="round"/>`,
+      `<circle cx="42" cy="37" r="6.5" stroke="white" stroke-width="4.5" fill="none"/>` +
+      `<circle cx="42" cy="67" r="6.5" stroke="white" stroke-width="4.5" fill="none"/>` +
+      `<line x1="47" y1="42" x2="82" y2="65" stroke="white" stroke-width="4.5" stroke-linecap="round"/>` +
+      `<line x1="47" y1="62" x2="82" y2="39" stroke="white" stroke-width="4.5" stroke-linecap="round"/>`,
     CAREGIVER:
-      `<ellipse cx="32" cy="32" rx="7" ry="5.5" fill="white"/>` +
-      `<circle cx="23" cy="23" r="3.2" fill="white"/>` +
-      `<circle cx="29" cy="19" r="3.2" fill="white"/>` +
-      `<circle cx="35" cy="19" r="3.2" fill="white"/>` +
-      `<circle cx="41" cy="23" r="3.2" fill="white"/>`,
+      `<ellipse cx="60" cy="60" rx="13" ry="10" fill="white"/>` +
+      `<circle cx="43" cy="43" r="6" fill="white"/>` +
+      `<circle cx="54" cy="35" r="6" fill="white"/>` +
+      `<circle cx="66" cy="35" r="6" fill="white"/>` +
+      `<circle cx="77" cy="43" r="6" fill="white"/>`,
     PARK:
-      `<line x1="32" y1="34" x2="32" y2="42" stroke="white" stroke-width="2.5" stroke-linecap="round"/>` +
-      `<path d="M23 38l9-12 9 12z" fill="white"/>` +
-      `<path d="M25 32l7-10 7 10z" fill="white"/>`,
+      `<line x1="60" y1="64" x2="60" y2="78" stroke="white" stroke-width="4.5" stroke-linecap="round"/>` +
+      `<path d="M42 72l18-24 18 24z" fill="white"/>` +
+      `<path d="M46 60l14-20 14 20z" fill="white"/>`,
     HOTEL:
-      `<path d="M20 42h24V26l-12-10L20 26v16z" stroke="white" stroke-width="2.5" fill="none" stroke-linejoin="round"/>` +
-      `<rect x="28" y="34" width="8" height="8" stroke="white" stroke-width="2.5" fill="none" rx="1"/>`,
+      `<path d="M37 78h46V48l-23-18L37 48v30z" stroke="white" stroke-width="4.5" fill="none" stroke-linejoin="round"/>` +
+      `<rect x="52" y="63" width="16" height="15" stroke="white" stroke-width="4.5" fill="none" rx="2"/>`,
     LOST_PET:
-      `<circle cx="32" cy="26" r="10" stroke="white" stroke-width="3" fill="none"/>` +
-      `<path d="M32 20v8M32 34v1" stroke="white" stroke-width="3.5" stroke-linecap="round"/>`,
+      `<circle cx="60" cy="48" r="18" stroke="white" stroke-width="5.5" fill="none"/>` +
+      `<path d="M60 37v15M60 63v2" stroke="white" stroke-width="6" stroke-linecap="round"/>`,
   };
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${MARKER_W}" height="${MARKER_H}" viewBox="0 0 ${MARKER_W} ${MARKER_H}">` +
     /* soft ground shadow */
-    `<ellipse cx="32" cy="76" rx="8" ry="2.5" fill="rgba(0,0,0,0.12)"/>` +
+    `<ellipse cx="60" cy="144" rx="14" ry="4" fill="rgba(0,0,0,0.10)"/>` +
     /* outer glow — accent color */
-    `<path d="${pin}" fill="${accent}" opacity="0.15" transform="translate(0,1) scale(1.04)" transform-origin="32 40"/>` +
-    /* white border */
-    `<path d="${pin}" fill="white" stroke="white" stroke-width="4"/>` +
+    `<path d="${pin}" fill="${accent}" opacity="0.18" transform="translate(0,2) scale(1.05)" transform-origin="60 74"/>` +
+    /* white border for contrast */
+    `<path d="${pin}" fill="white" stroke="white" stroke-width="6"/>` +
     /* pin body */
     `<path d="${pin}" fill="${body}"/>` +
     /* subtle top highlight */
-    `<ellipse cx="26" cy="18" rx="8" ry="6" fill="rgba(255,255,255,0.12)"/>` +
+    `<ellipse cx="48" cy="32" rx="14" ry="10" fill="rgba(255,255,255,0.12)"/>` +
     /* icon */
-    (icons[type] ?? `<circle cx="32" cy="28" r="8" fill="white"/>`) +
+    (icons[type] ?? `<circle cx="60" cy="52" r="14" fill="white"/>`) +
     `</svg>`
   );
 }
@@ -131,6 +131,7 @@ interface MapCanvasProps {
   pickedLocation?: { lat: number; lng: number } | null;
   onPickLocation?: (location: { lat: number; lng: number }) => void;
   center?: { lat: number; lng: number } | null;
+  userLocation?: { lat: number; lng: number } | null;
   className?: string;
   borderless?: boolean;
   showPopup?: boolean;
@@ -146,6 +147,7 @@ export function MapCanvas({
   pickedLocation = null,
   onPickLocation,
   center = null,
+  userLocation = null,
   className,
   borderless = false,
   showPopup = false,
@@ -156,6 +158,7 @@ export function MapCanvas({
   const mapRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
   const pickedMarkerRef = useRef<any>(null);
+  const userMarkerRef = useRef<any>(null);
   const mapLibraryRef = useRef<any>(null);
   const pointsRef = useRef<MapServicePoint[]>(points);
   const onSelectRef = useRef<typeof onSelectPoint>(onSelectPoint);
@@ -256,7 +259,7 @@ export function MapCanvas({
                   "HOTEL",    "marker-HOTEL",
                   "marker-LOST_PET",
                 ],
-                "icon-size": 0.5,
+                "icon-size": 1,
                 "icon-allow-overlap": true,
                 "icon-anchor": "bottom",
               },
@@ -305,7 +308,7 @@ export function MapCanvas({
           for (const type of ALL_TYPES) {
             const img = new Image(MARKER_W, MARKER_H);
             img.onload = () => {
-              map.addImage(`marker-${type}`, img, { pixelRatio: 2 });
+              map.addImage(`marker-${type}`, img, { pixelRatio: 3 });
               remaining--;
               if (remaining === 0) addLayers();
             };
@@ -325,6 +328,8 @@ export function MapCanvas({
       popupRef.current = null;
       pickedMarkerRef.current?.remove?.();
       pickedMarkerRef.current = null;
+      userMarkerRef.current?.remove?.();
+      userMarkerRef.current = null;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -374,6 +379,21 @@ export function MapCanvas({
     pickedMarkerRef.current.setLngLat([pickedLocation.lng, pickedLocation.lat]).addTo(map);
     map.flyTo({ center: [pickedLocation.lng, pickedLocation.lat], zoom: Math.max(13, map.getZoom()), duration: 450 });
   }, [pickedLocation]);
+
+  /* User location blue dot */
+  useEffect(() => {
+    const map = mapRef.current;
+    const maplibre = mapLibraryRef.current;
+    if (!map || !maplibre || !userLocation) return;
+
+    if (!userMarkerRef.current) {
+      const el = document.createElement("div");
+      el.innerHTML = `<div style="width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 4px rgba(59,130,246,0.2),0 2px 8px rgba(0,0,0,0.15);"></div>`;
+      userMarkerRef.current = new maplibre.Marker({ element: el.firstChild as HTMLElement });
+    }
+
+    userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]).addTo(map);
+  }, [userLocation]);
 
   useEffect(() => {
     const map = mapRef.current;

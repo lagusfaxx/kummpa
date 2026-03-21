@@ -9,6 +9,32 @@ import type { MapServicePoint, MapServiceType } from "@/features/map/types";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
+/* ─── Geolocation hook ───────────────────────────────────────── */
+function useUserLocation() {
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [status, setStatus] = useState<"idle" | "asking" | "granted" | "denied">("idle");
+  const asked = useRef(false);
+
+  useEffect(() => {
+    if (asked.current || typeof navigator === "undefined" || !navigator.geolocation) return;
+    asked.current = true;
+    setStatus("asking");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setStatus("granted");
+      },
+      () => {
+        setStatus("denied");
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300_000 }
+    );
+  }, []);
+
+  return { location, status };
+}
+
 /* ─── Typing placeholder ─────────────────────────────────────── */
 const SEARCH_PHRASES = [
   "Royal Canin cerca de ti...",
@@ -448,11 +474,15 @@ function MapBottomCard({ services, selectedId, onSelect }: {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Category Bar
+   Category Bar — desktop: horizontal pills, mobile: wrap grid
    ═══════════════════════════════════════════════════════════════ */
-function CategoryBar({ selected, onSelect }: { selected: MapServiceType | null; onSelect: (t: MapServiceType | null) => void }) {
+function CategoryBar({ selected, onSelect, wrap = false }: { selected: MapServiceType | null; onSelect: (t: MapServiceType | null) => void; wrap?: boolean }) {
+  const containerCls = wrap
+    ? "flex flex-wrap gap-2 px-4 py-3"
+    : "flex gap-1.5 overflow-x-auto px-5 py-3";
+
   return (
-    <div className="flex gap-1.5 overflow-x-auto px-5 py-3" style={{ scrollbarWidth: "none" }}>
+    <div className={containerCls} style={wrap ? undefined : { scrollbarWidth: "none" }}>
       {CATEGORIES.map((cat) => {
         const active = cat.type ? selected === cat.type : selected === null;
         const Icon = cat.icon;
@@ -461,7 +491,9 @@ function CategoryBar({ selected, onSelect }: { selected: MapServiceType | null; 
             key={cat.label}
             type="button"
             onClick={() => onSelect(cat.type ?? null)}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 transition-all duration-200 active:scale-95 ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 transition-all duration-200 active:scale-95 ${
+              wrap ? "" : "shrink-0"
+            } ${
               active
                 ? "bg-zinc-900 text-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
                 : "bg-white text-zinc-500 ring-1 ring-zinc-200/80 hover:ring-zinc-300 hover:text-zinc-700"
@@ -482,6 +514,7 @@ function CategoryBar({ selected, onSelect }: { selected: MapServiceType | null; 
 export default function ExplorePage() {
   const params = useSearchParams();
   const typingText = useTypingPlaceholder(SEARCH_PHRASES);
+  const { location: userLocation } = useUserLocation();
 
   const [search, setSearch]             = useState(params.get("q") ?? "");
   const [inputValue, setInputValue]     = useState(params.get("q") ?? "");
@@ -509,6 +542,8 @@ export default function ExplorePage() {
       types: selectedType ? [selectedType] : undefined,
       openNow,
       withDiscount,
+      lat: userLocation?.lat,
+      lng: userLocation?.lng,
       radiusKm: 15,
       sortBy: "distance",
       limit: 100
@@ -526,7 +561,7 @@ export default function ExplorePage() {
       .finally(() => { if (!ctrl.signal.aborted) setIsLoading(false); });
 
     return () => ctrl.abort();
-  }, [search, selectedType, openNow, withDiscount, retryKey]);
+  }, [search, selectedType, openNow, withDiscount, retryKey, userLocation]);
 
   useEffect(() => {
     if (!selectedId || !listRef.current) return;
@@ -702,8 +737,8 @@ export default function ExplorePage() {
               {SearchBar}
             </div>
 
-            {/* Categories */}
-            <CategoryBar selected={selectedType} onSelect={setSelectedType} />
+            {/* Categories — wrap grid so all are visible */}
+            <CategoryBar selected={selectedType} onSelect={setSelectedType} wrap />
 
             {/* Filters */}
             <div className="flex items-center gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
@@ -756,6 +791,8 @@ export default function ExplorePage() {
                 points={services}
                 selectedPointId={selectedId}
                 onSelectPoint={setSelectedId}
+                userLocation={userLocation}
+                center={userLocation}
                 className="flex-1 min-h-[56vh]"
                 borderless
                 minZoom={8}
@@ -798,6 +835,8 @@ export default function ExplorePage() {
             points={services}
             selectedPointId={selectedId}
             onSelectPoint={setSelectedId}
+            userLocation={userLocation}
+            center={userLocation}
             className="h-full w-full"
             borderless
             minZoom={8}
