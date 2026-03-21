@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { MapServicePoint, MapServiceType } from "@/features/map/types";
 
 const SOURCE_ID = "kumpa-pet-points-source";
@@ -31,11 +31,11 @@ function ensureMapAssets() {
 }
 
 function markerColor(type: MapServiceType): string {
-  if (type === "VET") return "#18181b";
-  if (type === "CAREGIVER") return "#18181b";
-  if (type === "SHOP") return "#18181b";
-  if (type === "GROOMING") return "#18181b";
-  if (type === "HOTEL") return "#18181b";
+  if (type === "VET") return "#0d9488";
+  if (type === "CAREGIVER") return "#2563eb";
+  if (type === "SHOP") return "#d97706";
+  if (type === "GROOMING") return "#db2777";
+  if (type === "HOTEL") return "#7c3aed";
   if (type === "PARK") return "#16a34a";
   return "#dc2626";
 }
@@ -345,11 +345,14 @@ export function MapCanvas({
     source.setData(toGeoJson(points));
   }, [points]);
 
+  /* Fit bounds only on first batch of points (initial load) — not on every search */
+  const didFitRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || points.length === 0 || selectedPointId) return;
+    if (!map || points.length === 0 || selectedPointId || didFitRef.current) return;
     const maplibre = mapLibraryRef.current;
     if (!maplibre) return;
+    didFitRef.current = true;
     const bounds = new maplibre.LngLatBounds();
     for (const point of points) bounds.extend([point.longitude, point.latitude]);
     map.fitBounds(bounds, { padding: 48, maxZoom: 13, duration: 700 });
