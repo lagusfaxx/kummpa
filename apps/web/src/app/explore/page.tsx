@@ -263,11 +263,11 @@ function MobileCard({ service, onSelect, i }: { service: MapServicePoint; onSele
   const price = priceText(service);
   return (
     <article onClick={onSelect} style={{ animationDelay: `${Math.min(i * 25, 250)}ms` }}
-      className="explore-card mx-4 mb-3.5 overflow-hidden rounded-[1.25rem] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_-8px_rgba(0,0,0,0.12)] active:scale-[0.985] transition-all cursor-pointer">
+      className="explore-card mx-3 mb-3 overflow-hidden rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_-8px_rgba(0,0,0,0.12)] active:scale-[0.985] transition-all cursor-pointer">
       {/* Colored gradient header */}
-      <div className="relative h-[5px]" style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}88)` }} />
+      <div className="relative h-[4px]" style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}88)` }} />
 
-      <div className="p-4 pb-3">
+      <div className="p-3 pb-2.5">
         {/* Top row: avatar + info */}
         <div className="flex gap-3.5">
           <Avatar service={service} size={56} />
@@ -311,9 +311,9 @@ function MobileCard({ service, onSelect, i }: { service: MapServicePoint; onSele
         )}
       </div>
 
-      {service.type === "SHOP" && service.matchedProduct && <div className="mx-4 mb-3"><ProductRow product={service.matchedProduct} /></div>}
+      {service.type === "SHOP" && service.matchedProduct && <div className="mx-3 mb-2"><ProductRow product={service.matchedProduct} /></div>}
 
-      <div className="flex gap-2.5 border-t px-4 py-3" style={{ borderColor: cat.color + "18" }}>
+      <div className="flex gap-2 border-t px-3 py-2.5" style={{ borderColor: cat.color + "18" }}>
         <CtaBtn service={service} expand />
         {service.phone && service.type !== "PARK" && <CallBtn phone={service.phone} expand />}
       </div>
@@ -378,21 +378,21 @@ function MapBottomCard({ services, selectedId, onSelect }: { services: MapServic
   );
 }
 
-/* ═══ Category Grid (mobile: wrap, desktop: scroll) ══════════════ */
-function CategoryBar({ selected, onSelect, wrap = false }: { selected: MapServiceType | null; onSelect: (t: MapServiceType | null) => void; wrap?: boolean }) {
+/* ═══ Category Bar (always horizontal scroll) ═══════════════════ */
+function CategoryBar({ selected, onSelect, compact = false }: { selected: MapServiceType | null; onSelect: (t: MapServiceType | null) => void; compact?: boolean }) {
   return (
-    <div className={wrap ? "flex flex-wrap gap-2 px-4 py-3" : "flex gap-2 overflow-x-auto px-4 py-3"} style={wrap ? undefined : { scrollbarWidth: "none" }}>
+    <div className="flex gap-1.5 overflow-x-auto px-4 py-2" style={{ scrollbarWidth: "none" }}>
       {CATS.map((cat) => {
         const active = cat.type ? selected === cat.type : selected === null;
         const Icon = cat.icon;
         return (
           <button key={cat.label} onClick={() => onSelect(cat.type ?? null)}
-            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${wrap ? "" : "shrink-0"} ${
+            className={`flex shrink-0 items-center gap-1 rounded-lg text-[11px] font-bold transition-all active:scale-95 ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} ${
               active
-                ? `${cat.bg} ${cat.text} shadow-md`
+                ? `${cat.bg} ${cat.text} shadow-sm`
                 : `${cat.lightBg} ${cat.lightText} ring-1 ring-black/5`
             }`}>
-            <Icon />{cat.label}
+            {!compact && <Icon />}{cat.label}
           </button>
         );
       })}
@@ -443,29 +443,29 @@ export default function ExplorePage() {
   /* ─ Search bar ─ */
   const SearchInput = (
     <form onSubmit={submitSearch}>
-      <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-all ${inputFocused ? "border-teal-300 bg-white shadow-[0_0_0_3px_rgba(13,148,136,0.10)]" : "border-slate-200 bg-white shadow-sm"}`}>
+      <div className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 transition-all ${inputFocused ? "border-teal-300 bg-white shadow-[0_0_0_3px_rgba(13,148,136,0.10)]" : "border-slate-200 bg-white shadow-sm"}`}>
         <span className={`shrink-0 ${inputFocused ? "text-teal-600" : "text-slate-400"}`}><IcoSearch /></span>
         <input ref={inputRef} value={inputValue} onChange={(e) => setInputValue(e.target.value)} onFocus={() => setInputFocused(true)} onBlur={() => setInputFocused(false)}
           placeholder={inputFocused ? "Buscar lugares, marcas, productos..." : typingText}
-          className="min-w-0 flex-1 bg-transparent text-[14px] text-slate-800 outline-none placeholder:text-slate-400" />
-        {inputValue && <button type="button" onClick={clearSearch} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300"><IcoX /></button>}
+          className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400" />
+        {inputValue && <button type="button" onClick={clearSearch} className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300"><IcoX /></button>}
       </div>
     </form>
   );
 
   /* ─ Filter pills ─ */
   const Filters = (
-    <div className="flex items-center gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
+    <div className="flex items-center gap-1.5 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none" }}>
       <button onClick={() => setOpenNow((v) => !v)}
-        className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${openNow ? "bg-emerald-500 text-white shadow-md" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"}`}>
-        <span className={`h-2 w-2 rounded-full ${openNow ? "bg-white animate-pulse" : "bg-emerald-400"}`} />Abierto ahora
+        className={`flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${openNow ? "bg-emerald-500 text-white shadow-sm" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"}`}>
+        <span className={`h-1.5 w-1.5 rounded-full ${openNow ? "bg-white animate-pulse" : "bg-emerald-400"}`} />Abierto ahora
       </button>
       <button onClick={() => setWithDiscount((v) => !v)}
-        className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-all active:scale-95 ${withDiscount ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md" : "bg-red-50 text-red-600 ring-1 ring-red-100"}`}>
-        <IcoTag />Con descuento
+        className={`flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${withDiscount ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-sm" : "bg-red-50 text-red-600 ring-1 ring-red-100"}`}>
+        <IcoTag />Descuento
       </button>
       {activeFilters > 0 && <button onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
-        className="flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-100 px-3.5 py-2.5 text-[12px] font-bold text-slate-500 hover:bg-slate-200 active:scale-95">Limpiar <IcoX /></button>}
+        className="flex shrink-0 items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-bold text-slate-500 hover:bg-slate-200 active:scale-95">Limpiar <IcoX /></button>}
     </div>
   );
 
@@ -488,7 +488,7 @@ export default function ExplorePage() {
               <div className="px-4 pt-4 pb-2">{SearchInput}</div>
               <CategoryBar selected={selectedType} onSelect={setSelectedType} />
               {Filters}
-              <div className="flex items-center justify-between px-4 py-2 border-t border-slate-100">
+              <div className="flex items-center justify-between px-4 py-1.5 border-t border-slate-100">
                 <span className="text-[12px] font-semibold text-slate-400">{isLoading ? "Buscando..." : `${services.length} resultado${services.length !== 1 ? "s" : ""}`}</span>
                 {activeFilters > 0 && <button onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }} className="text-[11px] font-semibold text-blue-500 hover:text-blue-600">Limpiar filtros</button>}
               </div>
@@ -505,46 +505,63 @@ export default function ExplorePage() {
 
         {/* ── Mobile ───────────────────────────────────────── */}
         <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
-          <div className="shrink-0 border-b border-slate-100" style={{ background: "linear-gradient(180deg, #f8fafb 0%, #ffffff 100%)" }}>
-            <div className="px-4 pt-4 pb-2">{SearchInput}</div>
-            <CategoryBar selected={selectedType} onSelect={setSelectedType} wrap />
+          {/* Header: search → categories (scroll) → filters → tabs */}
+          <div className="shrink-0 border-b border-slate-100 bg-white">
+            <div className="px-3 pt-3 pb-1">{SearchInput}</div>
+            <CategoryBar selected={selectedType} onSelect={setSelectedType} compact />
             {Filters}
             {/* Tabs */}
             <div className="flex border-t border-slate-100">
               {(["map", "list"] as const).map((tab) => (
                 <button key={tab} onClick={() => setMobileTab(tab)}
-                  className={`relative flex flex-1 items-center justify-center gap-2 py-3 text-[13px] font-bold transition-colors ${mobileTab === tab ? "text-slate-800" : "text-slate-400"}`}>
+                  className={`relative flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12px] font-bold transition-colors ${mobileTab === tab ? "text-slate-800" : "text-slate-400"}`}>
                   {tab === "map" ? <><IcoMap /> Mapa</> : <><IcoList /> Lista {!isLoading && services.length > 0 && <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: selectedType ? catFor(selectedType).color + "18" : "#f1f5f9", color: selectedType ? catFor(selectedType).color : "#64748b" }}>{services.length}</span>}</>}
-                  {mobileTab === tab && <span className="absolute bottom-0 left-[15%] right-[15%] h-[3px] rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />}
+                  {mobileTab === tab && <span className="absolute bottom-0 left-[15%] right-[15%] h-[2.5px] rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />}
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Content area */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {mobileTab === "map" ? (
-              <>
-                <MapCanvas accessToken={MAPBOX_TOKEN} points={services} selectedPointId={selectedId} onSelectPoint={setSelectedId} userLocation={userLocation} center={userLocation} className="flex-1 min-h-0" borderless minZoom={8} maxZoom={17} />
-                {services.length > 0 && (
-                  <div className="shrink-0 border-t border-slate-100 bg-white" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-                    <MapBottomCard services={services} selectedId={selectedId} onSelect={setSelectedId} />
-                  </div>
-                )}
-              </>
+              <div className="flex flex-1 flex-col min-h-0">
+                {/* Map: capped at 50vh so carousel and content are always visible */}
+                <div className="relative w-full" style={{ height: "clamp(200px, 45vh, 380px)" }}>
+                  <MapCanvas accessToken={MAPBOX_TOKEN} points={services} selectedPointId={selectedId} onSelectPoint={setSelectedId} userLocation={userLocation} center={userLocation} className="absolute inset-0" borderless minZoom={8} maxZoom={17} />
+                </div>
+                {/* Carousel + nearby list below map */}
+                <div className="flex-1 min-h-0 overflow-y-auto bg-white" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+                  {services.length > 0 && (
+                    <div className="border-t border-slate-100">
+                      <MapBottomCard services={services} selectedId={selectedId} onSelect={setSelectedId} />
+                    </div>
+                  )}
+                  {/* Results count */}
+                  {!isLoading && services.length > 0 && (
+                    <div className="flex items-center gap-2 px-4 py-2 border-t border-slate-50">
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />
+                      <span className="text-[11px] font-bold text-slate-400">
+                        {services.length} cerca de ti
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : (
-              <div className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))]" style={{ background: "linear-gradient(180deg, #f1f5f9 0%, #f8fafc 100%)" }}>
+              <div className="flex-1 overflow-y-auto pb-[calc(4rem+env(safe-area-inset-bottom))]" style={{ background: "linear-gradient(180deg, #f1f5f9 0%, #f8fafc 100%)" }}>
                 {!isLoading && !error && services.length > 0 && (
-                  <div className="flex items-center gap-2 px-5 py-3">
+                  <div className="flex items-center gap-2 px-4 py-2.5">
                     <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />
-                    <span className="text-[12px] font-bold text-slate-500">
+                    <span className="text-[11px] font-bold text-slate-400">
                       {services.length} resultado{services.length !== 1 ? "s" : ""}{search ? ` para "${search}"` : ""}
                     </span>
                   </div>
                 )}
-                {isLoading ? <div className="pt-3">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="mx-4 mb-3.5 rounded-[1.25rem] bg-white shadow-sm overflow-hidden"><Skeleton /></div>)}</div>
+                {isLoading ? <div className="pt-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="mx-3 mb-3 rounded-[1.25rem] bg-white shadow-sm overflow-hidden"><Skeleton /></div>)}</div>
                   : error ? <ErrorView onRetry={() => setRetryKey((k) => k + 1)} />
                   : services.length === 0 ? <Empty query={search} onClear={clearSearch} />
-                  : <div key={resultKey} className="pt-1">{services.map((s, i) => <div key={s.id} data-id={s.id}><MobileCard service={s} onSelect={() => setSelectedId(s.id)} i={i} /></div>)}</div>}
+                  : <div key={resultKey} className="pt-0.5">{services.map((s, i) => <div key={s.id} data-id={s.id}><MobileCard service={s} onSelect={() => setSelectedId(s.id)} i={i} /></div>)}</div>}
               </div>
             )}
           </div>
