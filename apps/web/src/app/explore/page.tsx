@@ -321,68 +321,56 @@ function MobileCard({ service, onSelect, i }: { service: MapServicePoint; onSele
   );
 }
 
-/* ═══ Mobile Map Bottom Card ═════════════════════════════════════ */
+/* ═══ Mobile Map Bottom Carousel ════════════════════════════════ */
 function MapBottomCard({ services, selectedId, onSelect }: { services: MapServicePoint[]; selectedId: string | null; onSelect: (id: string) => void }) {
-  const rawIdx = selectedId ? services.findIndex((s) => s.id === selectedId) : 0;
-  const idx = rawIdx < 0 ? 0 : rawIdx;
-  const s = services[idx] ?? null;
-  const touchX = useRef<number | null>(null);
-  if (!s) return null;
-  const cat = catFor(s.type);
-  const price = priceText(s);
-  const go = (i: number) => { const n = services[Math.max(0, Math.min(i, services.length - 1))]; if (n) onSelect(n.id); };
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!selectedId || !scrollRef.current) return;
+    const el = scrollRef.current.querySelector(`[data-card-id="${selectedId}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [selectedId]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 px-3" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
-      <div className="pointer-events-auto overflow-hidden rounded-[1.25rem] bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10),0_12px_40px_-12px_rgba(0,0,0,0.25)]"
-        onTouchStart={(e) => { touchX.current = e.touches[0]?.clientX ?? null; }}
-        onTouchEnd={(e) => { if (touchX.current === null) return; const dx = (e.changedTouches[0]?.clientX ?? 0) - touchX.current; touchX.current = null; if (Math.abs(dx) > 44) go(idx + (dx < 0 ? 1 : -1)); }}>
-        {/* Thicker color gradient top */}
-        <div className="h-[5px]" style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}88)` }} />
-
-        {/* Swipe indicator */}
-        <div className="flex justify-center pt-2 pb-1">
-          <div className="h-1 w-8 rounded-full bg-slate-200" />
-        </div>
-
-        <div className="flex items-center gap-3.5 px-4 pb-3">
-          <Avatar service={s} size={50} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="truncate text-[15px] font-bold text-slate-800">{s.name}</p>
-              <OpenBadge isOpen={s.isOpenNow} />
+    <div className="pointer-events-none absolute inset-x-0 bottom-0" style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
+      <div
+        ref={scrollRef}
+        className="pointer-events-auto flex gap-2.5 overflow-x-auto px-3 pb-1"
+        style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
+      >
+        {services.map((s) => {
+          const cat = catFor(s.type);
+          const active = selectedId === s.id;
+          const href = serviceHref(s);
+          return (
+            <div
+              key={s.id}
+              data-card-id={s.id}
+              onClick={() => onSelect(s.id)}
+              className={`flex w-[260px] shrink-0 cursor-pointer items-center gap-3 rounded-2xl bg-white px-3.5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all ${active ? "ring-2" : "ring-1 ring-black/5"}`}
+              style={{ scrollSnapAlign: "center", ...(active ? { ringColor: cat.color, boxShadow: `0 4px 20px rgba(0,0,0,0.15), 0 0 0 2px ${cat.color}` } : {}) }}
+            >
+              <Avatar service={s} size={40} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-bold text-slate-800">{s.name}</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-px text-[9px] font-bold" style={{ backgroundColor: cat.color + "18", color: cat.color }}>
+                    {typeLabel(s.type)}
+                  </span>
+                  {s.distanceKm !== null && <span className="text-[10px] font-semibold text-blue-600">{s.distanceKm.toFixed(1)} km</span>}
+                  {s.rating !== null && <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500"><IcoStar />{s.rating.toFixed(1)}</span>}
+                </div>
+              </div>
+              {href && (
+                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {s.type === "PARK"
+                    ? <a href={href} target="_blank" rel="noopener noreferrer" className="flex h-8 w-8 items-center justify-center rounded-xl text-white" style={{ backgroundColor: cat.color }}><IcoNav /></a>
+                    : <Link href={href} className="flex h-8 w-8 items-center justify-center rounded-xl text-white" style={{ backgroundColor: cat.color }}><IcoChevR /></Link>}
+                </div>
+              )}
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold" style={{ backgroundColor: cat.color + "18", color: cat.color }}>
-                <cat.icon />{typeLabel(s.type)}
-              </span>
-              {s.distanceKm !== null && <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-blue-600"><IcoPin />{s.distanceKm.toFixed(1)} km</span>}
-              {s.rating !== null && <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-amber-500"><IcoStar />{s.rating.toFixed(1)}</span>}
-              {price && <span className="ml-auto text-[14px] font-bold tabular-nums" style={{ color: cat.color }}>{price}</span>}
-            </div>
-          </div>
-        </div>
-
-        {s.type === "SHOP" && s.matchedProduct && <div className="mx-4 mb-2"><ProductRow product={s.matchedProduct} /></div>}
-
-        {s.discountLabel && (
-          <div className="mx-4 mb-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-3 py-1 text-[10px] font-bold text-white shadow-sm">
-              <IcoTag />{s.discountLabel}
-            </span>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2.5 border-t px-4 py-3" style={{ borderColor: cat.color + "18" }}>
-          <CtaBtn service={s} expand />
-          {s.phone && s.type !== "PARK" && <CallBtn phone={s.phone} />}
-          {/* Nav arrows */}
-          <div className="flex shrink-0 items-center gap-0.5">
-            <button onClick={() => go(idx - 1)} disabled={idx === 0} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-20"><IcoChevL /></button>
-            <span className="min-w-[32px] text-center text-[10px] font-bold tabular-nums text-slate-400">{idx + 1}/{services.length}</span>
-            <button onClick={() => go(idx + 1)} disabled={idx === services.length - 1} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-20"><IcoChevR /></button>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -484,7 +472,7 @@ export default function ExplorePage() {
       <style>{`
         @keyframes exploreCardIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
         .explore-card { animation: exploreCardIn .22s ease both }
-        @media (max-width:1023px) { .mapboxgl-ctrl-bottom-left,.mapboxgl-ctrl-bottom-right { margin-bottom:calc(11rem + env(safe-area-inset-bottom)) } }
+        @media (max-width:1023px) { .mapboxgl-ctrl-bottom-left,.mapboxgl-ctrl-bottom-right { margin-bottom:calc(5.5rem + env(safe-area-inset-bottom)) } }
         .mapboxgl-ctrl-group { border-radius:12px!important; box-shadow:0 2px 8px rgba(0,0,0,.08)!important; border:1px solid rgba(0,0,0,.06)!important; overflow:hidden }
         .mapboxgl-ctrl-group button { width:36px!important; height:36px!important }
       `}</style>
