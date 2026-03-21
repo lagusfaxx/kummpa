@@ -555,20 +555,19 @@ export default function ExplorePage() {
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {mobileTab === "map" ? (
               <div className="flex flex-1 flex-col min-h-0">
-                {/* Map: capped height so carousel is always visible */}
-                <div className="shrink-0 w-full overflow-hidden" style={{ height: "clamp(200px, 45vh, 380px)" }}>
+                {/* Map: fills remaining space above the carousel */}
+                <div className="flex-1 min-h-0 w-full overflow-hidden">
                   <MapCanvas accessToken={MAPBOX_TOKEN} points={services} selectedPointId={selectedId} onSelectPoint={setSelectedId} userLocation={userLocation} center={userLocation} className="h-full w-full" borderless minZoom={8} maxZoom={17} />
                 </div>
-                {/* Carousel + nearby list below map */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-white" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+                {/* Carousel + count below map — no vertical scroll */}
+                <div className="shrink-0 bg-white" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
                   {services.length > 0 && (
                     <div className="border-t border-slate-100">
                       <MapBottomCard services={services} selectedId={selectedId} onSelect={setSelectedId} />
                     </div>
                   )}
-                  {/* Results count */}
                   {!isLoading && services.length > 0 && (
-                    <div className="flex items-center gap-2 px-4 py-2 border-t border-slate-50">
+                    <div className="flex items-center gap-2 px-4 py-1.5 border-t border-slate-50">
                       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: selectedType ? catFor(selectedType).color : "#0d9488" }} />
                       <span className="text-[11px] font-bold text-slate-400">
                         {services.length} cerca de ti
