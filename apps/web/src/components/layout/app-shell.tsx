@@ -13,7 +13,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   if (isMap) {
     return (
-      <div className="flex h-screen flex-col overflow-hidden">
+      <div className="flex h-[100dvh] flex-col overflow-hidden">
         <TopNav />
         <main className="relative flex flex-1 flex-col overflow-hidden">
           {children}
