@@ -334,43 +334,72 @@ function MapBottomCard({ services, selectedId, onSelect }: { services: MapServic
   return (
     <div
       ref={scrollRef}
-      className="flex gap-2.5 overflow-x-auto px-3 py-3"
+      className="flex gap-2.5 overflow-x-auto px-3 py-2.5"
       style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
     >
       {services.map((s) => {
         const cat = catFor(s.type);
         const active = selectedId === s.id;
         const href = serviceHref(s);
+        const prod = s.matchedProduct;
         return (
           <div
             key={s.id}
             data-card-id={s.id}
             onClick={() => onSelect(s.id)}
-            className={`flex w-[260px] shrink-0 cursor-pointer items-center gap-3 rounded-2xl px-3.5 py-2.5 transition-all ${active ? "shadow-sm" : ""}`}
+            className={`flex w-[260px] shrink-0 cursor-pointer flex-col rounded-2xl transition-all ${active ? "shadow-sm" : ""}`}
             style={{
               scrollSnapAlign: "center",
               backgroundColor: active ? cat.color + "10" : "#f8fafc",
               border: active ? `2px solid ${cat.color}` : "2px solid #e2e8f0",
             }}
           >
-            <Avatar service={s} size={38} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-bold text-slate-800">{s.name}</p>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-px text-[9px] font-bold" style={{ backgroundColor: cat.color + "18", color: cat.color }}>
-                  {typeLabel(s.type)}
-                </span>
-                {s.distanceKm !== null && <span className="text-[10px] font-semibold text-blue-600">{s.distanceKm.toFixed(1)} km</span>}
-                {s.rating !== null && <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500"><IcoStar />{s.rating.toFixed(1)}</span>}
+            {/* Store row */}
+            <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1.5">
+              <Avatar service={s} size={34} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12px] font-bold text-slate-800">{s.name}</p>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-px text-[9px] font-bold" style={{ backgroundColor: cat.color + "18", color: cat.color }}>
+                    {typeLabel(s.type)}
+                  </span>
+                  {s.distanceKm !== null && <span className="text-[10px] font-semibold text-blue-600">{s.distanceKm.toFixed(1)} km</span>}
+                  {s.rating !== null && <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500"><IcoStar />{s.rating.toFixed(1)}</span>}
+                </div>
               </div>
+              {href && (
+                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {s.type === "PARK"
+                    ? <a href={href} target="_blank" rel="noopener noreferrer" className="flex h-7 w-7 items-center justify-center rounded-lg text-white" style={{ backgroundColor: cat.color }}><IcoNav /></a>
+                    : <Link href={href} className="flex h-7 w-7 items-center justify-center rounded-lg text-white" style={{ backgroundColor: cat.color }}><IcoChevR /></Link>}
+                </div>
+              )}
             </div>
-            {href && (
-              <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                {s.type === "PARK"
-                  ? <a href={href} target="_blank" rel="noopener noreferrer" className="flex h-8 w-8 items-center justify-center rounded-xl text-white" style={{ backgroundColor: cat.color }}><IcoNav /></a>
-                  : <Link href={href} className="flex h-8 w-8 items-center justify-center rounded-xl text-white" style={{ backgroundColor: cat.color }}><IcoChevR /></Link>}
+
+            {/* Matched product row (visible when searching) */}
+            {prod && (
+              <div className="mx-2.5 mb-2 flex items-center gap-2 rounded-lg bg-white/80 px-2 py-1.5 ring-1 ring-black/5">
+                {prod.imageUrl
+                  ? <img src={prod.imageUrl} alt="" className="h-8 w-8 shrink-0 rounded-md object-cover" />
+                  : <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-50 text-amber-500"><IcoTag /></span>}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[11px] font-semibold text-slate-700">{prod.title}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[12px] font-bold tabular-nums text-slate-800">
+                      ${Math.round(prod.priceCents / 100).toLocaleString("es-CL")}
+                    </span>
+                    {s.discountLabel && (
+                      <span className="rounded bg-red-500 px-1.5 py-px text-[8px] font-bold text-white">
+                        {s.discountLabel}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Bottom padding if no product */}
+            {!prod && <div className="h-1" />}
           </div>
         );
       })}
