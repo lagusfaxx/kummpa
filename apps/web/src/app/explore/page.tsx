@@ -54,8 +54,6 @@ type Category = {
   label: string;
   type?: MapServiceType;
   color: string;
-  activeBg: string;
-  activeText: string;
   icon: () => JSX.Element;
 };
 
@@ -121,12 +119,13 @@ function IcoCatHotel() {
 }
 
 const CATEGORIES: Category[] = [
-  { label: "Todo",        color: "#334155", activeBg: "bg-slate-700",   activeText: "text-white", icon: IcoCatAll      },
-  { label: "Tiendas",     type: "SHOP",      color: "#b45309", activeBg: "bg-amber-700",  activeText: "text-white", icon: IcoCatShop     },
-  { label: "Paseos",      type: "CAREGIVER", color: "#0369a1", activeBg: "bg-blue-700",   activeText: "text-white", icon: IcoCatWalk     },
-  { label: "Parques",     type: "PARK",      color: "#15803d", activeBg: "bg-green-700",  activeText: "text-white", icon: IcoCatPark     },
-  { label: "Peluquerías", type: "GROOMING",  color: "#be185d", activeBg: "bg-pink-700",   activeText: "text-white", icon: IcoCatGrooming },
-  { label: "Veterinarias",type: "VET",       color: "#0f766e", activeBg: "bg-teal-700",   activeText: "text-white", icon: IcoCatVet      },
+  { label: "Todo",         color: "#334155", icon: IcoCatAll },
+  { label: "Veterinarias", type: "VET",      color: "#0f766e", icon: IcoCatVet },
+  { label: "Tiendas",      type: "SHOP",     color: "#b45309", icon: IcoCatShop },
+  { label: "Peluquerías",  type: "GROOMING", color: "#be185d", icon: IcoCatGrooming },
+  { label: "Paseos",       type: "CAREGIVER",color: "#0369a1", icon: IcoCatWalk },
+  { label: "Parques",      type: "PARK",     color: "#15803d", icon: IcoCatPark },
+  { label: "Hoteles",      type: "HOTEL",    color: "#6d28d9", icon: IcoCatHotel },
 ];
 
 /* ─── Helpers ────────────────────────────────────────────────── */
@@ -145,6 +144,34 @@ function priceText(s: MapServicePoint): string {
 
 function categoryFor(type: MapServiceType): Category {
   return CATEGORIES.find((c) => c.type === type) ?? CATEGORIES[0]!;
+}
+
+function ctaHref(service: MapServicePoint): string | null {
+  if (service.type === "SHOP") return `/explore/shop/${service.sourceId}`;
+  if (service.type === "VET") return `/explore/vet/${service.sourceId}`;
+  if (service.type === "GROOMING") return `/explore/groomer/${service.sourceId}`;
+  if (service.type === "PARK") return mapsUrl(service.latitude, service.longitude, service.name);
+  return service.bookingUrl ?? service.profileUrl ?? null;
+}
+
+function ctaLabel(type: MapServiceType): string {
+  if (type === "SHOP") return "Ver tienda";
+  if (type === "PARK") return "Cómo llegar";
+  return "Reservar";
+}
+
+function ctaBg(type: MapServiceType): string {
+  if (type === "SHOP") return "#b45309";
+  if (type === "PARK") return "#15803d";
+  if (type === "GROOMING") return "#be185d";
+  if (type === "VET") return "#0f766e";
+  if (type === "HOTEL") return "#6d28d9";
+  if (type === "CAREGIVER") return "#0369a1";
+  return "#334155";
+}
+
+function isExternalLink(type: MapServiceType): boolean {
+  return type === "PARK";
 }
 
 /* ─── SVG icons ──────────────────────────────────────────────── */
@@ -179,25 +206,18 @@ function IcoListTab() {
   );
 }
 function IcoStar() {
-  return <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className="h-2.5 w-2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+  return <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className="h-3 w-3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
 }
 function IcoPhone() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.08 6.08l.98-.98a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-    </svg>
-  );
-}
-function IcoChev() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
-      <polyline points="9 18 15 12 9 6"/>
     </svg>
   );
 }
 function IcoDirections() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
       <polygon points="3 11 22 2 13 21 11 13 3 11"/>
     </svg>
   );
@@ -213,6 +233,51 @@ function IcoTag() {
 
 function mapsUrl(lat: number, lng: number, name: string): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_name=${encodeURIComponent(name)}`;
+}
+
+/* ─── CTA Button component ──────────────────────────────────── */
+function CtaButton({ service, size = "md" }: { service: MapServicePoint; size?: "sm" | "md" }) {
+  const href = ctaHref(service);
+  if (!href) return null;
+
+  const label = ctaLabel(service.type);
+  const bg = ctaBg(service.type);
+  const external = isExternalLink(service.type);
+  const cls = size === "sm"
+    ? "rounded-xl px-3.5 py-2 text-[12px] font-bold text-white transition-opacity hover:opacity-90 active:opacity-80"
+    : "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white transition-opacity hover:opacity-90 active:opacity-80";
+
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className={cls} style={{ backgroundColor: bg }}>
+        {size === "md" && service.type === "PARK" && <IcoDirections />}
+        {label}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} onClick={(e) => e.stopPropagation()}
+      className={cls} style={{ backgroundColor: bg }}>
+      {label}
+    </Link>
+  );
+}
+
+/* ─── Phone Button component ────────────────────────────────── */
+function PhoneButton({ phone, size = "md" }: { phone: string; size?: "sm" | "md" }) {
+  const cls = size === "sm"
+    ? "flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-600 transition hover:bg-slate-50 active:bg-slate-100"
+    : "flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-50 active:bg-slate-100";
+
+  return (
+    <a href={`tel:${phone}`} onClick={(e) => e.stopPropagation()} className={cls}>
+      <IcoPhone />
+      {size === "md" && <span>Llamar</span>}
+    </a>
+  );
 }
 
 /* ─── Skeleton ────────────────────────────────────────────────── */
@@ -275,7 +340,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/* ─── Service card ────────────────────────────────────────────── */
+/* ─── Desktop Service Card — always shows CTA + phone ────────── */
 function ServiceCard({
   service, selected, onSelect, animIndex
 }: {
@@ -301,9 +366,9 @@ function ServiceCard({
         <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full" style={{ backgroundColor: cat.color }} />
       )}
 
-      <div className="flex items-start gap-3 border-b border-slate-100 px-4 py-3">
+      <div className="flex items-start gap-3 px-4 py-3">
         <div
-          className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
+          className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
           style={{ backgroundColor: service.imageUrl ? "transparent" : cat.color }}
         >
           {service.imageUrl
@@ -347,122 +412,35 @@ function ServiceCard({
               <span className="ml-auto shrink-0 text-[10px] font-medium text-slate-400">{service.distanceKm.toFixed(1)} km</span>
             )}
           </div>
+
+          {/* Matched product for shops */}
           {service.type === "SHOP" && service.matchedProduct && (
             <div className="mt-1.5 flex items-center gap-1.5">
               {service.matchedProduct.imageUrl
                 ? <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
-                    className="h-5 w-5 shrink-0 rounded object-cover" />
+                    className="h-6 w-6 shrink-0 rounded object-cover" />
                 : <span className="shrink-0 text-amber-500"><IcoTag /></span>
               }
               <span className="truncate text-[11px] font-medium text-slate-600">{service.matchedProduct.title}</span>
-              <span className="shrink-0 text-[11px] font-bold text-[hsl(22_92%_50%)]">
+              <span className="shrink-0 text-[11px] font-bold text-amber-700">
                 ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
               </span>
             </div>
           )}
-        </div>
 
-        {!selected && <div className="mt-1 shrink-0 text-slate-300"><IcoChev /></div>}
+          {/* Always-visible action row */}
+          <div className="mt-2 flex items-center gap-2">
+            <CtaButton service={service} size="sm" />
+            {service.phone && service.type !== "PARK" && (
+              <PhoneButton phone={service.phone} size="sm" />
+            )}
+          </div>
+        </div>
       </div>
 
-      {selected && service.type === "SHOP" && service.matchedProduct && (
-        <div className="flex items-center gap-2 border-b border-slate-100 bg-amber-50/60 px-4 pb-2 pt-2 pl-[68px]">
-          {service.matchedProduct.imageUrl && (
-            <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
-              className="h-7 w-7 shrink-0 rounded-lg object-cover" />
-          )}
-          {!service.matchedProduct.imageUrl && (
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600"><IcoTag /></span>
-          )}
-          <span className="min-w-0 flex-1 truncate text-[11px] font-semibold text-slate-700">{service.matchedProduct.title}</span>
-          <span className="shrink-0 text-[11px] font-bold text-[hsl(22_92%_50%)]">
-            ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
-          </span>
-        </div>
-      )}
-
-      {selected && (
-        <div className="flex flex-wrap gap-2 border-b border-slate-100 px-4 pb-3 pl-[68px]">
-          {service.type === "PARK" ? (
-            <a href={mapsUrl(service.latitude, service.longitude, service.name)} target="_blank" rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 rounded-full bg-green-700 px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
-              <IcoDirections /> Cómo llegar
-            </a>
-          ) : service.type === "SHOP" ? (
-            <Link href={`/explore/shop/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
-              className="rounded-full bg-[hsl(22_92%_60%)] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
-              Ver tienda
-            </Link>
-          ) : service.type === "VET" ? (
-            <Link href={`/explore/vet/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
-              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
-              Reservar
-            </Link>
-          ) : service.type === "GROOMING" ? (
-            <Link href={`/explore/groomer/${service.sourceId}`} onClick={(e) => e.stopPropagation()}
-              className="rounded-full bg-pink-700 px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
-              Reservar
-            </Link>
-          ) : (service.bookingUrl ?? service.profileUrl) ? (
-            <Link href={service.bookingUrl ?? service.profileUrl ?? "#"} onClick={(e) => e.stopPropagation()}
-              className="rounded-full bg-[hsl(var(--primary))] px-4 py-1.5 text-[11px] font-bold text-white transition hover:opacity-90">
-              Reservar
-            </Link>
-          ) : null}
-          {service.phone && service.type !== "PARK" && (
-            <a href={`tel:${service.phone}`} onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
-              <IcoPhone /> Llamar
-            </a>
-          )}
-          {service.profileUrl && service.type !== "VET" && service.type !== "SHOP" && service.type !== "PARK" && service.type !== "GROOMING" && (
-            <Link href={service.profileUrl} onClick={(e) => e.stopPropagation()}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50">
-              Ver ficha
-            </Link>
-          )}
-        </div>
-      )}
+      {/* Bottom border */}
+      <div className="mx-4 border-b border-slate-100" />
     </article>
-  );
-}
-
-/* ─── Category grid ──────────────────────────────────────────── */
-function CategoryGrid({
-  selectedType, onSelect
-}: {
-  selectedType: MapServiceType | null;
-  onSelect: (t: MapServiceType | null) => void;
-}) {
-  return (
-    <div className="grid grid-cols-3 gap-2">
-      {CATEGORIES.map((cat, i) => {
-        const active = cat.type ? selectedType === cat.type : selectedType === null;
-        const Icon = cat.icon;
-        return (
-          <button
-            key={cat.label}
-            type="button"
-            onClick={() => onSelect(cat.type ?? null)}
-            style={active ? { backgroundColor: cat.color } : { animationDelay: `${i * 40}ms` }}
-            className={`category-chip relative flex flex-col items-center gap-1.5 rounded-2xl px-1 py-3 text-center transition-all duration-200 active:scale-95 ${
-              active
-                ? "text-white shadow-md"
-                : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-100"
-            }`}
-          >
-            <span className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}>
-              <Icon />
-            </span>
-            <span className="text-[10px] font-semibold leading-none">{cat.label}</span>
-            {active && (
-              <span className="absolute inset-0 animate-ping rounded-2xl opacity-0" style={{ backgroundColor: cat.color }} />
-            )}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -478,67 +456,6 @@ function MobileServiceCard({
 }) {
   const cat = categoryFor(service.type);
   const price = priceText(service);
-
-  const cta = (() => {
-    if (service.type === "PARK") {
-      return (
-        <a
-          href={mapsUrl(service.latitude, service.longitude, service.name)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-700 py-2.5 text-[13px] font-bold text-white"
-        >
-          <IcoDirections /> Cómo llegar
-        </a>
-      );
-    }
-    if (service.type === "SHOP") {
-      return (
-        <Link
-          href={`/explore/shop/${service.sourceId}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-1 items-center justify-center rounded-xl bg-[hsl(22_92%_60%)] py-2.5 text-[13px] font-bold text-white"
-        >
-          Ver tienda
-        </Link>
-      );
-    }
-    if (service.type === "VET") {
-      return (
-        <Link
-          href={`/explore/vet/${service.sourceId}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-1 items-center justify-center rounded-xl bg-[hsl(var(--primary))] py-2.5 text-[13px] font-bold text-white"
-        >
-          Reservar
-        </Link>
-      );
-    }
-    if (service.type === "GROOMING") {
-      return (
-        <Link
-          href={`/explore/groomer/${service.sourceId}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-1 items-center justify-center rounded-xl bg-pink-700 py-2.5 text-[13px] font-bold text-white"
-        >
-          Reservar
-        </Link>
-      );
-    }
-    if (service.bookingUrl ?? service.profileUrl) {
-      return (
-        <Link
-          href={service.bookingUrl ?? service.profileUrl ?? "#"}
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-1 items-center justify-center rounded-xl bg-[hsl(var(--primary))] py-2.5 text-[13px] font-bold text-white"
-        >
-          Reservar
-        </Link>
-      );
-    }
-    return null;
-  })();
 
   return (
     <article
@@ -600,7 +517,7 @@ function MobileServiceCard({
 
       {/* Product match — shown prominently */}
       {service.type === "SHOP" && service.matchedProduct && (
-        <div className="mx-4 mb-4 flex items-center gap-3 rounded-xl bg-amber-50 p-3">
+        <div className="mx-4 mb-3 flex items-center gap-3 rounded-xl bg-amber-50 p-3">
           {service.matchedProduct.imageUrl
             ? <img
                 src={service.matchedProduct.imageUrl}
@@ -615,33 +532,24 @@ function MobileServiceCard({
             <p className="text-[13px] font-semibold leading-snug text-slate-800 line-clamp-2">{service.matchedProduct.title}</p>
             <p className="mt-0.5 text-[11px] text-slate-400">Disponible en esta tienda</p>
           </div>
-          <span className="shrink-0 text-[16px] font-bold text-[hsl(22_92%_50%)]">
+          <span className="shrink-0 text-[16px] font-bold text-amber-700">
             ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
           </span>
         </div>
       )}
 
-      {/* Action buttons */}
-      {(cta || (service.phone && service.type !== "PARK")) && (
-        <div className="flex gap-2.5 border-t border-slate-100 px-4 py-3">
-          {cta}
-          {service.phone && service.type !== "PARK" && (
-            <a
-              href={`tel:${service.phone}`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-slate-700"
-            >
-              <IcoPhone /> Llamar
-            </a>
-          )}
-        </div>
-      )}
+      {/* Action buttons — always visible */}
+      <div className="flex gap-2.5 border-t border-slate-100 px-4 py-3">
+        <CtaButton service={service} size="md" />
+        {service.phone && service.type !== "PARK" && (
+          <PhoneButton phone={service.phone} size="md" />
+        )}
+      </div>
     </article>
   );
 }
 
-/* ─── Mobile Card Strip ──────────────────────────────────────── */
-/* ─── Mobile Map Card (ultra-compacto, 2 filas) ─────────────── */
+/* ─── Mobile Map Card (bottom sheet style) ───────────────────── */
 function MobileMapCard({
   services,
   selectedId,
@@ -665,23 +573,6 @@ function MobileMapCard({
     if (next) onSelect(next.id);
   };
 
-  const ctaHref =
-    service.type === "SHOP"     ? `/explore/shop/${service.sourceId}`    :
-    service.type === "VET"      ? `/explore/vet/${service.sourceId}`      :
-    service.type === "GROOMING" ? `/explore/groomer/${service.sourceId}`  :
-    service.type === "PARK"     ? mapsUrl(service.latitude, service.longitude, service.name) :
-    (service.bookingUrl ?? service.profileUrl ?? null);
-
-  const ctaLabel =
-    service.type === "SHOP" ? "Ver tienda" :
-    service.type === "PARK" ? "Ir" : "Reservar";
-
-  const ctaBg =
-    service.type === "SHOP"     ? "hsl(22 92% 60%)"          :
-    service.type === "PARK"     ? "#15803d"                   :
-    service.type === "GROOMING" ? "#be185d"                   :
-    cat.color;
-
   return (
     <div
       className="pointer-events-none absolute inset-x-0 bottom-0 px-3"
@@ -702,10 +593,10 @@ function MobileMapCard({
           <span className="h-[3px] w-8 rounded-full bg-slate-200" />
         </div>
 
-        {/* Fila 1: avatar · nombre · open · nav */}
+        {/* Row 1: avatar · name · open · nav */}
         <div className="flex items-center gap-2.5 px-3.5 pt-1.5 pb-2">
           <div
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-bold text-white"
             style={{ backgroundColor: service.imageUrl ? "transparent" : cat.color }}
           >
             {service.imageUrl
@@ -735,7 +626,7 @@ function MobileMapCard({
             </p>
           </div>
 
-          {/* Nav compacto */}
+          {/* Compact nav */}
           <div className="flex shrink-0 items-center gap-0.5">
             <button type="button" onClick={() => goTo(activeIdx - 1)} disabled={activeIdx === 0}
               className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 active:bg-slate-100 disabled:opacity-25">
@@ -755,40 +646,98 @@ function MobileMapCard({
           </div>
         </div>
 
-        {/* Fila 2: producto+precio (si hay) + CTA — todo en una línea */}
-        <div className="flex items-center gap-2 border-t border-slate-100/80 px-3.5 py-2.5">
-          {service.type === "SHOP" && service.matchedProduct ? (
-            <>
-              {service.matchedProduct.imageUrl && (
-                <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
-                  className="h-8 w-8 shrink-0 rounded-lg object-cover border border-amber-100 bg-amber-50" />
-              )}
-              <p className="min-w-0 flex-1 truncate text-[11px] text-slate-500">{service.matchedProduct.title}</p>
-              <span className="shrink-0 text-[15px] font-bold text-[hsl(22_92%_50%)]">
-                ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
-              </span>
-            </>
-          ) : (
-            <div className="flex-1" />
-          )}
+        {/* Row 2: matched product (if shop) */}
+        {service.type === "SHOP" && service.matchedProduct && (
+          <div className="flex items-center gap-2 border-t border-slate-100/80 px-3.5 py-2">
+            {service.matchedProduct.imageUrl && (
+              <img src={service.matchedProduct.imageUrl} alt={service.matchedProduct.title}
+                className="h-8 w-8 shrink-0 rounded-lg object-cover border border-amber-100 bg-amber-50" />
+            )}
+            <p className="min-w-0 flex-1 truncate text-[11px] text-slate-500">{service.matchedProduct.title}</p>
+            <span className="shrink-0 text-[14px] font-bold text-amber-700">
+              ${Math.round(service.matchedProduct.priceCents / 100).toLocaleString("es-CL")}
+            </span>
+          </div>
+        )}
 
-          {ctaHref && (
-            service.type === "PARK" ? (
-              <a href={ctaHref} target="_blank" rel="noopener noreferrer"
-                className="shrink-0 rounded-xl px-3.5 py-1.5 text-[12px] font-bold text-white"
-                style={{ backgroundColor: ctaBg }}>
-                {ctaLabel}
-              </a>
-            ) : (
-              <Link href={ctaHref}
-                className="shrink-0 rounded-xl px-3.5 py-1.5 text-[12px] font-bold text-white"
-                style={{ backgroundColor: ctaBg }}>
-                {ctaLabel}
-              </Link>
-            )
+        {/* Row 3: action buttons — CTA + phone */}
+        <div className="flex items-center gap-2 border-t border-slate-100/80 px-3.5 py-2.5">
+          <CtaButton service={service} size="md" />
+          {service.phone && service.type !== "PARK" && (
+            <PhoneButton phone={service.phone} size="sm" />
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── Category Grid (visible, not carousel) ──────────────────── */
+function CategoryGrid({
+  selectedType, onSelect, compact = false
+}: {
+  selectedType: MapServiceType | null;
+  onSelect: (t: MapServiceType | null) => void;
+  compact?: boolean;
+}) {
+  if (compact) {
+    // Mobile: 2 rows grid showing all categories at once
+    return (
+      <div className="grid grid-cols-4 gap-1.5">
+        {CATEGORIES.map((cat) => {
+          const active = cat.type ? selectedType === cat.type : selectedType === null;
+          const Icon = cat.icon;
+          return (
+            <button
+              key={cat.label}
+              type="button"
+              onClick={() => onSelect(cat.type ?? null)}
+              style={active ? { backgroundColor: cat.color } : {}}
+              className={`flex flex-col items-center gap-1 rounded-xl px-1 py-2 transition-all duration-200 active:scale-95 ${
+                active
+                  ? "text-white shadow-md"
+                  : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100"
+              }`}
+            >
+              <span className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}>
+                <Icon />
+              </span>
+              <span className="text-[9px] font-semibold leading-none">{cat.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Desktop: 3-column grid
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {CATEGORIES.map((cat, i) => {
+        const active = cat.type ? selectedType === cat.type : selectedType === null;
+        const Icon = cat.icon;
+        return (
+          <button
+            key={cat.label}
+            type="button"
+            onClick={() => onSelect(cat.type ?? null)}
+            style={active ? { backgroundColor: cat.color } : { animationDelay: `${i * 40}ms` }}
+            className={`category-chip relative flex flex-col items-center gap-1.5 rounded-2xl px-1 py-3 text-center transition-all duration-200 active:scale-95 ${
+              active
+                ? "text-white shadow-md"
+                : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-100"
+            }`}
+          >
+            <span className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}>
+              <Icon />
+            </span>
+            <span className="text-[10px] font-semibold leading-none">{cat.label}</span>
+            {active && (
+              <span className="absolute inset-0 animate-ping rounded-2xl opacity-0" style={{ backgroundColor: cat.color }} />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -848,11 +797,6 @@ export default function ExplorePage() {
     listRef.current.querySelector(`[data-id="${selectedId}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [selectedId]);
 
-  const selectedService = useMemo(
-    () => services.find((s) => s.id === selectedId) ?? null,
-    [services, selectedId]
-  );
-
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     setSearch(inputValue.trim());
@@ -866,9 +810,9 @@ export default function ExplorePage() {
 
   const activeFilters = [openNow, withDiscount, selectedType !== null, !!search].filter(Boolean).length;
 
-  /* ─── Shared panel header ───────────────────────────────────── */
-  const PanelHeader = (compact = false) => (
-    <div className={`sticky top-0 z-10 bg-white/96 backdrop-blur-sm ${compact ? "" : ""}`}>
+  /* ─── Shared panel header (desktop) ──────────────────────────── */
+  const PanelHeader = () => (
+    <div className="sticky top-0 z-10 bg-white/96 backdrop-blur-sm">
 
       {/* Category section */}
       <div className="px-4 pt-4 pb-3">
@@ -1000,7 +944,7 @@ export default function ExplorePage() {
         @media (max-width: 1023px) {
           .mapboxgl-ctrl-bottom-left,
           .mapboxgl-ctrl-bottom-right {
-            margin-bottom: calc(8rem + env(safe-area-inset-bottom));
+            margin-bottom: calc(10rem + env(safe-area-inset-bottom));
           }
         }
       `}</style>
@@ -1010,7 +954,7 @@ export default function ExplorePage() {
         {/* Desktop sidebar */}
         <aside className="hidden w-[360px] shrink-0 flex-col overflow-hidden border-r border-slate-200 shadow-[4px_0_30px_-8px_rgba(0,0,0,0.08)] lg:flex">
           <div className="flex flex-1 flex-col bg-white overflow-hidden">
-            {PanelHeader()}
+            <PanelHeader />
             {ResultList}
           </div>
         </aside>
@@ -1018,10 +962,10 @@ export default function ExplorePage() {
         {/* Mobile */}
         <div className="flex flex-1 flex-col overflow-hidden lg:hidden">
 
-          {/* Header — 3 zonas claras, separadas */}
+          {/* Header */}
           <div className="shrink-0 bg-white shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
 
-            {/* Zona 1: buscador */}
+            {/* Search bar */}
             <div className="px-4 pt-4 pb-3">
               <form onSubmit={submitSearch}>
                 <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 transition-all ${
@@ -1049,34 +993,19 @@ export default function ExplorePage() {
               </form>
             </div>
 
-            {/* Zona 2: categorías + filtros */}
-            <div className="flex gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
-              {CATEGORIES.map((cat) => {
-                const active = cat.type ? selectedType === cat.type : selectedType === null;
-                const Icon = cat.icon;
-                return (
-                  <button
-                    key={cat.label}
-                    onClick={() => setSelectedType(cat.type ?? null)}
-                    style={active ? { backgroundColor: cat.color } : {}}
-                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 transition-all duration-200 active:scale-95 ${
-                      active ? "text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
-                    }`}
-                  >
-                    <Icon />
-                    <span className="text-[11px] font-semibold">{cat.label}</span>
-                  </button>
-                );
-              })}
+            {/* Categories — visible grid (not hidden carousel) */}
+            <div className="px-4 pb-3">
+              <CategoryGrid selectedType={selectedType} onSelect={setSelectedType} compact />
+            </div>
 
-              <div className="mx-0.5 my-1 w-px shrink-0 self-stretch bg-slate-150" style={{ backgroundColor: "#e8ecf0" }} />
-
+            {/* Quick filters */}
+            <div className="flex gap-2 px-4 pb-3">
               <button onClick={() => setOpenNow((v) => !v)}
                 className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
                   openNow ? "bg-emerald-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
                 }`}>
                 {openNow && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
-                Abierto
+                Abierto ahora
               </button>
 
               <button onClick={() => setWithDiscount((v) => !v)}
@@ -1084,11 +1013,20 @@ export default function ExplorePage() {
                   withDiscount ? "bg-orange-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-500"
                 }`}>
                 {withDiscount && <span className="h-1.5 w-1.5 rounded-full bg-white/70" />}
-                Descuento
+                Con descuento
               </button>
+
+              {activeFilters > 0 && (
+                <button
+                  onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
+                  className="flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-500"
+                >
+                  Limpiar <IcoX />
+                </button>
+              )}
             </div>
 
-            {/* Zona 3: vista Mapa / Lista — tab ligero, separado */}
+            {/* Tab: Mapa / Lista */}
             <div className="flex border-t border-slate-100">
               {(["map", "list"] as const).map((tab) => (
                 <button
@@ -1107,7 +1045,7 @@ export default function ExplorePage() {
             </div>
           </div>
 
-          {/* Contenido — mapa limpio o lista */}
+          {/* Content — map or list */}
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
             {mobileTab === "map" ? (
               <MapCanvas
@@ -1118,6 +1056,8 @@ export default function ExplorePage() {
                 className="flex-1 min-h-[56vh]"
                 borderless
                 showPopup={false}
+                minZoom={8}
+                maxZoom={17}
               />
             ) : (
               <div className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(5rem+env(safe-area-inset-bottom))]">
@@ -1129,14 +1069,6 @@ export default function ExplorePage() {
                         ? `${services.length} lugar${services.length !== 1 ? "es" : ""}${search ? ` para "${search}"` : ""}`
                         : ""}
                     </span>
-                    {(openNow || withDiscount || selectedType !== null || !!search) && (
-                      <button
-                        onClick={() => { setOpenNow(false); setWithDiscount(false); setSelectedType(null); clearSearch(); }}
-                        className="flex items-center gap-1 rounded-full bg-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-500"
-                      >
-                        Limpiar <IcoX />
-                      </button>
-                    )}
                   </div>
                 )}
                 {isLoading
@@ -1156,7 +1088,7 @@ export default function ExplorePage() {
               </div>
             )}
 
-            {/* Mobile map card — single card con nav prev/next */}
+            {/* Mobile map card */}
             {mobileTab === "map" && services.length > 0 && (
               <MobileMapCard
                 services={services}
@@ -1177,6 +1109,8 @@ export default function ExplorePage() {
             className="h-full w-full"
             borderless
             showPopup={false}
+            minZoom={8}
+            maxZoom={17}
           />
 
           {!isLoading && services.length > 0 && (
